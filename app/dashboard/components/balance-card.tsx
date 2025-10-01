@@ -19,7 +19,7 @@ interface BalanceProps {
 export function BalanceCard(props: BalanceProps) {
   return (
     <>
-      <Card className="h-70">
+      <Card className="h-full">
         <CardHeader>
           <CardTitle>Current Balance</CardTitle>
           <CardAction>

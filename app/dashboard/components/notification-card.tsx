@@ -75,7 +75,7 @@ function truncateStringWithEllipsis(str: string, num: number) {
 export function NotificationCard() {
   return (
     <>
-      <Card className="h-70">
+      <Card className="h-full">
         <CardHeader>
           <CardTitle>Recent Notifications</CardTitle>
 

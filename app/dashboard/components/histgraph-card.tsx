@@ -19,6 +19,11 @@ import {
 
 export const description = "A bar chart";
 
+const dateOptions = {
+  month: 'long' as const,
+  day: 'numeric' as const
+};
+
 const balanceHistory = [
   { week: "2025-08-18", balance: 1025.0 },
   { week: "2025-08-25", balance: 875.2 },
@@ -38,7 +43,7 @@ const chartConfig = {
 
 export function HistgraphCard() {
   return (
-    <Card className="h-90">
+    <Card className="h-full">
       <CardHeader>
         <CardTitle>Balance History</CardTitle>
         <CardDescription>Weekly Balance</CardDescription>
@@ -52,7 +57,7 @@ export function HistgraphCard() {
               tickLine={false}
               tickMargin={10}
               axisLine={false}
-              tickFormatter={(value) => new Date(value).toLocaleDateString()}
+              tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', dateOptions)}
             />
             <YAxis
               dataKey="balance"

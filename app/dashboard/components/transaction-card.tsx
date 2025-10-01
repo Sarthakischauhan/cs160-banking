@@ -57,9 +57,10 @@ const transactions = [
 export function TransactionCard() {
     return (
         <>
-        <Card className="h-90">
+        <Card className="h-full">
             <CardHeader>
                 <CardTitle>Recent Transactions</CardTitle>
+                <CardAction>View Transactions</CardAction>
             </CardHeader>
             <CardContent>
                 {transactions.map((transaction) => (

@@ -8,12 +8,14 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
+const username = "Username"
+
 export function WelcomeCard() {
     return (
         <>
         <Card>
             <CardHeader>
-                <CardTitle>Welcome!</CardTitle>
+                <CardTitle>Welcome, {username}!</CardTitle>
                 <CardDescription>This is your dashboard!</CardDescription>
             </CardHeader>
             <CardContent>

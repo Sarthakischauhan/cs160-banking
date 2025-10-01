@@ -5,6 +5,8 @@ import {
   Settings,
   Landmark,
   Bell,
+  MapPin,
+  HandCoins
 } from "lucide-react";
 
 import {
@@ -27,6 +29,11 @@ const sidebarOptions = [
     img: House,
   },
   {
+    title: "Deposit/Withdraw",
+    url: "#",
+    img: HandCoins,
+  },
+  {
     title: "Transfer",
     url: "#",
     img: ArrowLeftRight,
@@ -46,6 +53,11 @@ const sidebarOptions = [
     url: "#",
     img: Settings,
   },
+  {
+    title: "Nearby ATMs",
+    url: "#",
+    img: MapPin,
+  }
 ];
 
 export function AppSidebar() {
