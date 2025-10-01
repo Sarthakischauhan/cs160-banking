@@ -29,7 +29,7 @@ const sidebarOptions = [
     img: House,
   },
   {
-    title: "Deposit/Withdraw",
+    title: "Deposit",
     url: "#",
     img: HandCoins,
   },
