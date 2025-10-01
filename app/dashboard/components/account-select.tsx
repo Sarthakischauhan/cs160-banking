@@ -26,7 +26,7 @@ export function AccountSelect() {
         <SelectGroup>
           <SelectLabel>Accounts</SelectLabel>
           {accountNames.map((account) => (
-            <SelectItem value={account}>{account}</SelectItem>
+            <SelectItem key={account} value={account}>{account}</SelectItem>
           ))}
         </SelectGroup>
       </SelectContent>
