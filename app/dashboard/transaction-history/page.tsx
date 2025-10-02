@@ -95,7 +95,7 @@ export default function TransactionHistoryPage() {
             <div className="p-10">
               <h1 className="text-4xl">Transaction History</h1>
             </div>
-            <div className="justify-items-center">
+            <div className="grid justify-items-center">
               <TransactionTableCard transactions={transactions} />
             </div>
           </div>
