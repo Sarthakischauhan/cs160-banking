@@ -33,7 +33,7 @@ export function DepositCard() {
   const router = useRouter()
 
   function formatCurrency(value?: string | number) {
-    if (!value) return "00.00";
+    if (!value || value === "NaN" || value == 0) return "";
     const num = parseFloat(value.toString());
     return num.toFixed(2);
   }
@@ -58,7 +58,7 @@ export function DepositCard() {
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-4xl">$</span>
                         <Input
-                          placeholder="$00.00"
+                          placeholder="00.00"
                           className="!text-5xl text-center h-20"
                           value={formatCurrency(field.value)}
                           onChange={(e) => {
