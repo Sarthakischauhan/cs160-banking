@@ -25,12 +25,12 @@ import {
 const sidebarOptions = [
   {
     title: "Dashboard",
-    url: "#",
+    url: "/dashboard",
     img: House,
   },
   {
     title: "Deposit",
-    url: "#",
+    url: "/dashboard/deposit",
     img: HandCoins,
   },
   {
