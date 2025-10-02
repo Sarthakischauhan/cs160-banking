@@ -40,7 +40,7 @@ const sidebarOptions = [
   },
   {
     title: "Transaction History",
-    url: "#",
+    url: "/dashboard/transaction-history",
     img: FileClock,
   },
   {
