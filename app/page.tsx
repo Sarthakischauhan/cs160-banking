@@ -10,7 +10,7 @@ export default async function Home() {
     return (
       <main className="w-screen h-screen bg-gradient-to-b from-gray-50 via-sky-100 to-white">
         <AppHeader />
-        <div className="w-full h-[75%] content-center justify-items-center col-span-3">
+        <div className="grid w-full h-[75%] content-center justify-items-center col-span-3">
           <h1 className="font-bold text-5xl py-3">
             Welcome to the Online Bank
           </h1>
