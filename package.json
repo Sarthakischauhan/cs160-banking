@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "^4.10.0",
+    "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^6.16.3",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-dialog": "^1.1.15",
