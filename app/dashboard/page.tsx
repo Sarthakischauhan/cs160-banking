@@ -12,8 +12,10 @@ import { HistgraphCard } from "./components/histgraph-card";
 import { UpcomingCard } from "./components/upcoming-card";
 import { ATMCard } from "./components/atm-card";
 import { AccountSelect } from "./components/account-select";
-
-export default function Dashboard() {
+import { auth0 } from "@/lib/auth0";
+export default async function Dashboard() {
+  const session = await auth0.getSession()
+  console.log(session) 
   return (
     <>
       <SidebarProvider>

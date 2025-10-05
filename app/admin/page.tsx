@@ -1,6 +1,5 @@
-import { auth0 } from "@/lib/auth0";
+import { auth0, getRole } from "@/lib/auth0";
 import { redirect } from "next/navigation";
-import jwt from "jsonwebtoken";
 
 export default async function AdminPage() {
   const session = await auth0.getSession();
@@ -8,12 +7,9 @@ export default async function AdminPage() {
   if (!session) {
     return redirect("/auth/login");
   }
+  const role = getRole(session)
 
-  const decodedToken = jwt.decode(session.tokenSet.idToken) as Record<string, any> | null;
-  const roles = decodedToken['https://my-app.example.com/roles'];
-  const isAdmin = roles.includes("Admin");
-
-  if (!isAdmin) {
+  if (!role.includes("Admin")) {
     return redirect("/unauthorized");
   }
 
