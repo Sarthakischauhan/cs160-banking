@@ -1,19 +1,25 @@
 import type { NextRequest } from "next/server";
-
-import { auth0 } from "@/lib/auth0"; // Adjust path if your auth0 client is elsewhere
+import { NextResponse } from "next/server";
+import { auth0, getRole } from "@/lib/auth0";
 
 export async function middleware(request: NextRequest) {
-  return await auth0.middleware(request);
+  if (request.nextUrl.pathname.includes("/auth/")) {
+    return auth0.middleware(request);
+  }
+
+  const session = await auth0.getSession(request);
+  if (!session) {
+    return auth0.middleware(request);
+  }
+  const role = getRole(session);
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-user-role", role);
+
+  return NextResponse.next({
+    request: { headers: requestHeaders },
+  });
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
-     */
-    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)"],
 };
