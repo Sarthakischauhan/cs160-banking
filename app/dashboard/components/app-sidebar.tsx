@@ -35,7 +35,7 @@ const sidebarOptions = [
   },
   {
     title: "Transfer",
-    url: "#",
+    url: "/dashboard/transfer",
     img: ArrowLeftRight,
   },
   {
