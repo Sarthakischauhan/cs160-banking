@@ -33,7 +33,7 @@ export default async function Dashboard() {
           </div>
 
           {/* ROW 2 */}
-          <div className="grid grid-cols-4 h-75">
+          <div className="grid grid-cols-4 h-fit">
             <div className="col-span-1 ml-4 mr-2">
               <BalanceCard
                 userBalance={1000}
@@ -47,7 +47,7 @@ export default async function Dashboard() {
           </div>
 
           {/* ROW 3 */}
-          <div className="grid grid-cols-2 my-2 h-95">
+          <div className="grid grid-cols-2 my-2 h-fit">
             <div className="ml-4 mr-2">
               <TransactionCard />
             </div>
@@ -57,7 +57,7 @@ export default async function Dashboard() {
           </div>
 
           {/* ROW 4 */}
-          <div className="grid grid-cols-7 my-2 h-55">
+          <div className="grid grid-cols-7 my-2 h-fit">
             <div className="ml-4 col-span-3 mr-2">
               <UpcomingCard />
             </div>

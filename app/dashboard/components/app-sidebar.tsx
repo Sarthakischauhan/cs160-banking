@@ -45,7 +45,7 @@ const sidebarOptions = [
   },
   {
     title: "Notifications",
-    url: "#",
+    url: "/dashboard/notifications",
     img: Bell,
   },
   {
