@@ -25,27 +25,27 @@ import {
 const sidebarOptions = [
   {
     title: "Dashboard",
-    url: "#",
+    url: "/dashboard",
     img: House,
   },
   {
     title: "Deposit",
-    url: "#",
+    url: "/dashboard/deposit",
     img: HandCoins,
   },
   {
     title: "Transfer",
-    url: "#",
+    url: "/dashboard/transfer",
     img: ArrowLeftRight,
   },
   {
     title: "Transaction History",
-    url: "#",
+    url: "/dashboard/transaction-history",
     img: FileClock,
   },
   {
     title: "Notifications",
-    url: "#",
+    url: "/dashboard/notifications",
     img: Bell,
   },
   {
