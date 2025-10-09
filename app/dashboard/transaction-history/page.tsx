@@ -93,7 +93,7 @@ export default function TransactionHistoryPage() {
         <SidebarInset>
           <div className="w-full h-full">
             <div className="p-10">
-              <h1 className="text-4xl">Transaction History</h1>
+              <h1 className="text-4xl font-bold">Transaction History</h1>
             </div>
             <div className="grid justify-items-center">
               <TransactionTableCard transactions={transactions} />
