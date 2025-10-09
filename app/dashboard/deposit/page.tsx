@@ -10,7 +10,7 @@ export default function DepositPage() {
         <AppSidebar />
         <SidebarInset>
           <div className="p-10">
-            <h1 className="text-4xl">Deposit</h1>
+            <h1 className="text-4xl font-bold">Deposit</h1>
           </div>
           <div className="flex h-60 p-2 justify-center">
             <BalanceCard userBalance={1000} />
