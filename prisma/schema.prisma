@@ -8,28 +8,35 @@ datasource db {
 }
 
 model Account {
-  account_id  String        @id(map: "account_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  customer_id String        @db.Uuid
-  balance     Decimal       @default(0.00) @db.Decimal(12, 2)
-  created_at  DateTime      @default(now()) @db.Timestamptz(6)
-  updated_at  DateTime      @default(now()) @db.Timestamptz(6)
-  Customer    Customer      @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade, onUpdate: NoAction, map: "account_customer_id_fkey")
-  Checks      Checks[]      @ignore
-  Statements  Statements[]
-  Transaction Transaction[]
+  account_id     String        @id(map: "account_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customer_id    String        @db.Uuid
+  balance        Decimal       @default(0.00) @db.Decimal(12, 2)
+  created_at     DateTime      @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime      @default(now()) @db.Timestamptz(6)
+  account_type   Bytes?
+  account_status Bytes?
+  limit_amount   Decimal?      @db.Decimal
+  Customer       Customer      @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade, onUpdate: NoAction, map: "account_customer_id_fkey")
+  Checks         Checks[]
+  Statements     Statements[]
+  Transaction    Transaction[]
+  cardInfo       cardInfo?
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model Checks {
-  Check_id     String       @id(map: "checks_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  created_at   DateTime? @db.Timestamptz(6)
-  front_image  Bytes?
-  back_image   Bytes?
-  account      String?   @db.Uuid
-  updated_at   DateTime? @db.Timestamptz(6)
-  deposit_date DateTime? @db.Timestamptz(6)
-  image_type   Bytes?
-  Account      Account?  @relation(fields: [account], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
+  Check_id       Bytes
+  created_at     DateTime?    @db.Timestamptz(6)
+  front_image    Bytes?
+  back_image     Bytes?
+  account        String?      @db.Uuid
+  updated_at     DateTime?    @db.Timestamptz(6)
+  deposit_date   DateTime?    @db.Timestamptz(6)
+  image_type     Bytes?
+  amount         Decimal?     @db.Decimal
+  transaction_Id String?      @db.Uuid
+  Account        Account?     @relation(fields: [account], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
+  Transaction    Transaction? @relation(fields: [transaction_Id], references: [transaction_id], onDelete: NoAction, onUpdate: NoAction)
 
   @@ignore
 }
@@ -47,6 +54,7 @@ model Customer {
   account_type  String?
   Account       Account[]
   Email         Email?          @relation(fields: [email], references: [email_name], onDelete: NoAction, onUpdate: NoAction)
+  Login         Login[]
   Notifications Notifications[]
   Statements    Statements[]
   Transaction   Transaction[]
@@ -91,6 +99,27 @@ model Transaction {
   transaction_status       String?
   customer_id              String?   @db.Uuid
   transaction_type         String?
+  Checks                   Checks[]  @ignore
   Customer                 Customer? @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
   Account                  Account   @relation(fields: [account_id], references: [account_id], onDelete: Cascade, onUpdate: NoAction, map: "transaction_account_id_fkey")
+}
+
+model Login {
+  login_id       BigInt    @id @default(autoincrement())
+  created_at     DateTime  @default(now()) @db.Timestamptz(6)
+  customer_id    String?   @db.Uuid
+  login_attempts Int?      @db.SmallInt
+  login_sucess   Boolean?
+  email          Bytes?
+  password       Bytes?
+  user_type      Bytes?
+  Customer       Customer? @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model cardInfo {
+  cardNum     BigInt    @default(autoincrement())
+  cardPin     Int       @db.SmallInt
+  accountID   String    @id @db.Uuid
+  expiry_date DateTime? @db.Date
+  Account     Account   @relation(fields: [accountID], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
 }

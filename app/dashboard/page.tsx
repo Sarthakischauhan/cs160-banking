@@ -15,7 +15,6 @@ import { AccountSelect } from "./components/account-select";
 import { auth0 } from "@/lib/auth0";
 export default async function Dashboard() {
   const session = await auth0.getSession()
-  console.log(session) 
   return (
     <>
       <SidebarProvider>
