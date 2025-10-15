@@ -1,7 +1,9 @@
 import Tesseract from 'tesseract.js';
 
 export async function POST(req: Request) {
+    try{
     const formData = await req.formData();
+
     const front_image = formData.get("image") as File | null;
     const back_image = formData.get("image2") as File | null;
 
@@ -14,30 +16,21 @@ export async function POST(req: Request) {
         return new Response("Invalid image type. Only JPEG , JPG & PNG are allowed.", { status: 415 });
     }
 
-    const frontBuffer = front_image ? Buffer.from(await front_image.arrayBuffer()) : null;
-    const backBuffer = back_image ? Buffer.from(await back_image.arrayBuffer()) : null;
+    const frontBuffer = Buffer.from(await front_image.arrayBuffer());
+    const backBuffer = Buffer.from(await back_image.arrayBuffer());
 
     if (frontBuffer && backBuffer && frontBuffer.equals(backBuffer)) {
         return new Response("Same image uploaded twice", { status: 400 });
     }
-    try {
-        const worker: any = await Tesseract.createWorker();
-        await worker.load();
-        await worker.loadLanguage("eng");
-        await worker.initialize("eng");
+        const front = await Tesseract.recognize(frontBuffer, "eng");
+    const back = await Tesseract.recognize(backBuffer, "eng");
 
-
-        const [front, back] = await Promise.all([
-            worker.recognize(frontBuffer),
-            worker.recognize(backBuffer)
-        ]);
-        const text = front.data.text;
-        const text2 = back.data.text;
-
-        await worker.terminate();
+    const text = front.data.text.trim();
+    const text2 = back.data.text.trim();
 
         return Response.json({ text, text2 });
     } catch (error) {
+         console.error("OCR failed:", error);
         return new Response("OCR failed", { status: 500 });
     }
 
