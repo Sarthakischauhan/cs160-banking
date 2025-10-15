@@ -27,8 +27,8 @@ const sidebarOptions = [
     img: House,
   },
   {
-    title: "User Requests",
-    url: "/admin/dashboard/user-requests",
+    title: "Notifications",
+    url: "/admin/dashboard/Notifications",
     img: Bell
   },
   {
