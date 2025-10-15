@@ -7,6 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Account, Customer, Transaction } from "@prisma/client";
+import { EllipsisVertical } from "lucide-react";
 
 export type AccountWithExtraData = Account & {
   Customer: Customer;
@@ -33,6 +34,7 @@ export function AccountsTable(props: AccountsTableProps) {
             <TableHead>Balance</TableHead>
             <TableHead>Transactions</TableHead>
             <TableHead>Date Created</TableHead>
+            <TableHead />
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -46,6 +48,7 @@ export function AccountsTable(props: AccountsTableProps) {
               </TableCell>
               <TableCell>{account._count.Transaction}</TableCell>
               <TableCell>{account.created_at.toLocaleDateString()}</TableCell>
+              <TableCell className="hover:cursor-pointer"><EllipsisVertical /></TableCell>
             </TableRow>
           ))}
         </TableBody>
