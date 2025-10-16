@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import {
   Sidebar,
   SidebarInset,
@@ -13,9 +16,55 @@ import { UpcomingCard } from "./components/upcoming-card";
 import { ATMCard } from "./components/atm-card";
 import { AccountSelect } from "./components/account-select";
 import { auth0 } from "@/lib/auth0";
-export default async function Dashboard() {
-  const session = await auth0.getSession()
-  console.log(session) 
+
+type Customer = {
+  customer_id: string | null;
+  balance: number | null;
+};
+
+export default function Dashboard({ roles }: { roles: string[] }) {
+  const [account, setAccount] = useState<Customer | null>(null);
+
+    useEffect(() => {
+    async function fetchProfile() {
+    const res = await fetch("/api/account");
+    if (res.status === 401) {
+      window.location.href = "/auth/login";
+      return;
+    }
+
+    const data = await res.json();
+    const accountData = data[0];
+    setAccount(accountData);
+    console.log(accountData.balance);
+
+    if (!accountData.customer_id) {
+      const created = await createProfile(accountData.customer_id); 
+    }
+  }
+  fetchProfile();
+}, []);
+
+async function createProfile(customer_id: string) {
+  const res = await fetch("/api/account", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      customer_id,         
+      initial_balance: 0,  
+    }),
+  });
+
+   const account = await res.json(); 
+  
+  setAccount((prev) => ({
+    ...prev,
+    customer_id: prev?.customer_id || null,
+    balance: account.balance, 
+  }));
+  return account;   
+  }
+
   return (
     <>
       <SidebarProvider>
@@ -36,7 +85,7 @@ export default async function Dashboard() {
           <div className="grid grid-cols-4 h-fit">
             <div className="col-span-1 ml-4 mr-2">
               <BalanceCard
-                userBalance={1000}
+                userBalance={account?.balance ?? 0}
                 monthIncome={1400}
                 monthExpense={1000}
               />
