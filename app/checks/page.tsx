@@ -1,15 +1,16 @@
 "use client";
 import { useState } from "react";
+import { text } from "stream/consumers";
 export default function Page() {
     const [front_image, setimage1] = useState<File | null>(null);
     const [back_image, setimage2] = useState<File | null>(null);
-    const [result, setresult] = useState("");
+    const [result, setresult] = useState<{ text: string; text2: string } | null>(null);
     const [error, seterror] = useState("");
 
     async function handleUpload(e: React.FormEvent) {
         e.preventDefault();
         seterror("");
-        setresult("");
+        setresult(null);
 
         const formData = new FormData();
         if (front_image) {
@@ -24,7 +25,7 @@ export default function Page() {
                 body: formData
             });
             const data = await res.json();
-            setresult(JSON.stringify(data));
+            setresult(data);
         } catch (error) {
             seterror("Error cannot process the image");
         }
@@ -46,6 +47,14 @@ export default function Page() {
                         onChange={(e) => setimage2(e.target.files?.[0] ?? null)} />
                 </div>
                 <button type="submit">Upload</button>
+                {result && (
+                    <div style={{ marginTop: "1rem" }}>
+                        <h2>Result</h2>
+                        <pre>{result.text}</pre>
+                        <pre>{result.text2}</pre>
+
+                    </div>
+                )}
             </form>
             {error && <p style={{ color: "red" }}>{error}</p>}
         </main>

@@ -1,7 +1,11 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  /* config options here */
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    serverComponentsExternalPackages: ['tesseract.js'],
+    outputFileTracingIncludes: {
+      '/api/**/*': ['./node_modules/**/*.wasm', './node_modules/**/*.proto']
+    }
+  }
 };
+module.exports = nextConfig;
 
-export default nextConfig;
