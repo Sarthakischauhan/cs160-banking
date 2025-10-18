@@ -6,19 +6,28 @@ import { HistgraphCard } from "./components/histgraph-card";
 import { UpcomingCard } from "./components/upcoming-card";
 import { ATMCard } from "./components/atm-card";
 import { AccountSelect } from "./components/account-select";
-import { auth0 } from "@/lib/auth0";
+import { getUserData } from "@/lib/user"
+import { auth0 } from "@/lib/auth0"
+import { ProfileCompletion } from "./components/onboard/ProfileCompletion";
+
 export default async function Dashboard() {
   const session = await auth0.getSession()
+  const user = await getUserData(session?.user?.sub)
+
+  if (!user?.isOnboarded ){
+    return <ProfileCompletion />
+  }
+  const accountNames = user?.accounts;
   return (
     <>
       {/* Header */}
       <div className="grid grid-cols-3 m-4">
-        <AccountSelect />
+        <AccountSelect accountNames={accountNames}/>
       </div>
 
       {/* ROW 1 */}
       <div className="mx-4 my-2">
-        <WelcomeCard />
+        <WelcomeCard firstName={user?.firstName} />
       </div>
 
       {/* ROW 2 */}

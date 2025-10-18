@@ -1,7 +1,7 @@
 import { auth0, getRole } from "@/lib/auth0";
 import jwt from "jsonwebtoken";
-import { AppHeader } from "./components/app-header";
-import { AuthCard } from "./components/auth-card";
+import { AppHeader } from "../components/landing/app-header";
+import { AuthCard } from "../components/landing/auth-card";
 
 export default async function Home() {
   const session = await auth0.getSession();

@@ -15,8 +15,8 @@ export async function middleware(request: NextRequest) {
   const role = getRole(session);
   const emailVerified = session.user?.email_verified
 
-  if (!emailVerified && !request.nextUrl.pathname.includes("onboard") && !request.nextUrl.pathname.includes("/api")) {
-    return NextResponse.redirect(new URL('/onboard?verify=true', request.url));
+  if (!emailVerified && !request.nextUrl.pathname.includes("email-verify") && !request.nextUrl.pathname.includes("/api")) {
+    return NextResponse.redirect(new URL('/email-verify', request.url));
   }
 
   const requestHeaders = new Headers(request.headers);
