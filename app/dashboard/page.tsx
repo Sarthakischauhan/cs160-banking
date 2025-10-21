@@ -17,13 +17,14 @@ import { ATMCard } from "./components/atm-card";
 import { AccountSelect } from "./components/account-select";
 import { auth0 } from "@/lib/auth0";
 
-type Customer = {
+
+type Account = {
   customer_id: string | null;
   balance: number | null;
-};
+}
 
 export default function Dashboard({ roles }: { roles: string[] }) {
-  const [account, setAccount] = useState<Customer | null>(null);
+  const [account, setAccount] = useState< Account | null>(null);
 
     useEffect(() => {
     async function fetchProfile() {
@@ -33,37 +34,13 @@ export default function Dashboard({ roles }: { roles: string[] }) {
       return;
     }
 
-    const data = await res.json();
-    const accountData = data[0];
-    setAccount(accountData);
-    console.log(accountData.balance);
+    const accountsData = await res.json();
+    const firstAccount = accountsData[0];
 
-    if (!accountData.customer_id) {
-      const created = await createProfile(accountData.customer_id); 
-    }
-  }
-  fetchProfile();
+    setAccount(firstAccount);
+}
+    fetchProfile();
 }, []);
-
-async function createProfile(customer_id: string) {
-  const res = await fetch("/api/account", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      customer_id,         
-      initial_balance: 0,  
-    }),
-  });
-
-   const account = await res.json(); 
-  
-  setAccount((prev) => ({
-    ...prev,
-    customer_id: prev?.customer_id || null,
-    balance: account.balance, 
-  }));
-  return account;   
-  }
 
   return (
     <>
