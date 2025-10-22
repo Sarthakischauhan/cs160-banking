@@ -1,3 +1,12 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import {
+  Sidebar,
+  SidebarInset,
+  SidebarProvider,
+} from "@/components/ui/sidebar";
+import { AppSidebar } from "./components/app-sidebar";
 import { WelcomeCard } from "./components/welcome-card";
 import { BalanceCard } from "./components/balance-card";
 import { NotificationCard } from "./components/notification-card";
@@ -42,19 +51,19 @@ export default async function Dashboard() {
         <WelcomeCard firstName={user?.firstName} />
       </div>
 
-      {/* ROW 2 */}
-      <div className="grid grid-cols-4 h-fit">
-        <div className="col-span-1 ml-4 mr-2">
-          <BalanceCard
-            userBalance={1000}
-            monthIncome={1400}
-            monthExpense={1000}
-          />
-        </div>
-        <div className="col-span-3 mr-4 ml-2">
-          <NotificationCard />
-        </div>
-      </div>
+          {/* ROW 2 */}
+          <div className="grid grid-cols-4 h-fit">
+            <div className="col-span-1 ml-4 mr-2">
+              <BalanceCard
+                userBalance={account?.balance ?? 0}
+                monthIncome={1400}
+                monthExpense={1000}
+              />
+            </div>
+            <div className="col-span-3 mr-4 ml-2">
+              <NotificationCard />
+            </div>
+          </div>
 
       {/* ROW 3 */}
       <div className="grid grid-cols-2 my-2 h-fit">
