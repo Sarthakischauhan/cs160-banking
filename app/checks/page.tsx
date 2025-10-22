@@ -1,6 +1,9 @@
 "use client";
 import { useState } from "react";
-import { text } from "stream/consumers";
+import { Button } from "@/components/ui/button";
+import { Card, CardAction, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+
 export default function Page() {
     const [front_image, setimage1] = useState<File | null>(null);
     const [back_image, setimage2] = useState<File | null>(null);
@@ -31,22 +34,73 @@ export default function Page() {
         }
     }
     return (
-        <main>  <h1> Upload front and back image</h1>
-            <form onSubmit={handleUpload}>
-                <div>
-                    <label> Front </label>
-                    <input type="file"
-                        accept="image/*"
-                        onChange={(e) => setimage1(e.target.files?.[0] ?? null)} />
+        <main className="min-h-screen flex flex-col items-center bg-gradient-to-b from-background to-muted/50 py-12 px-4">
+            <h1 className="text-3xl font-bold text-foreground mb-2">Deposit a Check</h1>
+            <p className="text-muted-foreground text-sm mb-8">
+                Upload both sides of your check to deposit
+            </p>
+            <form onSubmit={handleUpload} className="flex flex-col items-center gap-4 justify-start">
+                <div className="flex flex-row justify-center items-center gap-10 w-full">
+                    <label>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Front</CardTitle>
+                            </CardHeader>
+                            <CardAction className="flex items-center justify-center h-64 text-center">
+                                {front_image ? (
+                                    <img
+                                        src={URL.createObjectURL(front_image)}
+                                        alt=" Front Preview"
+                                        className="object-cover rounded-md border"
+                                    />
+                                ) : (
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <p className="text-sm text-muted-foreground italic"> Click to upload</p>
 
+                                    </div>
+                                )}
+                            </CardAction>
+                            <input type="file"
+                                accept="image/*"
+                                onChange={(e) => setimage1(e.target.files?.[0] ?? null)}
+                                className="hidden" />
+
+                        </Card>
+                    </label>
+                    <label>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Back</CardTitle>
+                            </CardHeader>
+                            <input type="file"
+                                accept="image/*"
+                                onChange={(e) => setimage2(e.target.files?.[0] ?? null)}
+                                className="hidden" />
+
+                            <CardAction className="flex items-center justify-center h-64 text-center">
+                                {back_image ? (
+                                    <img
+                                        src={URL.createObjectURL(back_image)}
+                                        alt="Back Preview"
+                                        className="object-cover rounded-md border"
+                                    />
+                                ) : (
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <p className="text-sm text-muted-foreground italic"> Click to upload</p>
+                                    </div>
+                                )}
+                            </CardAction>
+                        </Card>
+
+                    </label>
                 </div>
                 <div>
-                    <label> Back </label>
-                    <input type="file"
-                        accept="image/*"
-                        onChange={(e) => setimage2(e.target.files?.[0] ?? null)} />
+                    <Input id="deposit"
+                        placeholder="Enter deposit amount"
+                        type="number">
+                    </Input>
                 </div>
-                <button type="submit">Upload</button>
+                <Button type="submit">Upload</Button>
                 {result && (
                     <div style={{ marginTop: "1rem" }}>
                         <h2>Result</h2>
@@ -57,6 +111,6 @@ export default function Page() {
                 )}
             </form>
             {error && <p style={{ color: "red" }}>{error}</p>}
-        </main>
+        </main >
     )
 }
