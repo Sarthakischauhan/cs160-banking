@@ -16,11 +16,6 @@ export default async function Home() {
             <a href="/auth/login">
               <div className="border-1 border-black py-2 px-4 rounded-lg hover:bg-gray-300">Log in</div>
             </a>
-<<<<<<< HEAD
-            <div className="py-2"><span>or</span></div>
-            <a href="/auth/signup">
-              <div className="border-1 border-black py-2 px-4 rounded-lg hover:bg-gray-300">Sign Up</div>
-=======
             <div className="py-2">
               <span>or</span>
             </div>
@@ -28,37 +23,15 @@ export default async function Home() {
               <div className="border-1 border-black py-2 px-4 rounded-lg hover:bg-gray-300">
                 Sign Up
               </div>
->>>>>>> e5531728a5498afe0d0be01fe75495667d5594e2
             </a>
           </div>
         </div>
       </main>
     );
   }
-<<<<<<< HEAD
 
   const decodedToken = jwt.decode(session.tokenSet.idToken) as Record<string, any> | null;
   const roles = decodedToken?.["https://my-app.example.com/roles"] ?? [];
 
   return <ProfilePage session={session} roles={roles} />;
-=======
-  const roles = getRole(session as any)
-  if (!session.user.email_verified){}
-  return (
-    <main>
-      <p>Logged in as: {session.user.name}</p>
-      <p>Email: {session.user.email}</p>
-      <p>Roles: {roles|| "No roles assigned"}</p>
-      <div>
-        <a href="/admin">Admin Dashboard</a>
-      </div>
-      <div>
-        <a href="/protected">Protected page</a>
-      </div>
-      <div>
-        <a href="/auth/logout">Log Out</a>
-      </div>
-    </main>
-  );
->>>>>>> e5531728a5498afe0d0be01fe75495667d5594e2
 }
