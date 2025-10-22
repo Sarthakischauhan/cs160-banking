@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
 import {
   Form,
   FormControl,
@@ -17,6 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -41,6 +43,7 @@ export function DepositCard() {
     },
   });
 
+<<<<<<< HEAD
     useEffect(() => {
       async function fetchProfile() {
         const res = await fetch("/api/account");
@@ -86,6 +89,9 @@ export function DepositCard() {
 
   router.push("/dashboard"); 
 };
+=======
+  const router = useRouter();
+>>>>>>> e5531728a5498afe0d0be01fe75495667d5594e2
 
   return (
     <>
@@ -96,7 +102,16 @@ export function DepositCard() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
+<<<<<<< HEAD
             <form onSubmit={form.handleSubmit(handleClick)}className="space-y-6">
+=======
+            <form
+              onSubmit={form.handleSubmit(() => {
+                router.push("/dashboard");
+              })}
+              className="space-y-6"
+            >
+>>>>>>> e5531728a5498afe0d0be01fe75495667d5594e2
               <FormField
                 control={form.control}
                 name="amount"
@@ -105,8 +120,10 @@ export function DepositCard() {
                     <FormLabel>Amount</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-4xl">$</span>
-                        <MoneyInput field={field}/>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-4xl">
+                          $
+                        </span>
+                        <MoneyInput field={field} />
                       </div>
                     </FormControl>
                     <FormDescription>Amount to deposit</FormDescription>
@@ -131,9 +148,21 @@ export function DepositCard() {
                   </FormItem>
                 )}
               />
+<<<<<<< HEAD
               <Button type="submit" variant="success" >
                 Submit
               </Button>
+=======
+              <div className="flex flex-col items-center justify-center gap-2">
+                <Button>Use Check</Button>
+                <span className="text-sm">Upload a Check</span>
+              </div>
+              <div className="">
+                <Button type="submit" variant="success">
+                  Submit
+                </Button>
+              </div>
+>>>>>>> e5531728a5498afe0d0be01fe75495667d5594e2
             </form>
           </Form>
         </CardContent>

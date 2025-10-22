@@ -41,6 +41,7 @@ export default function DepositPage({ roles }: { roles: string[] }) {
   }, []);
 
   return (
+<<<<<<< HEAD
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
@@ -55,5 +56,18 @@ export default function DepositPage({ roles }: { roles: string[] }) {
         </div>
       </SidebarInset>
     </SidebarProvider>
+=======
+    <>
+      <div className="p-10">
+        <h1 className="text-4xl font-bold">Deposit</h1>
+      </div>
+      <div className="flex h-60 p-2 justify-center">
+        <BalanceCard userBalance={1000} />
+      </div>
+      <div className="flex h-fit p-2 justify-center">
+        <DepositCard />
+      </div>
+    </>
+>>>>>>> e5531728a5498afe0d0be01fe75495667d5594e2
   );
 }
