@@ -42,7 +42,7 @@ export default function Page() {
             <form onSubmit={handleUpload} className="flex flex-col items-center gap-4 justify-start">
                 <div className="flex flex-row justify-center items-center gap-10 w-full">
                     <label>
-                        <Card>
+                        <Card className="w-64 h-64 flex flex-col items-center justify-center border border-muted bg-background/60 backdrop-blur-sm shadow-sm hover:shadow-lg hover:border-accent transition-all duration-200">
                             <CardHeader>
                                 <CardTitle>Front</CardTitle>
                             </CardHeader>
@@ -68,7 +68,7 @@ export default function Page() {
                         </Card>
                     </label>
                     <label>
-                        <Card>
+                        <Card className="w-64 h-64 flex flex-col items-center justify-center border border-muted bg-background/60 backdrop-blur-sm shadow-sm hover:shadow-lg hover:border-accent transition-all duration-200">
                             <CardHeader>
                                 <CardTitle>Back</CardTitle>
                             </CardHeader>
