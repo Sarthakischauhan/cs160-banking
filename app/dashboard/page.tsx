@@ -15,7 +15,6 @@ import { HistgraphCard } from "./components/histgraph-card";
 import { UpcomingCard } from "./components/upcoming-card";
 import { ATMCard } from "./components/atm-card";
 import { AccountSelect } from "./components/account-select";
-import { auth0 } from "@/lib/auth0";
 
 
 type Account = {
@@ -23,7 +22,7 @@ type Account = {
   balance: number | null;
 }
 
-export default function Dashboard({ roles }: { roles: string[] }) {
+export default function Dashboard() {
   const [account, setAccount] = useState< Account | null>(null);
 
     useEffect(() => {

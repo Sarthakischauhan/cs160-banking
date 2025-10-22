@@ -1,14 +1,45 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "../components/app-sidebar";
 import { BalanceCard } from "../components/balance-card";
 import { TransferCard } from "./components/transfer-card";
 import { RecentTransfersCard } from "./components/recent-transfers-card";
-import { useState } from "react";
+type Customer = {
+  customer_id: string | null;
+  balance: number | null;
+};
 
 export default function TransferPage() {
     const [selected, setSelected] = useState<string | null>(null);
+     const [customer, setCustomer] = useState<Customer | null>(null);
+
+    useEffect(() => {
+        async function fetchProfile() {
+          const res = await fetch("/api/account");
+          if (res.status === 401) {
+            window.location.href = "/auth/login";
+            return;
+          }
+    
+          const data = await res.json();
+          const account = data[0]; 
+          console.log("Fetched account:", account);
+    
+          if (!account.customer_id) {
+            console.error("No customer_id found!");
+            return;
+          }
+    
+          setCustomer({
+            customer_id: account.customer_id,
+            balance: Number(account.balance), 
+          });
+        }
+    
+        fetchProfile();
+      }, []);
 
   return (
     <>
@@ -22,7 +53,7 @@ export default function TransferPage() {
               {/* Left Column */}
               <div className="flex flex-col gap-6 w-fit">
                 <div className="flex-1">
-                  <BalanceCard userBalance={1000} />
+                  <BalanceCard userBalance={customer?.balance ?? 0} />
                 </div>
 
                 <div className="flex-1">

@@ -61,7 +61,7 @@ model Customer {
 }
 
 model Email {
-  email_id      Bytes          @id
+  email_id      String         @id
   email_name    String?        @unique
   created_at    DateTime?      @db.Timestamptz(6)
   notification  BigInt?
@@ -121,4 +121,13 @@ model Login {
   password       Bytes?
   user_type      Bytes?
   Customer       Customer? @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model DepositTest {
+  transactionId String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  account_id    String?
+  amount        Decimal  @db.Decimal
+  description   String?
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
 }

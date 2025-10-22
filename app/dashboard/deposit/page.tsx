@@ -40,27 +40,6 @@ export default function DepositPage({ roles }: { roles: string[] }) {
     fetchProfile();
   }, []);
 
-  async function createProfile(customer_id: string) {
-    const res = await fetch("/api/account", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        customer_id,
-        initial_balance: 0,
-      }),
-    });
-
-    const account = await res.json();
-
-    setCustomer({
-      customer_id: account.customer_id,
-      balance: Number(account.balance),
-    });
-
-    console.log("Created account balance:", account.balance);
-    return account;
-  }
-
   return (
     <SidebarProvider>
       <AppSidebar />

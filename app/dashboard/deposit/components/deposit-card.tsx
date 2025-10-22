@@ -21,8 +21,19 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { MoneyInput } from "./money-input";
+import { useEffect, useState } from "react";
+
+type Customer = {
+  customer_id: string | null;
+  balance: number | null;
+};
+
+let test = "";
 
 export function DepositCard() {
+  const router = useRouter()
+  const [customer, setAccount] = useState<Customer | null>(null);
+  
   const form = useForm({
     defaultValues: {
       amount: "",
@@ -30,9 +41,51 @@ export function DepositCard() {
     },
   });
 
-  const router = useRouter()
+    useEffect(() => {
+      async function fetchProfile() {
+        const res = await fetch("/api/account");
+        if (res.status === 401) {
+          window.location.href = "/auth/login";
+          return;
+        }
+  
+        const data = await res.json();
+        const firstAccount = data[0];
+        setAccount(firstAccount);
+   
+        if (!firstAccount.account_id) {
+          console.error("No account_id found!");
+          return;
+        }
+
+        test = firstAccount.account_id;
+      }
+
+      fetchProfile();      
+    }, []);
+
+   
+
+    const handleClick = async (values: any) =>{  
+    if (!customer?.customer_id) return;
+
+    const res = await fetch("/api/deposit", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      account_id : test,
+      amount: Number(values.amount),
+      description: values.description, 
+    }),
+  });
+  const data = await res.json();
+  console.log("Deposit response:", data.money);
 
 
+  router.push("/dashboard"); 
+};
 
   return (
     <>
@@ -43,7 +96,7 @@ export function DepositCard() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(() => {router.push("/dashboard")})}className="space-y-6">
+            <form onSubmit={form.handleSubmit(handleClick)}className="space-y-6">
               <FormField
                 control={form.control}
                 name="amount"
@@ -78,7 +131,7 @@ export function DepositCard() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" variant="success">
+              <Button type="submit" variant="success" >
                 Submit
               </Button>
             </form>
