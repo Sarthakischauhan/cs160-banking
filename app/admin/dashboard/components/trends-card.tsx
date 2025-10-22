@@ -34,11 +34,7 @@ export interface TrendsCardProps {
   data: TimeMetric[];
 }
 
-export function TrendsCard({
-  title,
-  description,
-  data,
-}: TrendsCardProps) {
+export function TrendsCard({ title, description, data }: TrendsCardProps) {
   const chartConfig = {
     amount: {
       label: "Amount",
@@ -55,44 +51,42 @@ export function TrendsCard({
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="w-full h-[250px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                accessibilityLayer
-                data={data ?? []}
-                margin={{
-                  left: 12,
-                  right: 12,
-                }}
-              >
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  tickLine={false}
-                  axisLine={true}
-                  tickMargin={10}
-                  interval={7}
-                  tickFormatter={(value) => value.slice(5)}
-                />
-                <YAxis
-                  tickLine={false}
-                  axisLine={true}
-                  tickMargin={8}
-                  domain={["dataMin - 500", "dataMax + 500"]}
-                  tickFormatter={(value) => `$${value.toLocaleString()}`}
-                />
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent hideLabel />}
-                />
-                <Line
-                  dataKey="amount"
-                  type="linear"
-                  stroke="var(--chart-3)"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <LineChart
+              accessibilityLayer
+              data={data ?? []}
+              margin={{
+                left: 12,
+                right: 12,
+              }}
+            >
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={true}
+                tickMargin={10}
+                interval={7}
+                tickFormatter={(value) => value.slice(5)}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={true}
+                tickMargin={8}
+                domain={["dataMin - 500", "dataMax + 500"]}
+                tickFormatter={(value) => `$${value.toLocaleString()}`}
+              />
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+              />
+              <Line
+                dataKey="amount"
+                type="linear"
+                stroke="var(--chart-3)"
+                strokeWidth={2}
+                dot={false}
+              />
+            </LineChart>
           </ChartContainer>
         </CardContent>
       </Card>

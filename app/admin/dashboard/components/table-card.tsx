@@ -56,7 +56,7 @@ export function TableCard({
               {data &&
                 data.map((object: Record<string, any>, key) => {
                   return (
-                    <TableRow key={key}>
+                    <TableRow key={key} className="text-wrap">
                       {Object.values(object).map((value, key) => {
                         return optional?.includes(key) ? (
                           <TableCell className="hidden md:table-cell" key={key}>
