@@ -9,11 +9,19 @@ import { AccountSelect } from "./components/account-select";
 import { getUserData } from "@/lib/user"
 import { auth0 } from "@/lib/auth0"
 import { ProfileCompletion } from "./components/onboard/ProfileCompletion";
+import { redirect } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default async function Dashboard() {
   const session = await auth0.getSession()
-  const user = await getUserData(session?.user?.sub)
 
+  if (!session){
+    redirect("/")
+  }
+  const user = await getUserData({userId: session.user.sub})
+
+  // console.log(user)
   if (!user?.isOnboarded ){
     return <ProfileCompletion />
   }
@@ -22,7 +30,11 @@ export default async function Dashboard() {
     <>
       {/* Header */}
       <div className="grid grid-cols-3 m-4">
-        <AccountSelect accountNames={accountNames}/>
+        {
+        !accountNames ? 
+        <AccountSelect accountNames={accountNames}/> : 
+        <Button><Link href={"/create-account"}>Don't have an account ? Create one</Link></Button>
+        }
       </div>
 
       {/* ROW 1 */}

@@ -12,15 +12,21 @@ export const getUserData = cache(async ({userId} : userDataProps) => {
     const customerData = await prisma.customer.findFirst({
         where:{ auth0_user_id: userId }
     })  
+    if (!customerData){
+        return {}
+    }
     const accountData = await prisma.account.findMany({
         where: {customer_id: customerData?.customer_id}
     })  
+    if (!accountData){
+        return {}
+    }
     const user = {
-        firstName : customerData?.first_name,
-        lastName : customerData?.last_name,
+        firstName : customerData.first_name,
+        lastName : customerData.last_name,
         accounts : accountData, 
-        isOnboarded: (customerData?.first_name && customerData?.first_name) ? true : false
+        isOnboarded: (customerData?.first_name && customerData?.last_name) ? true : false
     } 
-
+    
     return user;
 })

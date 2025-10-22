@@ -1,14 +1,16 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { User, Shield, Briefcase, CreditCard } from "lucide-react"
+import { User, CreditCard } from "lucide-react"
+import { useRouter } from "next/navigation"
+
+import type { Customer } from "@prisma/client"
 
 interface ProfileFormData {
   firstName: string
@@ -19,13 +21,6 @@ interface ProfileFormData {
   city: string
   state: string
   zipCode: string
-  ssn: string
-  employmentStatus: string
-  annualIncome: string
-  idType: string
-  idNumber: string
-  citizenship: string
-  accountType: string
 }
 
 export const ProfileCompletion = () => {
@@ -39,34 +34,47 @@ export const ProfileCompletion = () => {
     city: "",
     state: "",
     zipCode: "",
-    ssn: "",
-    employmentStatus: "",
-    annualIncome: "",
-    idType: "",
-    idNumber: "",
-    citizenship: "",
-    accountType: "",
   })
 
   const handleInputChange = (field: keyof ProfileFormData, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
-    }))
+    })) 
   }
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    const router = useRouter()
+
+    const payload: Partial<Customer> = {
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      // dateOfBirth: formData.dateOfBirth, add that later
+      phone: formData.phone,
+      address: `${formData.address} ${formData.city} ${formData.state}`,
+    }
 
     try {
       console.log("Profile data:", formData)
 
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      const response = await fetch("/api/customer",{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
 
-      alert("Profile completed successfully!")
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      // Refresh server components so dashboard notices the updated profile
+      router.refresh()
+      
     } catch (error) {
-      console.error("Error saving profile:", error)
+      console.error("Error updating profile:", error)
       alert("Failed to save profile. Please try again.")
     } finally {
       setIsLoading(false)
@@ -74,7 +82,7 @@ export const ProfileCompletion = () => {
   }
 
   return (
-    <Card className="w-full max-w-3xl mx-auto">
+    <Card className="w-[50] max-w-2xl mx-auto my-10">
       <CardHeader className="text-center">
         <div className="mx-auto mb-4 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
           <User className="w-6 h-6 text-primary" />
@@ -213,7 +221,7 @@ export const ProfileCompletion = () => {
           </div>
 
           {/* Identity Verification Section */}
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b">
               <Shield className="w-4 h-4 text-muted-foreground" />
               <h3 className="font-semibold text-sm">Identity Verification</h3>
@@ -284,10 +292,10 @@ export const ProfileCompletion = () => {
                 </SelectContent>
               </Select>
             </div>
-          </div>
+          </div> */}
 
           {/* Employment & Financial Section */}
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b">
               <Briefcase className="w-4 h-4 text-muted-foreground" />
               <h3 className="font-semibold text-sm">Employment & Financial Information</h3>
@@ -357,7 +365,7 @@ export const ProfileCompletion = () => {
                 </SelectContent>
               </Select>
             </div>
-          </div>
+          </div> */}
 
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Saving Profile..." : "Complete Profile"}
