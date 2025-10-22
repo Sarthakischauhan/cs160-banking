@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 export default function Page() {
     const [front_image, setimage1] = useState<File | null>(null);
     const [back_image, setimage2] = useState<File | null>(null);
-    const [result, setresult] = useState<{ text: string; text2: string } | null>(null);
+    const [result, setresult] = useState<{ frontText: string; backText: string } | null>(null);
     const [error, seterror] = useState("");
 
     async function handleUpload(e: React.FormEvent) {
@@ -102,11 +102,14 @@ export default function Page() {
                 </div>
                 <Button type="submit">Upload</Button>
                 {result && (
-                    <div style={{ marginTop: "1rem" }}>
-                        <h2>Result</h2>
-                        <pre>{result.text}</pre>
-                        <pre>{result.text2}</pre>
-
+                    <div className="mt-8 w-full max-w-2xl bg-muted p-4 rounded-lg shadow border border-border">
+                        <h2 className="text-lg font-semibold mb-2">Display Contents of Check</h2>
+                        <pre className="bg-background border rounded-md p-3 text-sm overflow-auto mb-2">
+                            {result.frontText}
+                        </pre>
+                        <pre className="bg-background border rounded-md p-3 text-sm overflow-auto">
+                            {result.backText}
+                        </pre>
                     </div>
                 )}
             </form>
