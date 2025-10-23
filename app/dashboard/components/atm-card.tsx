@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 import {
   Card,
   CardAction,
@@ -11,12 +10,6 @@ import {
 } from "@/components/ui/card";
 
 export function ATMCard() {
-  const router = useRouter();
-  const handleClick = () => {
-    router.push("api/maps");
-  };
-
-
   return (
     <>
       <Card className="h-full">
@@ -34,7 +27,7 @@ export function ATMCard() {
             <div />
             <div />
             <div className="w-full">
-              <Button variant="outline" className="hover:cursor-pointer" onClick = {handleClick}>
+              <Button variant="outline" className="hover:cursor-pointer">
                 Locate
               </Button>
             </div>
@@ -43,5 +36,4 @@ export function ATMCard() {
       </Card>
     </>
   );
-
 }
