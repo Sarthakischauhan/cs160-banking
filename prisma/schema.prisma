@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DIRECT_URL")
+}
+
+model Account {
+  account_id     String        @id(map: "account_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customer_id    String        @db.Uuid
+  balance        Decimal       @default(0.00) @db.Decimal(12, 2)
+  created_at     DateTime      @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime      @default(now()) @db.Timestamptz(6)
+  account_type   Bytes?
+  account_status Bytes?
+  limit_amount   Decimal?      @db.Decimal
+  Customer       Customer      @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade, onUpdate: NoAction, map: "account_customer_id_fkey")
+  CardInfo       CardInfo?
+  Checks         Checks[] @ignore
+  Statements     Statements[]
+  Transaction    Transaction[]
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Checks {
+  Check_id       Bytes
+  created_at     DateTime?    @db.Timestamptz(6)
+  front_image    Bytes?
+  back_image     Bytes?
+  account        String?      @db.Uuid
+  updated_at     DateTime?    @db.Timestamptz(6)
+  deposit_date   DateTime?    @db.Timestamptz(6)
+  image_type     Bytes?
+  amount         Decimal?     @db.Decimal
+  transaction_Id String?      @db.Uuid
+  check_approved Boolean?
+  Account        Account?     @relation(fields: [account], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
+  Transaction    Transaction? @relation(fields: [transaction_Id], references: [transaction_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@ignore
+}
+
+model Customer {
+  customer_id   String          @id(map: "customer_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  auth0_user_id String          @unique
+  first_name    String?
+  last_name     String?
+  address       String?
+  phone         String?
+  created_at    DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime?       @default(now()) @db.Timestamptz(6)
+  email         String?
+  account_type  String?
+  Account       Account[]
+  Login         Login[]
+  Notifications Notifications[]
+  Statements    Statements[]
+  Transaction   Transaction[]
+}
+
+model Email {
+  email_id      Bytes          @id
+  email_name    String?        @unique
+  created_at    DateTime?      @db.Timestamptz(6)
+  notification  BigInt?
+  Notifications Notifications? @relation(fields: [notification], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Notifications {
+  id                BigInt    @id @default(autoincrement())
+  created_at        DateTime  @default(now()) @db.Timestamptz(6)
+  notification_type String?
+  customer          String?   @db.Uuid
+  message           String?
+  delivery_method   String?
+  Email             Email[]
+  Customer          Customer? @relation(fields: [customer], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Statements {
+  id            BigInt    @id @default(autoincrement())
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
+  account_id    String?   @db.Uuid
+  customer_id   String?   @db.Uuid
+  statement_pdf Bytes?
+  Account       Account?  @relation(fields: [account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
+  Customer      Customer? @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Transaction {
+  transaction_id           String    @id(map: "transaction_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  account_id               String    @db.Uuid
+  amount                   Decimal   @db.Decimal(12, 2)
+  created_at               DateTime  @default(now()) @db.Timestamptz(6)
+  amount_after_transaction Decimal?  @db.Decimal
+  transaction_status       String?
+  customer_id              String?   @db.Uuid
+  transaction_type         String?
+  Checks                   Checks[] @ignore
+  Customer                 Customer? @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
+  Account                  Account   @relation(fields: [account_id], references: [account_id], onDelete: Cascade, onUpdate: NoAction, map: "transaction_account_id_fkey")
+}
+
+model Login {
+  login_id       BigInt    @id @default(autoincrement())
+  created_at     DateTime  @default(now()) @db.Timestamptz(6)
+  customer_id    String?   @db.Uuid
+  login_attempts Int?      @db.SmallInt
+  login_sucess   Boolean?
+  email          Bytes?
+  password       Bytes?
+  user_type      Bytes?
+  Customer       Customer? @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model CardInfo {
+  cardNum     BigInt    @default(autoincrement())
+  cardPin     Int       @db.SmallInt
+  accountID   String    @id(map: "cardInfo_pkey") @db.Uuid
+  expiry_date DateTime? @db.Date
+  Account     Account   @relation(fields: [accountID], references: [account_id], onDelete: NoAction, onUpdate: NoAction, map: "cardInfo_accountID_fkey")
+}
