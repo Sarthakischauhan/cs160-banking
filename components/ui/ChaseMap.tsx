@@ -72,7 +72,7 @@ export default function ChaseMap() {
 
       try {
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-        const res = await fetch(`${baseUrl}/api/maps?q=Chase ATMs Near Me`);
+        const res = await fetch(`${baseUrl}/api/maps?q=Chase ATMs Near SJSU`);
         const data = await res.json();
         const fetchedPlaces = data.places || [];
         setPlaces(fetchedPlaces);
