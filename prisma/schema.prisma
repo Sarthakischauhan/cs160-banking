@@ -18,7 +18,7 @@ model Account {
   limit_amount                                 Decimal?      @db.Decimal
   Customer                                     Customer      @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade, onUpdate: NoAction, map: "account_customer_id_fkey")
   CardInfo                                     CardInfo?
-  Checks                                       Checks[]      @ignore
+  Checks                                       Checks[]
   Statements                                   Statements[]
   Transaction_Transaction_account_id2ToAccount Transaction[] @relation("Transaction_account_id2ToAccount")
   Transaction                                  Transaction[]
@@ -58,7 +58,6 @@ model Customer {
   Login         Login[]
   Notifications Notifications[]
   Statements    Statements[]
-
 }
 
 model Email {
@@ -100,7 +99,7 @@ model Transaction {
   account_id2                              String?  @db.Uuid
   transaction_type                         String?
   description                              String?
-  Checks                                   Checks[] @ignore
+  Checks                                   Checks[]
   Account_Transaction_account_id2ToAccount Account? @relation("Transaction_account_id2ToAccount", fields: [account_id2], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
   Account                                  Account  @relation(fields: [account_id], references: [account_id], onDelete: Cascade, onUpdate: NoAction, map: "transaction_account_id_fkey")
 }
@@ -117,7 +116,6 @@ model Login {
   Customer       Customer? @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model DepositTest {
   transactionId String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -132,9 +130,5 @@ model CardInfo {
   cardPin     Int       @db.SmallInt
   accountID   String    @id(map: "cardInfo_pkey") @db.Uuid
   expiry_date DateTime? @db.Date
- 
   Account     Account   @relation(fields: [accountID], references: [account_id], onDelete: NoAction, onUpdate: NoAction, map: "cardInfo_accountID_fkey")
-
 }
-
-
