@@ -20,7 +20,7 @@ export function MoneyInput(props: MoneyInputProps) {
         // Parse into cents
         const num = parseFloat(raw) / 100;
         // Update form value
-        props.field.onChange(num.toFixed(2));
+        props.field.onChange(formatCurrency(num));
       }}
     />
   );

@@ -43,12 +43,12 @@ export function TransactionsTable(props: TransactionsTableProps) {
         </TableHeader>
         <TableBody>
           {props.transactions.map((transaction: Transaction) => (
-            <TableRow key={transaction.transaction_id}>
-              <TableCell className="text-wrap">
+            <TableRow key={transaction.transaction_id.slice(0, 4) + "********"}>
+              <TableCell>
                 {transaction.transaction_id}
               </TableCell>
-              <TableCell className="text-wrap">
-                {transaction.account_id}
+              <TableCell>
+                {transaction.account_id.slice(0,4) + "********"}
               </TableCell>
               <TableCell>{transaction.transaction_type}</TableCell>
               <TableCell>{transaction.transaction_status}</TableCell>
