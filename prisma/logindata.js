@@ -1,5 +1,5 @@
 import {prisma, supabase} from './prisma1.js';
-
+// This node is currently used to populate the new customer id with account numbers and initlize them with whatever data is currently available
 async function main() {
   const customers = await prisma.Customer.findMany();
   

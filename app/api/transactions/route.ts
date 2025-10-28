@@ -13,7 +13,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
         if (!customer) return NextResponse.json({ message: "Customer not found" }, { status: 400 });
 
         const body = await req.json();
-        const { account_id, amount, transaction_type } = body || {};
+        const { account_id, amount, transaction_type, description } = body || {};
         if (!account_id || typeof amount !== "number" || !transaction_type) {
             return NextResponse.json({ message: "account_id, amount (number), transaction_type required" }, { status: 400 });
         }
@@ -36,6 +36,9 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
             const fresh = await tx.account.findUniqueOrThrow({ where: { account_id } });
             const currentBalance = Number(fresh.balance);
             const nextBalance = isWithdraw ? currentBalance - amount : currentBalance + amount;
+            console.log("nextbalance " + nextBalance );
+            console.log("amount " + amount );
+
             if (nextBalance < 0) {
                 throw new Error("Insufficient funds");
             }
@@ -43,15 +46,20 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
             const updated = await tx.account.update({
                 where: { account_id },
                 data: { balance: nextBalance },
+                
             });
 
-            const createdTx = await tx.transaction.create({
+         
+
+            const createdTx = await prisma.transaction.create({
                 data: {
                     account_id,
+                    account_id2: null,
                     amount,
                     amount_after_transaction: nextBalance,
+                    description,
+                    created_at: new Date(),
                     transaction_status: "success",
-                    customer_id: customer.customer_id,
                     transaction_type: isWithdraw ? "withdraw" : "deposit",
                 },
             });

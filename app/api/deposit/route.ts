@@ -30,17 +30,30 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
 
         const { account_id, amount, description } = await req.json();
 
-        if (!account_id || !amount) {
+        if (!description || !amount) {
         return NextResponse.json(
-            { message: "Money and description are required" },
+            { message: "Amount and description are required" },
             { status: 399 }
+            );
+        }
+
+        if (!description ) {
+        return NextResponse.json(
+            { message: "Description is required" },
+            { status: 398 }
+            );
+        }
+        if (!amount) {
+        return NextResponse.json(
+            { message: "Amount is required" },
+            { status: 397}
             );
         }
 
         if (amount <=0) {
              return NextResponse.json(
-            { message: "Deposit can't be a negative amount" },
-            { status: 398 }
+            { message: "Amount can't be a negative amount" },
+            { status: 396}
             );
         }
 

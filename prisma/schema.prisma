@@ -18,7 +18,7 @@ model Account {
   limit_amount                                 Decimal?      @db.Decimal
   Customer                                     Customer      @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade, onUpdate: NoAction, map: "account_customer_id_fkey")
   CardInfo                                     CardInfo?
-  Checks                                       Checks[]
+  Checks                                       Checks[]      @ignore 
   Statements                                   Statements[]
   Transaction_Transaction_account_id2ToAccount Transaction[] @relation("Transaction_account_id2ToAccount")
   Transaction                                  Transaction[]
@@ -99,7 +99,7 @@ model Transaction {
   account_id2                              String?  @db.Uuid
   transaction_type                         String?
   description                              String?
-  Checks                                   Checks[]
+  Checks                                   Checks[] @ignore
   Account_Transaction_account_id2ToAccount Account? @relation("Transaction_account_id2ToAccount", fields: [account_id2], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
   Account                                  Account  @relation(fields: [account_id], references: [account_id], onDelete: Cascade, onUpdate: NoAction, map: "transaction_account_id_fkey")
 }

@@ -16,12 +16,12 @@ import { UpcomingCard } from "./components/upcoming-card";
 import { ATMCard } from "./components/atm-card";
 import { AccountSelect } from "./components/account-select";
 
-type Account = {
+type Account = { // Makes structure to hold account info
   customer_id: string | null;
   balance: number | null;
 }
 
-export default function Dashboard() {
+export default function Dashboard() { // Initilize with grabbing info from api Account 
   const [account, setAccount] = useState< Account | null>(null);
 
     useEffect(() => {
@@ -33,7 +33,7 @@ export default function Dashboard() {
     }
 
     const accountsData = await res.json();
-    const firstAccount = accountsData[0];
+    const firstAccount = accountsData[0]; // gets the first account info for now will change in the future
 
     setAccount(firstAccount);
 }
@@ -56,7 +56,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-4 h-fit">
             <div className="col-span-1 ml-4 mr-2">
               <BalanceCard
-                userBalance={account?.balance ?? 0}
+                userBalance={account?.balance ?? 0} //Sets balance to info from first account
                 monthIncome={1400}
                 monthExpense={1000}
               />
