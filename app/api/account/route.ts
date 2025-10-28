@@ -35,7 +35,7 @@ export const GET = auth0.withApiAuthRequired(async (req: NextRequest) => {
     }
 });
 
-// Create an account for a given customer_id. Admin only.
+// Create an account for the current user or, if admin, for any customer.
 export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
     try {
         const session = await auth0.getSession();
@@ -44,20 +44,42 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
         }
         const role = getRole(session as any);
         const isAdmin = role?.includes("Admin");
-        if (!isAdmin) {
-            return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+
+        const { customer_id, initial_balance, account_type } = await req.json();
+
+        const hasInitialBalance = initial_balance !== undefined && initial_balance !== null;
+        const balanceValue = hasInitialBalance ? initial_balance : undefined;
+        const accountTypeBuffer = account_type ? Buffer.from(String(account_type), "utf-8") : undefined;
+
+        if (isAdmin) {
+            if (!customer_id) {
+                return NextResponse.json({ message: "customer_id is required" }, { status: 400 });
+            }
+            const account = await prisma.account.create({
+            data: {
+                customer_id,
+                balance: balanceValue,
+                account_type: accountTypeBuffer,
+            },
+        });
+        return NextResponse.json(account, { status: 201 });
         }
 
-        const { customer_id, initial_balance } = await req.json();
-        if (!customer_id) {
-            return NextResponse.json({ message: "customer_id is required" }, { status: 400 });
+        const auth0UserId = session.user?.sub || "";
+        if (!auth0UserId) {
+            return NextResponse.json({ message: "User not found in session" }, { status: 400 });
+        }
+
+        const customer = await prisma.customer.findUnique({ where: { auth0_user_id: auth0UserId } });
+        if (!customer) {
+            return NextResponse.json({ message: "Customer profile not found" }, { status: 404 });
         }
 
         const account = await prisma.account.create({
             data: {
-                customer_id,
-                // prisma Decimal expects string/number; default 0.00 if not provided
-                balance: initial_balance ?? undefined,
+                customer_id: customer.customer_id,
+                balance: balanceValue,
+                account_type: accountTypeBuffer,
             },
         });
         return NextResponse.json(account, { status: 201 });

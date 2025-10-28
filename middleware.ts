@@ -8,7 +8,8 @@ export async function middleware(request: NextRequest) {
   }
 
   const session = await auth0.getSession(request);
-  if (!session) {
+
+  if (session === null) {
     return auth0.middleware(request);
   }
 

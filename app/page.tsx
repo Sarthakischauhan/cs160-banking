@@ -1,7 +1,5 @@
 import { auth0, getRole } from "@/lib/auth0";
-import jwt from "jsonwebtoken";
-import { AppHeader } from "./components/app-header";
-import { ProfilePage } from "./components/profile";
+import { AppHeader } from "../components/landing/app-header";
 
 export default async function Home() {
   const session = await auth0.getSession();
@@ -29,9 +27,6 @@ export default async function Home() {
       </main>
     );
   }
-
-  const decodedToken = jwt.decode(session.tokenSet.idToken) as Record<string, any> | null;
-  const roles = decodedToken?.["https://my-app.example.com/roles"] ?? [];
-
-  return <ProfilePage session={session} roles={roles} />;
+  const { redirect } = await import("next/navigation");
+  redirect("/dashboard");
 }

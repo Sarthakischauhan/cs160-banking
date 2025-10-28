@@ -35,7 +35,7 @@ export const ProfileCompletion = () => {
     state: "",
     zipCode: "",
   })
-
+  const router = useRouter()
   const handleInputChange = (field: keyof ProfileFormData, value: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -46,7 +46,7 @@ export const ProfileCompletion = () => {
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    const router = useRouter()
+
 
     const payload: Partial<Customer> = {
       first_name: formData.firstName,

@@ -29,12 +29,12 @@ export async function POST(request: NextRequest) {
     if (!accessToken) {
       return NextResponse.json({ error: "access_token_not_found" }, { status: 500 });
     }
-
+    console.log(accessToken.token)
     // Call Auth0 Management API to send verification email
-    const response = await fetch(`https://${auth0Domain}/api/v2/jobs/verification-email`, {
+    const response = await fetch(`${auth0Domain}/api/v2/jobs/verification-email`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        'Authorization': `Bearer ${accessToken.token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
