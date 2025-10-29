@@ -6,7 +6,8 @@ import {
   Landmark,
   Bell,
   MapPin,
-  HandCoins
+  HandCoins,
+  Banknote
 } from "lucide-react";
 
 import {
@@ -57,6 +58,11 @@ const sidebarOptions = [
     title: "Nearby ATMs",
     url: "#",
     img: MapPin,
+  },
+  {
+    title: "Deposit Checks",
+    url: "/checks",
+    img: Banknote,
   }
 ];
 

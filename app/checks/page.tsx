@@ -9,6 +9,7 @@ export default function Page() {
     const [back_image, setimage2] = useState<File | null>(null);
     const [result, setresult] = useState<{ frontText: string; backText: string } | null>(null);
     const [error, seterror] = useState("");
+    const [amount, setAmount] = useState<number | null>(null);
 
     async function handleUpload(e: React.FormEvent) {
         e.preventDefault();
@@ -42,7 +43,7 @@ export default function Page() {
             <form onSubmit={handleUpload} className="flex flex-col items-center gap-4 justify-start">
                 <div className="flex flex-row justify-center items-center gap-10 w-full">
                     <label>
-                        <Card>
+                        <Card className="w-65 h-45 flex flex-col items-center justify-center bg-background border border-border shadow-sm hover:bg-accent/10 rounded-none hover:shadow-md hover:border-accent hover:scale-[1.02]">
                             <CardHeader>
                                 <CardTitle>Front</CardTitle>
                             </CardHeader>
@@ -54,9 +55,10 @@ export default function Page() {
                                         className="object-cover rounded-md border"
                                     />
                                 ) : (
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <p className="text-sm text-muted-foreground italic"> Click to upload</p>
-
+                                    <div className="flex items-center justify-center w-full h-full">
+                                        <p className="text-sm italic text-muted-foreground text-center">
+                                            Click to upload
+                                        </p>
                                     </div>
                                 )}
                             </CardAction>
@@ -64,11 +66,10 @@ export default function Page() {
                                 accept="image/*"
                                 onChange={(e) => setimage1(e.target.files?.[0] ?? null)}
                                 className="hidden" />
-
                         </Card>
                     </label>
                     <label>
-                        <Card>
+                        <Card className="w-65 h-45 flex flex-col items-center justify-center bg-background border border-border shadow-sm hover:bg-accent/10 rounded-none hover:shadow-md hover:border-accent hover:scale-[1.02]">
                             <CardHeader>
                                 <CardTitle>Back</CardTitle>
                             </CardHeader>
@@ -85,8 +86,10 @@ export default function Page() {
                                         className="object-cover rounded-md border"
                                     />
                                 ) : (
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <p className="text-sm text-muted-foreground italic"> Click to upload</p>
+                                    <div className="flex items-center justify-center w-full h-full">
+                                        <p className="text-sm italic text-muted-foreground text-center group-hover:text-accent-foreground">
+                                            Click to upload
+                                        </p>
                                     </div>
                                 )}
                             </CardAction>
@@ -95,10 +98,16 @@ export default function Page() {
                     </label>
                 </div>
                 <div>
-                    <Input id="deposit"
+                    <Input
+                        id="deposit"
                         placeholder="Enter deposit amount"
-                        type="number">
-                    </Input>
+                        type="number"
+                        min="1"
+                        max="10000"
+                        value={amount ?? ""}
+                        onChange={(e) => setAmount(e.target.value === "" ? null : Number(e.target.value))}
+                        step="0.01"
+                    />
                 </div>
                 <Button type="submit">Upload</Button>
                 {result && (
