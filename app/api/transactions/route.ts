@@ -19,7 +19,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
             return NextResponse.json({ message: "account_id, amount (number), transaction_type required" }, { status: 400 });
         }
         if (!["immediate", "scheduled"].includes(String(transaction_type).toLowerCase())) {
-            return NextResponse.json({ message: "transaction_type must be deposit or withdraw" }, { status: 400 });
+            return NextResponse.json({ message: "transaction_type must be immediate or scheduled" }, { status: 400 });
         }
         if (amount <= 0) {
             return NextResponse.json({ message: "amount must be positive" }, { status: 400 });
@@ -31,8 +31,13 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
             return NextResponse.json({ message: "Account not found" }, { status: 404 });
         }
 
-        const isWithdraw = String(transaction_type).toLowerCase() === "immediate"; // temperorarily make all transactions immediate will update later 
-        
+        let temp = ""
+        if (transaction_type === "immediate"){
+            temp = "COMPLETED"
+        } else if (transaction_type === "scheduled"){
+            temp = "PENDING"
+        }
+
         const createdTransaction = await prisma.transaction.create({
             data: {
                 account_id,
@@ -41,8 +46,21 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
                 amount_after_transaction: balance - amount,
                 description,
                 created_at: new Date(),
-                transaction_status: "success",
-                transaction_type: isWithdraw ? "immediate" : "scheduled",
+                transaction_status: temp,
+                transaction_type: "DEPOSIT",
+            },
+        });
+
+        const createdTransaction2 = await prisma.transaction.create({
+            data: {
+                account_id: account_id2,
+                account_id2: account_id,
+                amount,
+                amount_after_transaction: amount,
+                description,
+                created_at: new Date(),
+                transaction_status: temp,
+                transaction_type: "WITHDRAWAL",
             },
         });
 
