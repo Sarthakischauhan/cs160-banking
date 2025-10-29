@@ -7,15 +7,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-
-const username = "Username"
-
-export function WelcomeCard() {
+interface WelcomeCardProps {
+    firstName: string
+}
+export function WelcomeCard({firstName} : WelcomeCardProps) {
     return (
         <>
         <Card>
             <CardHeader>
-                <CardTitle>Welcome, {username}!</CardTitle>
+                <CardTitle>Welcome, {firstName}!</CardTitle>
                 <CardDescription>This is your dashboard!</CardDescription>
             </CardHeader>
             <CardContent>

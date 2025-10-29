@@ -1,7 +1,5 @@
 import { auth0, getRole } from "@/lib/auth0";
-import jwt from "jsonwebtoken";
-import { AppHeader } from "./components/app-header";
-import { AuthCard } from "./components/auth-card";
+import { AppHeader } from "../components/landing/app-header";
 
 export default async function Home() {
   const session = await auth0.getSession();
@@ -35,22 +33,6 @@ export default async function Home() {
       </main>
     );
   }
-  const roles = getRole(session as any)
-  if (!session.user.email_verified){}
-  return (
-    <main>
-      <p>Logged in as: {session.user.name}</p>
-      <p>Email: {session.user.email}</p>
-      <p>Roles: {roles|| "No roles assigned"}</p>
-      <div>
-        <a href="/admin">Admin Dashboard</a>
-      </div>
-      <div>
-        <a href="/protected">Protected page</a>
-      </div>
-      <div>
-        <a href="/auth/logout">Log Out</a>
-      </div>
-    </main>
-  );
+  const { redirect } = await import("next/navigation");
+  redirect("/dashboard");
 }
