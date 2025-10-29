@@ -127,7 +127,7 @@ export function SelectFilter({
 }: SelectFilterProps) {
   return (
     <div className="flex flex-col" {...props}>
-      <label className="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 py-2">Account Type</label>
+      <label className="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 py-2">{label}</label>
       <select name={name} defaultValue={value} className="border p-2 rounded-md">
         <option value="">Select {label}</option>
         {options.map((opt) => (

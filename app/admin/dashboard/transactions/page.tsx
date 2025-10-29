@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { FilterInput, FilterRange } from "../components/filters";
+import { TextFilter, RangeFilter, SelectFilter } from "../components/filters";
 import { TransactionsTable } from "./components/transactions-table";
 import {
   Select,
@@ -9,85 +9,100 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { sampleTransactions } from "../dummydata/data";
 import { prisma } from "@/prisma/prisma";
+import { TransactionStatus, TransactionType } from "@prisma/client";
 
-export default async function TransactionsPage() {
-    const data = await prisma.transaction.findMany()
-    console.log(data)
+export default async function TransactionsPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | undefined };
+}) {
+  const search = searchParams.search ?? "";
+  const minAmount = searchParams.minAmount ?? "";
+  const maxAmount = searchParams.maxAmount ?? "";
+  const minDate = searchParams.minDate ?? "";
+  const maxDate = searchParams.maxDate ?? "";
+  const transactionStatus = searchParams.transactionStatus ?? "";
+  const transactionType = searchParams.transactionType ?? "";
+
+  const data = await prisma.transaction.findMany({
+    where: {
+      ...(search
+        ? {
+            OR: [
+              { transaction_id: search },
+              { account_id: search },
+              { account_id2: search },
+            ],
+          }
+        : {}),
+      ...(minAmount || maxAmount
+        ? {
+            amount: {
+              gte: minAmount ? Number(minAmount) : undefined,
+              lte: maxAmount ? Number(maxAmount) : undefined,
+            },
+          }
+        : {}),
+      ...(minDate || maxDate
+        ? {
+            created_at: {
+              gte: minDate ? new Date(minDate) : undefined,
+              lte: maxDate ? new Date(maxDate) : undefined,
+            },
+          }
+        : {}),
+        ...(transactionStatus ? {transaction_status: transactionStatus as TransactionStatus} : {}),
+        ...(transactionType ? {transaction_type: transactionType as TransactionType} : {})
+    },
+  });
+  console.log(data);
 
   return (
     <div className="w-full h-fit">
       <div className="p-10">
-        <h1 className="text-4xl font-bold">Transactions</h1>
-        <div className="py-4">
+        <h1 className="text-4xl font-bold mb-10">Transactions</h1>
+        <form className="flex flex-col gap-4">
           <p className="font-bold w-full border-b-2">Filters</p>
+          <div>
+            <Button type="submit">Apply Filters</Button>
+          </div>
           <div className="w-full h-20 grid grid-cols-3 gap-4 py-4">
-            <FilterInput
-              inputProps={{
-                label: "Search by ID",
-                placeholder: "Enter Transaction/Account ID",
-                type: "text",
-              }}
+            <TextFilter label={"Search by ID"} name="search" value={search} />
+            <RangeFilter
+              label={"Amount"}
+              minName="minAmount"
+              maxName="maxAmount"
+              minValue={minAmount}
+              maxValue={maxAmount}
+              minPlaceholder="Minimum Amount"
+              maxPlaceholder="Maximum Amount"
+              prefix="$"
             />
-            <FilterRange
-              rangeProps={{
-                label: "Amount Range",
-                minPlaceholder: "Min Amount",
-                maxPlaceholder: "Max Amount",
-                type: "text",
-                prefix: "$",
-              }}
-            />
-            <FilterRange
-              rangeProps={{
-                label: "Date Range",
-                minPlaceholder: "Start Date",
-                maxPlaceholder: "End Date",
-                type: "date",
-              }}
+            <RangeFilter
+              label={"Date"}
+              minName="minDate"
+              maxName="maxDate"
+              minValue={minDate}
+              maxValue={maxDate}
+              type="date"
             />
           </div>
           <div className="grid grid-cols-4 gap-4 my-4">
-            <FilterRange
-              rangeProps={{
-                label: "Time Range",
-                minPlaceholder: "Start Time",
-                maxPlaceholder: "End Time",
-                type: "time",
-              }}
+            <SelectFilter
+              label={"Status"}
+              options={Object.keys(TransactionStatus)}
+              name="transactionStatus"
+              value={transactionStatus}
             />
-            <div>
-              <Label className="mb-2">Status</Label>
-              <Select>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All">All</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
-                  <SelectItem value="Pending">Pending</SelectItem>
-                  <SelectItem value="Failed">Failed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="mb-2">Type</Label>
-              <Select>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All">All</SelectItem>
-                  <SelectItem value="Completed">Deposit</SelectItem>
-                  <SelectItem value="Pending">Withdrawal</SelectItem>
-                  <SelectItem value="Failed">Payment</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <SelectFilter
+              label={"Type"}
+              options={Object.keys(TransactionType)}
+              name="transactionType"
+              value={transactionType}
+            />
           </div>
-          <Button>Apply Filters</Button>
-        </div>
+        </form>
         <p className="font-bold w-full border-b-2">Transactions</p>
         <div className="w-full h-[calc(100%-100px)] flex justify-center items-center py-6">
           <TransactionsTable transactions={data} />
