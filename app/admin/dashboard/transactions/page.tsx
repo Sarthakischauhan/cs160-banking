@@ -55,6 +55,9 @@ export default async function TransactionsPage({
         ...(transactionStatus ? {transaction_status: transactionStatus as TransactionStatus} : {}),
         ...(transactionType ? {transaction_type: transactionType as TransactionType} : {})
     },
+    orderBy: {
+        created_at: 'desc'
+    }
   });
   console.log(data);
 

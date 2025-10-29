@@ -1,3 +1,10 @@
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { MetricCard, MetricCardProps } from "./components/metric-card";
 import { TableCard } from "./components/table-card";
 import { TrendsCard } from "./components/trends-card";
@@ -7,8 +14,33 @@ import {
   supportTickets,
   trendsData1,
 } from "./dummydata/data";
+import { getAccountsSummary, getCustomerSummary, getTransactionSummary } from "@/lib/data";
+import { formatCurrency } from "@/lib/utils";
 
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage() {
+  const [account, customer, transaction] = await Promise.all([
+    getAccountsSummary(),
+    getCustomerSummary(),
+    getTransactionSummary()
+  ]);
+  const data = { account: account, customer: customer, transaction: transaction };
+
+  const metricsList: MetricCardProps[] = [
+    {
+        title: "Total Accounts",
+        value: account.count
+    },
+    {
+        title: "Overall Balance",
+        value: formatCurrency(Number(account.totalBalance))
+    },
+    {
+        title: "Total Transactions",
+        value: transaction.count
+    }
+  ]
+
+  console.log(data)
   return (
     <div className="w-full h-fit">
       <div className="p-10">
@@ -18,10 +50,20 @@ export default function AdminDashboardPage() {
         <h1 className="text-4xl font-bold">Metrics</h1>
       </div>
 
-      <div className="w-full h-fit p-2 grid grid-cols-3 gap-4 justify-center items-center">
-        {metricslist.map((metric, key) => {
-          return <MetricCard key={key} {...metric} />;
-        })}
+      <div className="w-full max-w-[90%] mx-auto px-4">
+        <Carousel className="relative w-full">
+          <CarouselPrevious />
+          <CarouselContent>
+            {metricsList.map((metric, key) => {
+              return (
+                <CarouselItem className="md:basis-1/2 lg:basis-1/3" key={key}>
+                  <MetricCard key={key} {...metric} />
+                </CarouselItem>
+              );
+            })}
+          </CarouselContent>
+          <CarouselNext />
+        </Carousel>
       </div>
       <div className="w-full h-fit p-2 justify-center items-center">
         <TrendsCard title={trendsData1.title} data={trendsData1.data} />

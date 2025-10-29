@@ -17,7 +17,7 @@ export interface MetricCardProps {
 export function MetricCard({
   title,
   value,
-  change = 0,
+  change,
   description,
 }: MetricCardProps) {
   return (
@@ -33,15 +33,21 @@ export function MetricCard({
           <div className="flex text-3xl font-bold">
             {value}{" "}
             <span className="self-center px-2">
-              {change > 0 ? (
-                <TrendingUp color="#3a88fe" />
+              {change ? (
+                change > 0 ? (
+                  <TrendingUp color="#3a88fe" />
+                ) : (
+                  <TrendingDown color="#ff6251" />
+                )
               ) : (
-                <TrendingDown color="#ff6251" />
+                ""
               )}
             </span>
           </div>
           <div className="text-sm text-muted-foreground">
-            {change > 0 ? "+" : ""}{change} change vs. yesterday
+            {change
+              ? (change > 0 ? "+" : "") + { change } + " change vs. yesterday"
+              : ""}
           </div>
         </CardContent>
       </Card>

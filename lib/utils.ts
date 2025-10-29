@@ -1,3 +1,6 @@
+
+
+import { prisma } from "@/prisma/prisma";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -6,11 +9,11 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(v: number | string) {
-  let value = v
+  let value = v;
   if (typeof v === "string") {
     value = parseFloat(v);
   }
-  console.log(typeof(value));
+  console.log(typeof value);
   return value.toLocaleString("en-US", {
     style: "currency",
     currency: "USD",
@@ -18,7 +21,7 @@ export function formatCurrency(v: number | string) {
 }
 
 export function censorString(s: string) {
-  return "********" + s.slice(s.length - 4, s.length)
+  return "********" + s.slice(s.length - 4, s.length);
 }
 
 export const dataFormatter: Record<string, (value: any) => React.ReactNode> = {
@@ -28,5 +31,5 @@ export const dataFormatter: Record<string, (value: any) => React.ReactNode> = {
   createdAt: (v) => new Date(v).toLocaleDateString(),
   created_at: (v) => new Date(v).toLocaleDateString(),
   updated_at: (v) => new Date(v).toLocaleDateString(),
-  limit_amount: (v) => v ? v : "No limit"
+  limit_amount: (v) => (v ? v : "No limit"),
 };
