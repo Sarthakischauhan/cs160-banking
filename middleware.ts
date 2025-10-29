@@ -11,7 +11,14 @@ export async function middleware(request: NextRequest) {
   if (!session) {
     return auth0.middleware(request);
   }
+
   const role = getRole(session);
+  const emailVerified = session.user?.email_verified
+
+  if (!emailVerified && !request.nextUrl.pathname.includes("onboard") && !request.nextUrl.pathname.includes("/api")) {
+    return NextResponse.redirect(new URL('/onboard?verify=true', request.url));
+  }
+
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-user-role", role);
 
@@ -22,4 +29,5 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)"],
+  // the reason we are using nodejs because the prisma adapter doesn't run on the default edge runtime of middleware
 };

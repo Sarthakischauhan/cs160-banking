@@ -1,4 +1,5 @@
 import { Input } from "@/components/ui/input";
+import { formatCurrency } from "@/lib/utils";
 import { ControllerRenderProps } from "react-hook-form";
 
 type MoneyInputProps = {
@@ -6,11 +7,7 @@ type MoneyInputProps = {
 };
 
 export function MoneyInput(props: MoneyInputProps) {
-  function formatCurrency(value?: string | number) {
-    if (!value || value === "NaN" || value == 0) return "";
-    const num = parseFloat(value.toString());
-    return num.toFixed(2);
-  }
+  
 
   return (
     <Input

@@ -88,19 +88,14 @@ const transactions = [
 export default function TransactionHistoryPage() {
   return (
     <>
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <div className="w-full h-full">
-            <div className="p-10">
-              <h1 className="text-4xl font-bold">Transaction History</h1>
-            </div>
-            <div className="grid justify-items-center">
-              <TransactionTableCard transactions={transactions} />
-            </div>
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
+      <div className="w-full h-full">
+        <div className="p-10">
+          <h1 className="text-4xl font-bold">Transaction History</h1>
+        </div>
+        <div className="grid justify-items-center">
+          <TransactionTableCard transactions={transactions} />
+        </div>
+      </div>
     </>
   );
 }

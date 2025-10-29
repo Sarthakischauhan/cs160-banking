@@ -19,7 +19,6 @@ export const GET = auth0.withApiAuthRequired(async (req: NextRequest) => {
         }
 
         const auth0UserId = session.user?.sub || "";
-        console.log(auth0UserId)
         if (!auth0UserId) {
             return NextResponse.json({ message: "User not found in session" }, { status: 400 });
         }

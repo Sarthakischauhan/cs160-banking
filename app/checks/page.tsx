@@ -44,6 +44,7 @@ export default function Page() {
                 <div className="flex flex-row justify-center items-center gap-10 w-full">
                     <label>
                         <Card className="w-65 h-45 flex flex-col items-center justify-center bg-background border border-border shadow-sm hover:bg-accent/10 rounded-none hover:shadow-md hover:border-accent hover:scale-[1.02]">
+
                             <CardHeader>
                                 <CardTitle>Front</CardTitle>
                             </CardHeader>
@@ -70,6 +71,7 @@ export default function Page() {
                     </label>
                     <label>
                         <Card className="w-65 h-45 flex flex-col items-center justify-center bg-background border border-border shadow-sm hover:bg-accent/10 rounded-none hover:shadow-md hover:border-accent hover:scale-[1.02]">
+
                             <CardHeader>
                                 <CardTitle>Back</CardTitle>
                             </CardHeader>
