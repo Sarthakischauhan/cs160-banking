@@ -1,4 +1,5 @@
 "use client"
+import Decimal from "decimal.js"
 import {
   toast
 } from "sonner"
@@ -24,37 +25,66 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import {
-  Input
-} from "@/components/ui/input"
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select"
+import {
+  Input
+} from "@/components/ui/input"
+import { Account, AccountType } from "@prisma/client"
+import { useRouter } from "next/navigation"
 
 const formSchema = z.object({
-  name_7365964443: z.string().min(1),
-  name_4563405336: z.string().min(1),
-  name_1525843777: z.string()
+  account_type: z.string(),
+  annual_income: z.string(),
+  employment_status: z.string(),
+  inital_amount: z.number().min(0).max(100)
 });
 
-export function AccountForm() {
+const annualIncome = [
+  "0-50k", 
+  "50k-100k",
+  "100k-250k",
+  "250k+"
+]
 
+const accountTypeArray = Object.values(AccountType)
+
+const employmentStatus = [
+  "EMPLOYED", 
+  "UNEMPLOYED",
+  "SELF-EMPLOYED",
+]
+
+export function AccountForm() {
+  const router = useRouter()
   const form = useForm < z.infer < typeof formSchema >> ({
     resolver: zodResolver(formSchema),
-
   })
 
-  function onSubmit(values: z.infer < typeof formSchema > ) {
+  async function onSubmit(values: z.infer < typeof formSchema > ) {
     try {
-      console.log(values);
-      toast(
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-        </pre>
-      );
+      const payload = {
+        account_type: AccountType[values.account_type as keyof typeof AccountType], 
+        initial_balance: new Decimal(values.inital_amount),
+      }
+
+      const result = await fetch("/api/account",{
+        method:"POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
+
+      if (!result){
+        throw new Error("Couldn't create account")
+      }
+      router.push("/dashboard")
+      
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
@@ -62,72 +92,106 @@ export function AccountForm() {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-3xl mx-auto py-10">
-        
-        <FormField
-          control={form.control}
-          name="name_7365964443"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input 
-                placeholder="shadcn"
-                
-                type=""
-                {...field} />
-              </FormControl>
-              <FormDescription>This is your public display name.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="name_4563405336"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input 
-                placeholder="shadcn"
-                
-                type=""
-                {...field} />
-              </FormControl>
-              <FormDescription>This is your public display name.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="name_1525843777"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-3xl mx-auto py-10">
+          <FormField
+            control={form.control}
+            name="account_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Account Type</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Account type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {accountTypeArray.map((account, key) => {
+                      return (
+                        <SelectItem key={key} value={account}>{account}</SelectItem> 
+                      )
+                    })}
+                  </SelectContent>
+                </Select>
+                  
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="annual_income"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Annual Income</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select income"/>
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {annualIncome.map((income, key) => {
+                      return (
+                        <SelectItem key={key} value={income}>{income}</SelectItem> 
+                      )
+                    })}
+                  </SelectContent>
+                </Select>
+                 <FormDescription>Annual income as mentioned on tax filing</FormDescription> 
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="employment_status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Employment status" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {employmentStatus.map((status, key) => {
+                      return (
+                        <SelectItem key={key} value={status}>{status}</SelectItem> 
+                      )
+                    })}
+                  </SelectContent>
+                </Select>
+                  <FormDescription>You can always change it</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="inital_amount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Inital Amount</FormLabel>
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a verified email to display" />
-                  </SelectTrigger>
+                  <Input 
+                  placeholder="00.00"
+                  
+                  type="number"
+                  {...form.register("inital_amount", { valueAsNumber: true })} />
                 </FormControl>
-                <SelectContent>
-                  <SelectItem value="m@example.com">m@example.com</SelectItem>
-                  <SelectItem value="m@google.com">m@google.com</SelectItem>
-                  <SelectItem value="m@support.com">m@support.com</SelectItem>
-                </SelectContent>
-              </Select>
-                <FormDescription>You can manage email addresses in your email settings.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit">Submit</Button>
-      </form>
-    </Form>
+                <FormDescription>Initial amount you want to add</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit" className="w-full">Create Account</Button>
+        </form>
+      </Form>
   )
 }

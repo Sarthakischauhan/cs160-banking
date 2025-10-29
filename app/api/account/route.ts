@@ -44,26 +44,23 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
         }
         const role = getRole(session as any);
         const isAdmin = role?.includes("Admin");
-
-        const { customer_id, initial_balance, account_type } = await req.json();
-
-        const hasInitialBalance = initial_balance !== undefined && initial_balance !== null;
-        const balanceValue = hasInitialBalance ? initial_balance : undefined;
-        const accountTypeBuffer = account_type ? Buffer.from(String(account_type), "utf-8") : undefined;
-
-        if (isAdmin) {
-            if (!customer_id) {
-                return NextResponse.json({ message: "customer_id is required" }, { status: 400 });
-            }
-            const account = await prisma.account.create({
-            data: {
-                customer_id,
-                balance: balanceValue,
-                account_type: accountTypeBuffer,
-            },
-        });
-        return NextResponse.json(account, { status: 201 });
-        }
+        const body = (await req.json()) as any;
+        const { initial_balance, account_type } = body || {};
+        
+        // will visit this for admin account flow
+        // if (isAdmin) {
+        //     if (!customer_id) {
+        //         return NextResponse.json({ message: "customer_id is required" }, { status: 400 });
+        //     }
+        //     const account = await prisma.account.create({
+        //     data: {
+        //         customer_id,
+        //         balance: balanceValue,
+        //         account_type: account_type,
+        //     },
+        // });
+        // return NextResponse.json(account, { status: 201 });
+        // }
 
         const auth0UserId = session.user?.sub || "";
         if (!auth0UserId) {
@@ -78,8 +75,8 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
         const account = await prisma.account.create({
             data: {
                 customer_id: customer.customer_id,
-                balance: balanceValue,
-                account_type: accountTypeBuffer,
+                balance: initial_balance,
+                account_type: account_type,
             },
         });
         return NextResponse.json(account, { status: 201 });
