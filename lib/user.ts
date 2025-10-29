@@ -4,6 +4,7 @@ import type { Transaction, Account } from "@prisma/client";
 import { cookies } from "next/headers";
 import { prisma } from "@/prisma/prisma";
 import { cache } from "react"
+import Decimal from "decimal.js";
 
 
 type userDataProps = {
@@ -80,13 +81,7 @@ export const getUserData = cache(async ({
     // serialize transactions so they contain only plain JS types
     const transactions = transactionsRaw.map((t) => ({
         ...t,
-        // convert Decimal-like amounts to numbers when possible
-        amount: (t as any).amount && typeof (t as any).amount === 'object' && typeof (t as any).amount.toNumber === 'function'
-            ? (t as any).amount.toNumber()
-            : typeof (t as any).amount === 'string'
-              ? parseFloat((t as any).amount)
-              : (t as any).amount,
-        // convert Date objects to ISO strings
+        amount: new Decimal(t.amount),
         created_at: (t as any).created_at ? (t as any).created_at.toISOString() : null,
     }))
 

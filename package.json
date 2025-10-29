@@ -26,6 +26,7 @@
     "axios": "^1.12.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "decimal.js": "^10.6.0",
     "fs": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.544.0",
@@ -47,6 +48,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
     "@tailwindcss/postcss": "^4",
+    "@types/decimal.js": "^7.4.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/pg": "^8.15.5",

@@ -43,7 +43,7 @@ export function AccountSelect({accounts, currentAccountId}: AccountSelectProps) 
           <SelectLabel>Accounts</SelectLabel>
           {accounts.map((account) => (
             <SelectItem key={account.account_id} value={account.account_id}>
-              {account.account_id}
+              {account.account_type}
             </SelectItem>
           ))}
         </SelectGroup>
