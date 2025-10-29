@@ -5,9 +5,9 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(v: number | string | object) {
+export function formatCurrency(v: number | string) {
   let value = v
-  if (typeof v === "string" || typeof v === "object") {
+  if (typeof v === "string") {
     value = parseFloat(v);
   }
   console.log(typeof(value));
@@ -17,9 +17,13 @@ export function formatCurrency(v: number | string | object) {
   });
 }
 
+export function censorString(s: string) {
+  return "********" + s.slice(s.length - 4, s.length)
+}
+
 export const dataFormatter: Record<string, (value: any) => React.ReactNode> = {
-  amount: (v: number | string | object) => formatCurrency(v),
-  balance: (v: number | string | object) => formatCurrency(v),
+  amount: (v: number | string) => formatCurrency(v),
+  balance: (v: number | string) => formatCurrency(v),
   date: (v) => new Date(v).toLocaleDateString(),
   createdAt: (v) => new Date(v).toLocaleDateString(),
   created_at: (v) => new Date(v).toLocaleDateString(),
