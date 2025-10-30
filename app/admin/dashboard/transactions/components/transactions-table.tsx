@@ -8,22 +8,15 @@ import {
 } from "@/components/ui/table";
 import { EllipsisVertical } from "lucide-react";
 
-type Transaction = {
-  transaction_id: string;
-  account_id: string;
-  customer_id: string;
-  amount: number;
-  amount_after_transaction: number;
-  transaction_status: string;
-  transaction_type: string;
-  created_at: Date;
-};
+import { Transaction } from "@prisma/client";
+import { prisma } from "@/prisma/prisma";
+import { censorString, formatCurrency } from "@/lib/utils";
 
 interface TransactionsTableProps {
   transactions: Transaction[];
 }
 
-export function TransactionsTable(props: TransactionsTableProps) {
+export async function TransactionsTable(props: TransactionsTableProps) {
 
   return (
     <div className="w-full h-fit border-2 rounded-md">
@@ -31,7 +24,8 @@ export function TransactionsTable(props: TransactionsTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead>Transaction ID</TableHead>
-            <TableHead>Account ID</TableHead>
+            <TableHead>From</TableHead>
+            <TableHead>To</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Amount</TableHead>
@@ -44,22 +38,22 @@ export function TransactionsTable(props: TransactionsTableProps) {
         <TableBody>
           {props.transactions.map((transaction: Transaction) => (
             <TableRow key={transaction.transaction_id}>
-              <TableCell className="text-wrap">
-                {transaction.transaction_id}
+              <TableCell>
+                {censorString(transaction.transaction_id)}
               </TableCell>
-              <TableCell className="text-wrap">
-                {transaction.account_id}
+              <TableCell>
+                {censorString(transaction.account_id)}
+              </TableCell>
+              <TableCell>
+                {transaction.account_id2 && censorString(transaction.account_id2)}
               </TableCell>
               <TableCell>{transaction.transaction_type}</TableCell>
               <TableCell>{transaction.transaction_status}</TableCell>
               <TableCell>
-                ${transaction.amount.toFixed(2).toLocaleString()}
+                {formatCurrency(Number(transaction.amount))}
               </TableCell>
               <TableCell>
-                $
-                {transaction.amount_after_transaction
-                  .toFixed(2)
-                  .toLocaleString()}
+                {transaction.amount_after_transaction && formatCurrency(Number(transaction.amount_after_transaction))}
               </TableCell>
               <TableCell>
                 {transaction.created_at.toLocaleDateString()}

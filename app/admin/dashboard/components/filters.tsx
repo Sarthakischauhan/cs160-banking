@@ -5,27 +5,17 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
+import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent, SelectGroup } from "@/components/ui/select";
 
-type Input = {
-  id: string;
+
+/** Single text input */
+interface TextFilterProps {
+  label: string;
+  name?: string;
+  value: string;
+  defaultValue?: string;
   placeholder?: string;
   type?: string;
-  prefix?: string;
-};
-
-interface FilterInputProps {
-  label: string;
-  placeholder?: string;
-  type?: string;
-  prefix?: string;
-}
-
-interface FilterRangeProps {
-  label: string;
-  minPlaceholder?: string;
-  maxPlaceholder?: string;
-  type?: string;
-  prefix?: string;
 }
 
 /**
@@ -33,54 +23,93 @@ interface FilterRangeProps {
  * @param param0 - Properties for a single filter input including label, placeholder, and type.
  * @returns Component rendering a single input field for filtering.
  */
-function FilterInput({
-  inputProps,
+
+export function TextFilter({
+  label,
+  name,
+  value = "",
+  placeholder,
+  type = "text",
   ...props
-}: {
-  inputProps: FilterInputProps;
-}) {
+}: TextFilterProps) {
   return (
     <div {...props}>
-      <Label className="mr-2 mb-2">{inputProps.label}</Label>
+      <Label className="mb-2">{label}</Label>
       <Input
-        type={inputProps.type ? inputProps.type : ""}
-        placeholder={inputProps.placeholder}
+        type={type}
+        placeholder={placeholder}
+        defaultValue={value}
+        name={name}
         className="w-full"
       />
     </div>
   );
 }
 
+/** Numeric range filter */
+interface RangeFilterProps {
+  label: string;
+  minName?: string;
+  maxName?: string;
+  minValue: string;
+  maxValue: string;
+  minPlaceholder?: string;
+  maxPlaceholder?: string;
+  type?: string;
+  prefix?: string;
+}
 /**
  * Multiple filter inputs grouped together.
- * @param param0 - An array of filter field definitions including label, placeholder, and type.
  * @returns Component rendering multiple input fields for filtering.
  */
-function FilterGroup({
+export function RangeFilter({
   label,
-  inputFields,
+  minName,
+  maxName,
+  maxValue,
+  minValue,
+  minPlaceholder,
+  maxPlaceholder,
+  prefix,
+  type = "text",
   ...props
-}: {
-  label: string;
-  inputFields: Input[];
-}) {
+}: RangeFilterProps) {
   return (
-    <div className="flex flex-col" {...props}>
-      <div>
-        <Label className="mr-2 mb-2">{label}</Label>
-      </div>
-      <div className="flex flex-row gap-4">
-        {inputFields.map((field) => (
-          <Input
-            key={field.id}
-            type={field.type ? field.type : "text"}
-            placeholder={field.placeholder}
-            className="w-1/2"
+    <div {...props}>
+      <Label className="mb-2">{label}</Label>
+      <div className="flex gap-2 items-center">
+        <InputGroup className="w-1/2">
+          {prefix && <InputGroupAddon>{prefix}</InputGroupAddon>}
+          <InputGroupInput
+            name={minName}
+            type={type}
+            placeholder={minPlaceholder}
+            defaultValue={minValue ? minValue : ""}
           />
-        ))}
+        </InputGroup>
+        <span>-</span>
+        <InputGroup className="w-1/2">
+          {prefix && <InputGroupAddon>{prefix}</InputGroupAddon>}
+          <InputGroupInput
+            name={maxName}
+            type={type}
+            placeholder={maxPlaceholder}
+            defaultValue={maxValue ? maxValue : ""}
+          />
+        </InputGroup>
       </div>
     </div>
   );
+}
+
+/** Select or radio filter */
+
+interface SelectFilterProps {
+  label: string;
+  name?: string;
+  options: string[];
+  value: string;
+  defaultValue?: string;
 }
 
 /**
@@ -88,42 +117,25 @@ function FilterGroup({
  * @param rangeProps - Properties for the range filter including label, min/max placeholders, type, and prefix.
  * @returns Component rendering two input fields for specifying a range.
  */
-function FilterRange({
-  rangeProps,
+export function SelectFilter({
+  label,
+  options,
+  value,
+  defaultValue,
+  name,
   ...props
-}: {
-  rangeProps: FilterRangeProps;
-}) {
+}: SelectFilterProps) {
   return (
-    <div>
-      <Label className="mr-2 mb-2">{rangeProps.label}</Label>
-      <div className="flex flex-row items-center">
-        <InputGroup className="w-3/7 mr-2">
-          {rangeProps.prefix ? (
-            <InputGroupAddon>{rangeProps.prefix}</InputGroupAddon>
-          ) : (
-            <></>
-          )}
-          <InputGroupInput
-            type={rangeProps.type}
-            placeholder={rangeProps.minPlaceholder}
-          ></InputGroupInput>
-        </InputGroup>
-        <span>-</span>
-        <InputGroup className="w-3/7 ml-2">
-          {rangeProps.prefix ? (
-            <InputGroupAddon>{rangeProps.prefix}</InputGroupAddon>
-          ) : (
-            <></>
-          )}
-          <InputGroupInput
-            type={rangeProps.type}
-            placeholder={rangeProps.maxPlaceholder}
-          ></InputGroupInput>
-        </InputGroup>
-      </div>
+    <div className="flex flex-col" {...props}>
+      <label className="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 py-2">{label}</label>
+      <select name={name} defaultValue={value} className="border p-2 rounded-md">
+        <option value="">Select {label}</option>
+        {options.map((opt) => (
+          <option key={opt} value={opt}>
+            {opt}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
-
-export { FilterInput, FilterRange, FilterGroup };

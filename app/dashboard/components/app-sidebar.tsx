@@ -66,7 +66,7 @@ const sidebarOptions = [
   }
 ];
 
-export function AppSidebar() {
+export function AppSidebar({currentAccountId}: {currentAccountId?: string}) {
   return (
     <Sidebar className="p-2">
       <SidebarHeader>

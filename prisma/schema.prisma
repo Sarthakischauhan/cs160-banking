@@ -3,9 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DIRECT_URL")
-   directUrl = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DIRECT_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -130,7 +130,7 @@ model Transaction {
   transaction_type                         TransactionType   @default(DEPOSIT)
   Checks                                   Checks[]
   Account_Transaction_account_id2ToAccount Account?          @relation("Transaction_account_id2ToAccount", fields: [account_id2], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
-  Account_Transaction_account_idToAccount  Account           @relation("Transaction_account_idToAccount", fields: [account_id], references: [account_id], onDelete: Cascade, onUpdate: NoAction, map: "transaction_account_id_fkey")
+  Account                                  Account           @relation("Transaction_account_idToAccount", fields: [account_id], references: [account_id], onDelete: Cascade, onUpdate: NoAction, map: "transaction_account_id_fkey")
 }
 
 enum AccountStatus {
