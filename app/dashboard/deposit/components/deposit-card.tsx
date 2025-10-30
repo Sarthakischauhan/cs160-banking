@@ -92,9 +92,7 @@ export function DepositCard() {
         <CardContent>
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit(() => {
-                router.push("/dashboard");
-              })}
+              onSubmit={form.handleSubmit(handleClick)}
               className="space-y-6"
             >
               <FormField
