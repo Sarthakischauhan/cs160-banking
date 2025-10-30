@@ -56,7 +56,7 @@ const sidebarOptions = [
   },
   {
     title: "Nearby ATMs",
-    url: "#",
+    url: "/dashboard/maps",
     img: MapPin,
   },
   {
