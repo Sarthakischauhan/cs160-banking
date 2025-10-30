@@ -6,13 +6,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { censorString, formatCurrency } from "@/lib/utils";
 import { Account, Customer, Transaction } from "@prisma/client";
 import { EllipsisVertical } from "lucide-react";
 
 export type AccountWithExtraData = Account & {
   Customer: Customer;
   _count: {
-    Transaction: number;
+    Transaction_Transaction_account_idToAccount: number;
   };
 };
 
@@ -40,13 +41,13 @@ export function AccountsTable(props: AccountsTableProps) {
         <TableBody>
           {props.accounts.map((account: AccountWithExtraData) => (
             <TableRow key={account.account_id}>
-              <TableCell>{account.Customer.customer_id.slice(0, 4) + "********"}</TableCell>
-              <TableCell>{account.account_id.slice(0, 4) + "********"}</TableCell>
-              <TableCell>{account.account_type ? decoder.decode(account.account_type) : ""}</TableCell>
+              <TableCell>{censorString(account.customer_id)}</TableCell>
+              <TableCell>{censorString(account.account_id)}</TableCell>
+              <TableCell>{account.account_type}</TableCell>
               <TableCell>
-                ${account.balance.toFixed(2).toLocaleString()}
+                {formatCurrency(Number(account.balance))}
               </TableCell>
-              <TableCell>{account._count.Transaction}</TableCell>
+              <TableCell>{account._count.Transaction_Transaction_account_idToAccount}</TableCell>
               <TableCell>{account.created_at.toLocaleDateString()}</TableCell>
               <TableCell className="hover:cursor-pointer"><EllipsisVertical /></TableCell>
             </TableRow>

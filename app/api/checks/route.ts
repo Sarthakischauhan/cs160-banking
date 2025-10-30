@@ -1,3 +1,10 @@
+import { prisma } from "@/prisma/prisma";
+import crypto from "crypto";
+
+export async function GET() {
+    const checks = await prisma.checks.findMany();
+    return Response.json(checks);
+}
 export async function POST(req: Request) {
     try {
         const formData = await req.formData();
@@ -43,14 +50,31 @@ export async function POST(req: Request) {
         }
 
         const [front, back] = await Promise.all(
-            [performOcr(front_image!),
-            performOcr(back_image!)]
+            [performOcr(front_image),
+            performOcr(back_image)]
         );
-        console.log("OCR Result:", { frontText:front, backText: back });
+        const amount = Number(formData.get("amount"));
+        if (!amount || amount <= 0) {
+            return new Response("Deposit amount must be a positive number", { status: 400 });
+        }
 
-        return new Response(JSON.stringify({ frontText: front, backText: back }), {
-            status: 200, headers: { "Content-Type": "application/json" }
+        const newCheck = await prisma.checks.create({
+            data: {
+                check_id: crypto.randomUUID(),
+                front_text: front,
+                back_text: back,
+                deposit_amount: amount,
+                created_at: new Date(),
+            },
         });
+
+        console.log("OCR Result:", newCheck);
+
+        return new Response(
+            JSON.stringify({ message: "Saved to DB", checks: newCheck }),
+            { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+
     } catch (error) {
         console.error("OCR failed:", error);
         return new Response("OCR failed", { status: 500 });
