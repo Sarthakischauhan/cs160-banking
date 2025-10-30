@@ -1,15 +1,32 @@
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "./components/app-sidebar";
+import { getUserData, handleCurrentId } from "@/lib/user";
+import { auth0 } from "@/lib/auth0";
+import { OnboardSidebar } from "./components/onboard-sidebar";
 
-export default function dashboardLayout({
+export default async function dashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth0.getSession()
+  if (!session){
+    return (
+      <>
+      {children}
+      </>
+    )
+  }
+  const userSub = session?.user?.sub
+  if (!userSub) {
+    throw new Error("User ID (sub) is missing from session.")
+  }
+  const user = await getUserData({ userId: userSub })
+  // const accountId = await handleCurrentId();
   return (
     <>
       <SidebarProvider>
-        <AppSidebar />
+        {user?.isOnboarded ? <AppSidebar />  : <OnboardSidebar />}
         <SidebarInset>{children}</SidebarInset>
       </SidebarProvider>
     </>

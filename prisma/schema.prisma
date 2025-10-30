@@ -19,7 +19,7 @@ model Account {
   Customer                                     Customer      @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade, onUpdate: NoAction, map: "account_customer_id_fkey")
   CardInfo                                     CardInfo?
   Check                                        Check[]
-  Checks                                       Checks[]      @ignore
+  Checks                                       Checks[]     @ignore
   Statements                                   Statements[]
   Transaction_Transaction_account_id2ToAccount Transaction[] @relation("Transaction_account_id2ToAccount")
   Transaction                                  Transaction[]
@@ -118,6 +118,17 @@ model Login {
   Customer       Customer? @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model DepositTest {
+  transactionId String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  account_id    String?
+  amount        Decimal  @db.Decimal
+  description   String?
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+}
+
+}
+
 model CardInfo {
   cardNum     BigInt    @default(autoincrement())
   cardPin     Int       @db.SmallInt
@@ -140,15 +151,6 @@ model Check {
   Transaction     Transaction @relation(fields: [transaction_id], references: [transaction_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model DepositTest {
-  transactionId String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  account_id    String?
-  amount        Decimal  @db.Decimal
-  description   String?
-  created_at    DateTime @default(now()) @db.Timestamptz(6)
-}
-
 enum AccountStatus {
   ACTIVE
   CLOSED
@@ -159,10 +161,10 @@ enum AccountType {
   SAVINGS
 }
 
-enum CheckStatus {
-  PENDING
-  APPROVED
-  REJECTED
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER
 }
 
 enum TransactionStatus {
@@ -172,8 +174,8 @@ enum TransactionStatus {
   CANCELED
 }
 
-enum TransactionType {
-  DEPOSIT
-  WITHDRAWAL
-  TRANSFER
+enum CheckStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
