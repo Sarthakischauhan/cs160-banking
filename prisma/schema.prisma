@@ -3,9 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DIRECT_URL")
-   directUrl = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DIRECT_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -15,7 +15,6 @@ model Account {
   balance                                      Decimal       @default(0.00) @db.Decimal(12, 2)
   created_at                                   DateTime      @default(now()) @db.Timestamptz(6)
   updated_at                                   DateTime      @default(now()) @db.Timestamptz(6)
-<<<<<<< HEAD
   limit_amount                                 Decimal?      @db.Decimal
   account_status                               AccountStatus @default(ACTIVE)
   account_type                                 AccountType   @default(CHECKING)
@@ -24,47 +23,11 @@ model Account {
   Checks                                       Checks[]
   Statements                                   Statements[]
   Transaction_Transaction_account_id2ToAccount Transaction[] @relation("Transaction_account_id2ToAccount")
-  Transaction_Transaction_account_idToAccount  Transaction[] @relation("Transaction_account_idToAccount")
-}
-
-model CardInfo {
-  cardNum     BigInt    @default(autoincrement())
-  cardPin     Int       @db.SmallInt
-  accountID   String    @id(map: "cardInfo_pkey") @db.Uuid
-  expiry_date DateTime? @db.Date
-  Account     Account   @relation(fields: [accountID], references: [account_id], onDelete: NoAction, onUpdate: NoAction, map: "cardInfo_accountID_fkey")
-}
-=======
-  account_type                                 Bytes?
-  account_status                               Bytes?
-  limit_amount                                 Decimal?      @db.Decimal
-  Customer                                     Customer      @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade, onUpdate: NoAction, map: "account_customer_id_fkey")
-  CardInfo                                     CardInfo?
-  Checks                                       Checks[] @ignore
-  Statements                                   Statements[]
-  Transaction_Transaction_account_id2ToAccount Transaction[] @relation("Transaction_account_id2ToAccount")
   Transaction                                  Transaction[]
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model Checks {
-  Check_id       Bytes
-  created_at     DateTime?    @db.Timestamptz(6)
-  front_image    Bytes?
-  back_image     Bytes?
-  account        String?      @db.Uuid
-  updated_at     DateTime?    @db.Timestamptz(6)
-  deposit_date   DateTime?    @db.Timestamptz(6)
-  image_type     Bytes?
-  amount         Decimal?     @db.Decimal
-  transaction_Id String?      @db.Uuid
-  check_approved Boolean?
-  Account        Account?     @relation(fields: [account], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
-  Transaction    Transaction? @relation(fields: [transaction_Id], references: [transaction_id], onDelete: NoAction, onUpdate: NoAction)
->>>>>>> e7bc3d8db614de53997d2766f838e79c5ef7261c
-
-model Checks {
-  check_id       String       @id @unique @db.Uuid
+  check_id       String       @id @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   created_at     DateTime?    @db.Timestamptz(6)
   front_image    String?
   back_image     String?
@@ -95,18 +58,6 @@ model Customer {
   Login         Login[]
   Notifications Notifications[]
   Statements    Statements[]
-<<<<<<< HEAD
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model DepositTest {
-  transactionId String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  account_id    String?
-  amount        Decimal  @db.Decimal
-  description   String?
-  created_at    DateTime @default(now()) @db.Timestamptz(6)
-=======
->>>>>>> e7bc3d8db614de53997d2766f838e79c5ef7261c
 }
 
 model Email {
@@ -151,7 +102,6 @@ model Statements {
 }
 
 model Transaction {
-<<<<<<< HEAD
   transaction_id                           String            @id(map: "transaction_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   account_id                               String            @db.Uuid
   amount                                   Decimal           @db.Decimal(12, 2)
@@ -163,7 +113,24 @@ model Transaction {
   transaction_type                         TransactionType   @default(DEPOSIT)
   Checks                                   Checks[]
   Account_Transaction_account_id2ToAccount Account?          @relation("Transaction_account_id2ToAccount", fields: [account_id2], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
-  Account_Transaction_account_idToAccount  Account           @relation("Transaction_account_idToAccount", fields: [account_id], references: [account_id], onDelete: Cascade, onUpdate: NoAction, map: "transaction_account_id_fkey")
+  Account                                  Account           @relation(fields: [account_id], references: [account_id], onDelete: Cascade, onUpdate: NoAction, map: "transaction_account_id_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model DepositTest {
+  transactionId String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  account_id    String?
+  amount        Decimal  @db.Decimal
+  description   String?
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+}
+
+model CardInfo {
+  cardNum     BigInt    @default(autoincrement())
+  cardPin     Int       @db.SmallInt
+  accountID   String    @id(map: "cardInfo_pkey") @db.Uuid
+  expiry_date DateTime? @db.Date
+  Account     Account   @relation(fields: [accountID], references: [account_id], onDelete: NoAction, onUpdate: NoAction, map: "cardInfo_accountID_fkey")
 }
 
 enum AccountStatus {
@@ -193,47 +160,4 @@ enum TransactionType {
   DEPOSIT
   WITHDRAWAL
   TRANSFER
-=======
-  transaction_id                           String   @id(map: "transaction_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  account_id                               String   @db.Uuid
-  amount                                   Decimal  @db.Decimal(12, 2)
-  created_at                               DateTime @default(now()) @db.Timestamptz(6)
-  amount_after_transaction                 Decimal? @db.Decimal
-  transaction_status                       String?
-  account_id2                              String?  @db.Uuid
-  transaction_type                         String?
-  description                              String?
-  Checks                                   Checks[] @ignore
-  Account_Transaction_account_id2ToAccount Account? @relation("Transaction_account_id2ToAccount", fields: [account_id2], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
-  Account                                  Account  @relation(fields: [account_id], references: [account_id], onDelete: Cascade, onUpdate: NoAction, map: "transaction_account_id_fkey")
-}
-
-model Login {
-  login_id       BigInt    @id @default(autoincrement())
-  created_at     DateTime  @default(now()) @db.Timestamptz(6)
-  customer_id    String?   @db.Uuid
-  login_attempts Int?      @db.SmallInt
-  login_sucess   Boolean?
-  email          Bytes?
-  password       Bytes?
-  user_type      Bytes?
-  Customer       Customer? @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model DepositTest {
-  transactionId String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  account_id    String?
-  amount        Decimal  @db.Decimal
-  description   String?
-  created_at    DateTime @default(now()) @db.Timestamptz(6)
-}
-
-model CardInfo {
-  cardNum     BigInt    @default(autoincrement())
-  cardPin     Int       @db.SmallInt
-  accountID   String    @id(map: "cardInfo_pkey") @db.Uuid
-  expiry_date DateTime? @db.Date
-  Account     Account   @relation(fields: [accountID], references: [account_id], onDelete: NoAction, onUpdate: NoAction, map: "cardInfo_accountID_fkey")
->>>>>>> e7bc3d8db614de53997d2766f838e79c5ef7261c
 }

@@ -13,12 +13,13 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
         if (!customer) return NextResponse.json({ message: "Customer not found" }, { status: 400 });
 
         const body = await req.json();
-        const { account_id, amount, transaction_type } = body || {};
+        const { account_id, account_id2, balance, amount, transaction_type, description } = body || {};
+        console.log(account_id, account_id2, balance, amount, transaction_type, description);   
         if (!account_id || typeof amount !== "number" || !transaction_type) {
             return NextResponse.json({ message: "account_id, amount (number), transaction_type required" }, { status: 400 });
         }
-        if (!["deposit", "withdraw"].includes(String(transaction_type).toLowerCase())) {
-            return NextResponse.json({ message: "transaction_type must be deposit or withdraw" }, { status: 400 });
+        if (!["immediate", "scheduled"].includes(String(transaction_type).toLowerCase())) {
+            return NextResponse.json({ message: "transaction_type must be immediate or scheduled" }, { status: 400 });
         }
         if (amount <= 0) {
             return NextResponse.json({ message: "amount must be positive" }, { status: 400 });
@@ -30,37 +31,66 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
             return NextResponse.json({ message: "Account not found" }, { status: 404 });
         }
 
-        const isWithdraw = String(transaction_type).toLowerCase() === "withdraw";
+        if (balance - amount < 0 ){
+            return NextResponse.json({ message: "not enough in balance to give this amount" }, { status: 400 });
+        }
 
-        const result = await prisma.$transaction(async (tx) => {
-            const fresh = await tx.account.findUniqueOrThrow({ where: { account_id } });
-            const currentBalance = Number(fresh.balance);
-            const nextBalance = isWithdraw ? currentBalance - amount : currentBalance + amount;
-            if (nextBalance < 0) {
-                throw new Error("Insufficient funds");
-            }
 
-            const updated = await tx.account.update({
-                where: { account_id },
-                data: { balance: nextBalance },
-            });
+        let temp = ""
+        if (transaction_type === "immediate"){
+            temp = "COMPLETED"
+        } else if (transaction_type === "scheduled"){
+            temp = "PENDING"
+        }
 
-            const createdTx = await tx.transaction.create({
-                data: {
-                    account_id,
-                    amount,
-                    amount_after_transaction: nextBalance,
-                    transaction_status: "success",
-                    customer_id: customer.customer_id,
-                    transaction_type: isWithdraw ? "withdraw" : "deposit",
-                },
-            });
-
-            return { updated, createdTx };
+      
+        const createdTransaction = await prisma.transaction.create({
+            data: {
+                account_id,
+                account_id2,
+                amount,
+                amount_after_transaction: balance - amount,
+                description,
+                created_at: new Date(),
+                transaction_status: temp,
+                transaction_type: "DEPOSIT",
+            },
         });
 
-        return NextResponse.json(result.createdTx, { status: 201 });
-    } catch (error: any) {
+        const createdTransaction2 = await prisma.transaction.create({
+            data: {
+                account_id: account_id2,
+                account_id2: account_id,
+                amount,
+                amount_after_transaction: amount,
+                description,
+                created_at: new Date(),
+                transaction_status: temp,
+                transaction_type: "WITHDRAWAL",
+            },
+        });
+
+        const updatedTransaction = await prisma.account.update({
+            where: { account_id : account_id},
+            data: {
+            balance: {
+            increment: -amount, // decreases existing balance by amount
+        },
+        },
+        });
+
+        const updatedTransaction2 = await prisma.account.update({
+            where: { account_id : account_id2 },
+            data: {
+            balance: {
+            increment: amount, // increases existing balance by amount
+        },
+        },
+        });
+        
+        
+        return NextResponse.json({ message: "Transaction successful" }, { status: 200 });
+        } catch (error: any) {
         if (error?.message === "Insufficient funds") {
             return NextResponse.json({ message: error.message }, { status: 400 });
         }
