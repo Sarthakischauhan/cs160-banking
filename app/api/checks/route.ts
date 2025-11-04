@@ -1,5 +1,10 @@
 import { prisma } from "@/prisma/prisma";
-import crypto from "crypto";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_KEY!
+);
 
 export async function GET() {
     const checks = await prisma.checks.findMany();
@@ -25,6 +30,31 @@ export async function POST(req: Request) {
 
         if (frontBuffer.equals(backBuffer)) {
             return new Response("Same image uploaded twice", { status: 400 });
+        }
+
+        async function getUrl(file: File, folder: string) {
+            const buffer = Buffer.from(await file.arrayBuffer());
+
+            if (buffer.byteLength === 0) throw new Error("Empty file buffer");
+
+            const filePath = `${folder}/${crypto.randomUUID()}-${file.name}`;
+            const { data: uploadData, error } = await supabase.storage
+                .from("Checks")
+                .upload(filePath, buffer, {
+                    contentType: file.type || "image/jpeg",
+                    upsert: false,
+                });
+
+            if (error || !uploadData) {
+                console.error(" Upload failed full response:", error);
+                throw new Error("Upload failed");
+            }
+
+            const { data: publicData } = supabase
+                .storage
+                .from("Checks")
+                .getPublicUrl(uploadData.path);
+            return publicData.publicUrl;
         }
 
         async function performOcr(imageFile: File): Promise<string> {
@@ -53,20 +83,27 @@ export async function POST(req: Request) {
             [performOcr(front_image),
             performOcr(back_image)]
         );
+        const [frontUrl, backUrl] = await Promise.all([
+            getUrl(front_image, "front"),
+            getUrl(back_image, "back"),
+        ]);
+
         const amount = Number(formData.get("amount"));
         if (!amount || amount <= 0) {
             return new Response("Deposit amount must be a positive number", { status: 400 });
         }
-
         const newCheck = await prisma.checks.create({
             data: {
-                check_id: crypto.randomUUID(),
                 front_text: front,
                 back_text: back,
                 deposit_amount: amount,
                 created_at: new Date(),
+                front_image: frontUrl,
+                back_image: backUrl
+
             },
         });
+        console.log("Supabase client:", supabase.storage.from("Checks"));
 
         console.log("OCR Result:", newCheck);
 

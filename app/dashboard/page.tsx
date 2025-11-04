@@ -6,9 +6,31 @@ import { HistgraphCard } from "./components/histgraph-card";
 import { UpcomingCard } from "./components/upcoming-card";
 import { ATMCard } from "./components/atm-card";
 import { AccountSelect } from "./components/account-select";
-import { auth0 } from "@/lib/auth0";
-export default async function Dashboard() {
-  const session = await auth0.getSession()
+import { useEffect } from "react";
+
+type Account = { // Makes structure to hold account info
+  customer_id: string | null;
+  balance: number | null;
+}
+export default function Dashboard() { // Initilize with grabbing info from api Account 
+  const [account, setAccount] = useState< Account | null>(null);
+
+    useEffect(() => {
+    async function fetchProfile() {
+    const res = await fetch("/api/account");
+    if (res.status === 401) {
+      window.location.href = "/auth/login";
+      return;
+    }
+
+    const accountsData = await res.json();
+    const firstAccount = accountsData[0]; // gets the first account info for now will change in the future
+
+    setAccount(firstAccount);
+}
+    fetchProfile();
+}, []);
+
   return (
     <>
       {/* Header */}
@@ -21,19 +43,19 @@ export default async function Dashboard() {
         <WelcomeCard />
       </div>
 
-      {/* ROW 2 */}
-      <div className="grid grid-cols-4 h-fit">
-        <div className="col-span-1 ml-4 mr-2">
-          <BalanceCard
-            userBalance={1000}
-            monthIncome={1400}
-            monthExpense={1000}
-          />
-        </div>
-        <div className="col-span-3 mr-4 ml-2">
-          <NotificationCard />
-        </div>
-      </div>
+          {/* ROW 2 */}
+          <div className="grid grid-cols-4 h-fit">
+            <div className="col-span-1 ml-4 mr-2">
+              <BalanceCard
+                userBalance={account?.balance ?? 0} //Sets balance to info from first account
+                monthIncome={1400}
+                monthExpense={1000}
+              />
+            </div>
+            <div className="col-span-3 mr-4 ml-2">
+              <NotificationCard />
+            </div>
+          </div>
 
       {/* ROW 3 */}
       <div className="grid grid-cols-2 my-2 h-fit">
@@ -57,3 +79,7 @@ export default async function Dashboard() {
     </>
   );
 }
+function useState<T>(arg0: null): [any, any] {
+  throw new Error("Function not implemented.");
+}
+
