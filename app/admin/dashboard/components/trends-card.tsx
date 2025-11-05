@@ -55,8 +55,8 @@ export function TrendsCard({ title, description, data }: TrendsCardProps) {
               accessibilityLayer
               data={data ?? []}
               margin={{
-                left: 12,
-                right: 12,
+                left: 25,
+                right: 25,
               }}
             >
               <CartesianGrid vertical={false} />

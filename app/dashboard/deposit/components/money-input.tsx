@@ -16,7 +16,7 @@ export function MoneyInput({ field }: MoneyInputProps) {
   return (
     <Input
       placeholder="00.00"
-      className="!text-5xl text-center h-20"
+      className="text-5xl text-center h-20"
       value={displayValue}
       onChange={(e) => {
         // Remove all non-digits

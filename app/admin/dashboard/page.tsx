@@ -18,21 +18,27 @@ import { getAccountsSummary, getCustomerSummary, getTransactionSummary } from "@
 import { formatCurrency } from "@/lib/utils";
 
 export default async function AdminDashboardPage() {
+  const start = new Date()
+  const end = new Date()
+  const timePeriod = 30
+
+  start.setDate(end.getDate() - timePeriod)
+
   const [account, customer, transaction] = await Promise.all([
-    getAccountsSummary(),
+    getAccountsSummary("month"),
     getCustomerSummary(),
-    getTransactionSummary()
+    getTransactionSummary("month")
   ]);
   const data = { account: account, customer: customer, transaction: transaction };
 
   const metricsList: MetricCardProps[] = [
     {
-        title: "Total Accounts",
-        value: account.count
+        title: "Overall Bank Assets",
+        value: formatCurrency(Number(account.totalBalance))
     },
     {
-        title: "Overall Balance",
-        value: formatCurrency(Number(account.totalBalance))
+        title: "Total Accounts",
+        value: account.count
     },
     {
         title: "Total Transactions",
@@ -66,7 +72,7 @@ export default async function AdminDashboardPage() {
         </Carousel>
       </div>
       <div className="w-full h-fit p-2 justify-center items-center">
-        <TrendsCard title={trendsData1.title} data={transaction.transactionHistory} />
+        <TrendsCard title="Money Transferred This Month" data={account.balanceHistory} />
       </div>
       <div className="px-10 py-5 w-full">
         <h1 className="text-4xl font-bold">Pending</h1>
