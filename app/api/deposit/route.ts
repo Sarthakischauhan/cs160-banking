@@ -31,56 +31,56 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
         const { account_id, amount, description } = await req.json();
 
         if (!description || !amount) {
-        return NextResponse.json(
-            { message: "Amount and description are required" },
-            { status: 399 }
+            return NextResponse.json(
+                { message: "Amount and description are required" },
+                { status: 399 }
             );
         }
 
-        if (!description ) {
-        return NextResponse.json(
-            { message: "Description is required" },
-            { status: 398 }
+        if (!description) {
+            return NextResponse.json(
+                { message: "Description is required" },
+                { status: 398 }
             );
         }
         if (!amount) {
-        return NextResponse.json(
-            { message: "Amount is required" },
-            { status: 397}
+            return NextResponse.json(
+                { message: "Amount is required" },
+                { status: 397 }
             );
         }
 
-        if (amount <=0) {
-             return NextResponse.json(
-            { message: "Amount can't be a negative amount" },
-            { status: 396}
+        if (amount <= 0) {
+            return NextResponse.json(
+                { message: "Amount can't be a negative amount" },
+                { status: 396 }
             );
         }
 
         const deposit = await prisma.depositTest.create({
-        data: {
-        account_id,
-        amount,
-        description,
-        created_at: new Date(),
+            data: {
+                account_id,
+                amount,
+                description,
+                created_at: new Date(),
             },
         });
-        
+
         const updatedAccount = await prisma.account.update({
             where: { account_id },
             data: {
-            balance: {
-            increment: amount, // increases existing balance by amount
-        },
-        },
+                balance: {
+                    increment: amount, // increases existing balance by amount
+                },
+            },
         });
 
         return NextResponse.json({ deposit }, { status: 201 });
-            } catch (error) {
-            console.error(error);
-            return NextResponse.json(
+    } catch (error) {
+        console.error(error);
+        return NextResponse.json(
             { message: "Failed to create deposit" },
             { status: 500 }
         );
-        }
+    }
 });

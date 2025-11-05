@@ -92,6 +92,19 @@ export async function POST(req: Request) {
         if (!amount || amount <= 0) {
             return new Response("Deposit amount must be a positive number", { status: 400 });
         }
+
+        const transactionId = formData.get("transactionId") as string | null;
+        if (!transactionId) {
+            return new Response("Missing transaction ID", { status: 400 });
+        }
+        const deposit = await prisma.depositTest.findUnique({
+            where: { transactionId },
+            select: { account_id: true },
+        });
+
+        if (!deposit) {
+            throw new Error("Deposit not found");
+        }
         const newCheck = await prisma.checks.create({
             data: {
                 front_text: front,
@@ -99,12 +112,16 @@ export async function POST(req: Request) {
                 deposit_amount: amount,
                 created_at: new Date(),
                 front_image: frontUrl,
-                back_image: backUrl
-
-            },
+                back_image: backUrl,
+                deposit_date: new Date(),
+                deposit: {
+                    connect: {
+                        transactionId
+                    }
+                }
+            }
         });
         console.log("Supabase client:", supabase.storage.from("Checks"));
-
         console.log("OCR Result:", newCheck);
 
         return new Response(

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardAction, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardAction, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
 export default function Page() {
@@ -16,6 +16,25 @@ export default function Page() {
         seterror("");
         setresult(null);
 
+        const createDeposit = await fetch("/api/deposit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                amount,
+                description: "Check deposit",
+            }),
+        });
+        if (!createDeposit.ok) {
+            throw new Error("Failed to create deposit");
+        }
+        const depositData = await createDeposit.json();
+        const createdDeposit = depositData.deposit;
+        const transactionId = createdDeposit.transactionId;
+
+        if (!transactionId) {
+            throw new Error("Deposit response missing transactionId");
+        }
+
         const formData = new FormData();
         if (front_image) {
             formData.append("image", front_image);
@@ -24,8 +43,9 @@ export default function Page() {
             formData.append("image2", back_image);
         }
         if (amount !== null && amount > 0) {
-            formData.append("amount", amount.toString()); 
+            formData.append("amount", amount.toString());
         }
+        formData.append("transactionId", transactionId);
         try {
             const res = await fetch("/api/checks", {
                 method: "POST",
