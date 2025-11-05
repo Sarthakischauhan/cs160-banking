@@ -11,54 +11,24 @@ import {
 import { Label } from "@/components/ui/label";
 import { prisma } from "@/prisma/prisma";
 import { TransactionStatus, TransactionType } from "@prisma/client";
+import { getTransactions } from "@/lib/adminData";
 
 export default async function TransactionsPage({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
 }) {
-  const search = searchParams.search ?? "";
-  const minAmount = searchParams.minAmount ?? "";
-  const maxAmount = searchParams.maxAmount ?? "";
-  const minDate = searchParams.minDate ?? "";
-  const maxDate = searchParams.maxDate ?? "";
-  const transactionStatus = searchParams.transactionStatus ?? "";
-  const transactionType = searchParams.transactionType ?? "";
+  const params = await searchParams;
+  const firstName = params.firstName ?? "";
+  const lastName = params.lastName ?? "";
+  const minAmount = params.minAmount ?? "";
+  const maxAmount = params.maxAmount ?? "";
+  const minDate = params.minDate ?? "";
+  const maxDate = params.maxDate ?? "";
+  const transactionStatus = params.transactionStatus ?? "";
+  const transactionType = params.transactionType ?? "";
 
-  const data = await prisma.transaction.findMany({
-    where: {
-      ...(search
-        ? {
-            OR: [
-              { transaction_id: search },
-              { account_id: search },
-              { account_id2: search },
-            ],
-          }
-        : {}),
-      ...(minAmount || maxAmount
-        ? {
-            amount: {
-              gte: minAmount ? Number(minAmount) : undefined,
-              lte: maxAmount ? Number(maxAmount) : undefined,
-            },
-          }
-        : {}),
-      ...(minDate || maxDate
-        ? {
-            created_at: {
-              gte: minDate ? new Date(minDate) : undefined,
-              lte: maxDate ? new Date(maxDate) : undefined,
-            },
-          }
-        : {}),
-        ...(transactionStatus ? {transaction_status: transactionStatus as TransactionStatus} : {}),
-        ...(transactionType ? {transaction_type: transactionType as TransactionType} : {})
-    },
-    orderBy: {
-        created_at: 'desc'
-    }
-  });
+  const data = await getTransactions(params);
   console.log(data);
 
   return (
@@ -70,8 +40,17 @@ export default async function TransactionsPage({
           <div>
             <Button type="submit">Apply Filters</Button>
           </div>
-          <div className="w-full h-20 grid grid-cols-3 gap-4 py-4">
-            <TextFilter label={"Search by ID"} name="search" value={search} />
+          <div className="w-full h-20 grid grid-cols-4 gap-4 py-4">
+            <TextFilter
+              label={"First Name"}
+              name="firstName"
+              value={firstName}
+            />
+            <TextFilter
+              label={"Last Name"}
+              name="lastName"
+              value={lastName}
+            />
             <RangeFilter
               label={"Amount"}
               minName="minAmount"

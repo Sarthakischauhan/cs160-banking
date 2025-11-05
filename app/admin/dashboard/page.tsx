@@ -14,7 +14,7 @@ import {
   supportTickets,
   trendsData1,
 } from "./dummydata/data";
-import { getAccountsSummary, getCustomerSummary, getTransactionSummary } from "@/lib/data";
+import { getAccountsSummary, getCustomerSummary, getTransactionSummary } from "@/lib/adminData";
 import { formatCurrency } from "@/lib/utils";
 
 export default async function AdminDashboardPage() {

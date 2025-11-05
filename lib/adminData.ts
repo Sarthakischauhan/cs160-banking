@@ -1,12 +1,134 @@
 "use server";
 
 import { prisma } from "@/prisma/prisma";
-import { DepositTest, Transaction, TransactionType } from "@prisma/client";
+import {
+  DepositTest,
+  Transaction,
+  TransactionStatus,
+  TransactionType,
+} from "@prisma/client";
+import { gte, lte } from "zod";
 
 const timeFrameOptions = {
   month: 30,
   year: 365,
 };
+
+export async function getTransactions(searchParams: {
+  [key: string]: string | undefined;
+}) {
+  const where: any = {};
+
+  if (searchParams.minAmount || searchParams.maxAmount) {
+    where.amount = {};
+    if (searchParams.minAmount)
+      where.amount.gte = Number(searchParams.minAmount);
+    if (searchParams.maxAmount)
+      where.amount.lte = Number(searchParams.maxAmount);
+  }
+
+  if (searchParams.minDate || searchParams.maxDate) {
+    where.created_at = {};
+    if (searchParams.minDate)
+      where.created_at.gte = new Date(searchParams.minDate);
+    if (searchParams.maxDate)
+      where.created_at.lte = new Date(searchParams.maxDate);
+  }
+
+  if (searchParams.firstName) {
+    where.OR = [
+      {
+        Account: {
+          Customer: {
+            first_name: {
+              contains: searchParams.firstName,
+              mode: "insensitive",
+            },
+          },
+        },
+      },
+      {
+        Account_Transaction_account_id2ToAccount: {
+          Customer: {
+            first_name: {
+              contains: searchParams.firstName,
+              mode: "insensitive",
+            },
+          },
+        },
+      },
+    ];
+  }
+
+  if (searchParams.lastName) {
+    where.OR = [
+      {
+        Account: {
+          Customer: {
+            last_name: {
+              contains: searchParams.lastName,
+              mode: "insensitive",
+            },
+          },
+        },
+      },
+      {
+        Account_Transaction_account_id2ToAccount: {
+          Customer: {
+            last_name: {
+              contains: searchParams.lastName,
+              mode: "insensitive",
+            },
+          },
+        },
+      },
+    ];
+  }
+
+  if (searchParams.transactionStatus) {
+    where.transaction_status =
+      searchParams.transactionStatus as TransactionStatus;
+  }
+
+  if (searchParams.transactionType) {
+    where.transaction_type = searchParams.transactionType as TransactionType;
+  }
+
+  const data = await prisma.transaction.findMany({
+    where,
+    include: {
+      Account: {
+        include: {
+          Customer: true,
+        },
+      },
+      Account_Transaction_account_id2ToAccount: {
+        include: {
+          Customer: true,
+        },
+      },
+    },
+    orderBy: {
+      created_at: "desc",
+    },
+  });
+
+  const result = data.map((t) => ({
+    ...t,
+    amount: Number(t.amount),
+    amount_after_transaction: Number(t.amount_after_transaction),
+    Account: {
+      ...t.Account,
+      balance: Number(t.Account.balance),
+    },
+    Account_Transaction_account_id2ToAccount: {
+      ...t.Account_Transaction_account_id2ToAccount,
+      balance: Number(t.Account_Transaction_account_id2ToAccount?.balance),
+    },
+  }));
+
+  return result;
+}
 
 export async function getAccountsSummary(timeFrame: "month" | "year") {
   const [count, overall, byType] = await Promise.all([
