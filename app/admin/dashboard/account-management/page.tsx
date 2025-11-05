@@ -43,7 +43,7 @@ export default async function AccountManagementPage({
     include: {
       Customer: true,
       _count: {
-        select: { Transaction: true },
+        select: { Transaction_Transaction_account_idToAccount: true },
       },
     },
     orderBy: {

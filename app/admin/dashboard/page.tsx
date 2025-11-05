@@ -66,7 +66,7 @@ export default async function AdminDashboardPage() {
         </Carousel>
       </div>
       <div className="w-full h-fit p-2 justify-center items-center">
-        <TrendsCard title={trendsData1.title} data={trendsData1.data} />
+        <TrendsCard title={trendsData1.title} data={transaction.transactionHistory} />
       </div>
       <div className="px-10 py-5 w-full">
         <h1 className="text-4xl font-bold">Pending</h1>

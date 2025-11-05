@@ -13,7 +13,7 @@ import { EllipsisVertical } from "lucide-react";
 export type AccountWithExtraData = Account & {
   Customer: Customer;
   _count: {
-    Transaction: number;
+    Transaction_Transaction_account_idToAccount : number;
   };
 };
 
@@ -47,7 +47,7 @@ export function AccountsTable(props: AccountsTableProps) {
               <TableCell>
                 {formatCurrency(Number(account.balance))}
               </TableCell>
-              <TableCell>{account._count.Transaction}</TableCell>
+              <TableCell>{account._count.Transaction_Transaction_account_idToAccount}</TableCell>
               <TableCell>{account.created_at.toLocaleDateString()}</TableCell>
               <TableCell className="hover:cursor-pointer"><EllipsisVertical /></TableCell>
             </TableRow>
