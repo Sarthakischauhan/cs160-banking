@@ -18,7 +18,7 @@ export default async function TransactionsPage({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) {
-  const params = await searchParams;
+  const params = searchParams;
   const firstName = params.firstName ?? "";
   const lastName = params.lastName ?? "";
   const minAmount = params.minAmount ?? "";
@@ -35,7 +35,7 @@ export default async function TransactionsPage({
     <div className="w-full h-fit">
       <div className="p-10">
         <h1 className="text-4xl font-bold mb-10">Transactions</h1>
-        <form className="flex flex-col gap-4">
+        <form method="GET" className="flex flex-col gap-4">
           <p className="font-bold w-full border-b-2">Filters</p>
           <div>
             <Button type="submit">Apply Filters</Button>

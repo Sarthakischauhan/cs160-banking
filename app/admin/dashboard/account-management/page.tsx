@@ -9,13 +9,14 @@ export default async function AccountManagementPage({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) {
-  const firstName = searchParams.firstName ?? "";
-  const lastName = searchParams.lastName ?? "";
-  const minBalance = searchParams.minBalance ?? "";
-  const maxBalance = searchParams.maxBalance ?? "";
-  const minDate = searchParams.minDate ?? "";
-  const maxDate = searchParams.maxDate ?? "";
-  const accountType = searchParams.accountType ?? "";
+  const params = await searchParams
+  const firstName = params.firstName ?? "";
+  const lastName = params.lastName ?? "";
+  const minBalance = params.minBalance ?? "";
+  const maxBalance = params.maxBalance ?? "";
+  const minDate = params.minDate ?? "";
+  const maxDate = params.maxDate ?? "";
+  const accountType = params.accountType ?? "";
 
   const accountData = await prisma.account.findMany({
     where: {
