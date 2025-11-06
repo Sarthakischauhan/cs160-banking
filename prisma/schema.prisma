@@ -20,7 +20,6 @@ model Account {
   account_type                                 AccountType   @default(CHECKING)
   Customer                                     Customer      @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade, onUpdate: NoAction, map: "account_customer_id_fkey")
   CardInfo                                     CardInfo?
-  Checks                                       Checks?
   Statements                                   Statements[]
   Transaction_Transaction_account_id2ToAccount Transaction[] @relation("Transaction_account_id2ToAccount")
   Transaction                                  Transaction[]
@@ -38,8 +37,6 @@ model Checks {
   check_approved Boolean      @default(false)
   front_text     String?
   back_text      String?
-  account_id     String?      @unique @db.Uuid
-  Account        Account?     @relation(fields: [account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
   deposit        DepositTest? @relation("ChecksToDeposit", fields: [transactionId], references: [transactionId])
 }
 
@@ -57,6 +54,7 @@ model Customer {
   Account       Account[]
   Login         Login[]
   Notifications Notifications[]
+  Settings      Settings?
   Statements    Statements[]
 }
 
@@ -118,12 +116,12 @@ model Transaction {
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model DepositTest {
   transactionId String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  account_id    String?
+  account_id    String?  @db.Uuid
   amount        Decimal  @db.Decimal
   description   String?
   created_at    DateTime @default(now()) @db.Timestamptz(6)
   check_id      String?  @db.Uuid
-  checks        Checks[]  @relation("ChecksToDeposit")
+  checks        Checks?  @relation("ChecksToDeposit")
 }
 
 model CardInfo {
@@ -132,6 +130,20 @@ model CardInfo {
   accountID   String    @id(map: "cardInfo_pkey") @db.Uuid
   expiry_date DateTime? @db.Date
   Account     Account   @relation(fields: [accountID], references: [account_id], onDelete: NoAction, onUpdate: NoAction, map: "cardInfo_accountID_fkey")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model Settings {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customer_id       String    @unique @db.Uuid
+  dark_mode         Boolean   @default(false)
+  hide_balance      Boolean?  @default(false)
+  email_transaction Boolean?  @default(true)
+  email_promotions  Boolean?  @default(true)
+  email_security    Boolean?  @default(true)
+  created_at        DateTime? @default(now()) @db.Timestamp(6)
+  updated_at        DateTime? @default(now()) @db.Timestamp(6)
+  Customer          Customer  @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 enum AccountStatus {

@@ -1,8 +1,14 @@
 "use client";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useEffect, useState } from "react";
+
+    type Customer = {  // Structure to hold customer info from the UI input
+            customer_id: string | null;
+            balance: number | null;
+        };
+let test = "";
 
 export default function Page() {
     const [front_image, setimage1] = useState<File | null>(null);
@@ -10,16 +16,46 @@ export default function Page() {
     const [result, setresult] = useState<{ frontText: string; backText: string } | null>(null);
     const [error, seterror] = useState("");
     const [amount, setAmount] = useState<number | null>(null);
+    const [customer, setAccount] = useState<number | null>(null);
+   
 
+    useEffect(() => { // Fetchs the api to get Account info 
+        async function fetchProfile() {
+            const res = await fetch("/api/account");
+            if (res.status === 401) { // Ensures user is logged in correctly
+                window.location.href = "/auth/login";
+                return;
+            }
+
+            const data = await res.json();
+            const firstAccount = data[0];
+            setAccount(firstAccount); //retrieve the first account info will need to modify later to allow picking of multiple accounts
+
+            if (!firstAccount.account_id) {
+                console.error("No account_id found!");
+                return;
+            }
+          
+
+            test = firstAccount.account_id; //Just to retain value
+              console.log("test has been recorded " + test);
+        }
+
+        fetchProfile();
+    }, []);
+
+    
     async function handleUpload(e: React.FormEvent) {
         e.preventDefault();
         seterror("");
         setresult(null);
+        console.log("testing if test shows up " + test);
 
         const createDeposit = await fetch("/api/deposit", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
+                account_id: test,
                 amount,
                 description: "Check deposit",
             }),
@@ -34,7 +70,7 @@ export default function Page() {
         if (!transactionId) {
             throw new Error("Deposit response missing transactionId");
         }
-
+        
         const formData = new FormData();
         if (front_image) {
             formData.append("image", front_image);
