@@ -5,23 +5,40 @@ import { RangeFilter, SelectFilter, TextFilter } from "../components/filters";
 import { AccountType } from "@prisma/client";
 
 export default async function AccountManagementPage({
-    searchParams,
+  searchParams,
 }: {
-    searchParams: { [key: string]: string | undefined };
+  searchParams: { [key: string]: string | undefined };
 }) {
-
-    const search = searchParams.search ?? "";
-    const minBalance = searchParams.minBalance ?? "";
-    const maxBalance = searchParams.maxBalance ?? "";
-    const minDate = searchParams.minDate ?? "";
-    const maxDate = searchParams.maxDate ?? "";
-    const accountType = searchParams.accountType ?? "";
+  const firstName = searchParams.firstName ?? "";
+  const lastName = searchParams.lastName ?? "";
+  const minBalance = searchParams.minBalance ?? "";
+  const maxBalance = searchParams.maxBalance ?? "";
+  const minDate = searchParams.minDate ?? "";
+  const maxDate = searchParams.maxDate ?? "";
+  const accountType = searchParams.accountType ?? "";
 
   const accountData = await prisma.account.findMany({
     where: {
       ...(accountType ? { account_type: accountType as AccountType } : {}),
-      ...(search
-        ? { OR: [{ account_id: search }, { customer_id: search }] }
+      ...(firstName
+        ? {
+            Customer: {
+              first_name: {
+                contains: firstName,
+                mode: "insensitive"
+              }
+            },
+          }
+        : {}),
+      ...(lastName
+        ? {
+            Customer: {
+              last_name: {
+                contains: lastName,
+                mode: "insensitive"
+              }
+            },
+          }
         : {}),
       ...(minBalance || maxBalance
         ? {
@@ -47,66 +64,72 @@ export default async function AccountManagementPage({
       },
     },
     orderBy: {
-        created_at: 'desc'
-    }
+      created_at: "desc",
+    },
   });
 
-    console.log(accountData);
+  console.log(accountData);
 
-    return (
-        <>
-            <div className="w-full h-fit">
-                <div className="p-10">
-                    <h1 className="text-4xl font-bold mb-10">Account Management</h1>
-                    <form method="GET" className="flex flex-col gap-4">
-                        <p className="font-bold w-full border-b-2">Filters</p>
-                        <div>
-                            <Button type="submit">Apply Filters</Button>
-                        </div>
-                        <div className="grid grid-cols-3 w-full gap-4">
-                            <TextFilter
-                                label={"Search by ID"}
-                                name="search"
-                                value={search}
-                                placeholder="Enter ID"
-                            />
-                            <RangeFilter
-                                label={"Balance"}
-                                minName="minBalance"
-                                maxName="maxBalance"
-                                minValue={minBalance}
-                                maxValue={maxBalance}
-                                minPlaceholder="Minimum Balance"
-                                maxPlaceholder="Maximum Balance"
-                                prefix="$"
-                            />
-                            <RangeFilter
-                                label={"Date"}
-                                minName="minDate"
-                                maxName="maxDate"
-                                minValue={minDate}
-                                maxValue={maxDate}
-                                type="date"
-                            />
-                        </div>
-                        <div className="grid grid-cols-3 w-full gap-4">
-                            <div>
-                                <SelectFilter
-                                    label="Account Type"
-                                    name="accountType"
-                                    options={Object.keys(AccountType)}
-                                    value={accountType}
-                                />
-                            </div>
-                        </div>
-                    </form>
-
-                    <div className="w-full h-[calc(100%-100px)] flex flex-col items-center py-6 gap-4">
-                        <p className="font-bold w-full border-b-2">Accounts</p>
-                        <AccountsTable accounts={accountData} />
-                    </div>
-                </div>
+  return (
+    <>
+      <div className="w-full h-fit">
+        <div className="p-10">
+          <h1 className="text-4xl font-bold mb-10">Account Management</h1>
+          <form method="GET" className="flex flex-col gap-4">
+            <p className="font-bold w-full border-b-2">Filters</p>
+            <div className="flex gap-4">
+              <Button type="submit">Apply Filters</Button>
             </div>
-        </>
-    );
+            <div className="grid grid-cols-4 w-full gap-4">
+              <TextFilter
+                label={"First Name"}
+                name="firstName"
+                value={firstName}
+                placeholder="First Name"
+              />
+              <TextFilter
+                label={"Last Name"}
+                name="lastName"
+                value={lastName}
+                placeholder="Last Name"
+              />
+              <RangeFilter
+                label={"Balance"}
+                minName="minBalance"
+                maxName="maxBalance"
+                minValue={minBalance}
+                maxValue={maxBalance}
+                minPlaceholder="Minimum Balance"
+                maxPlaceholder="Maximum Balance"
+                prefix="$"
+              />
+              <RangeFilter
+                label={"Date"}
+                minName="minDate"
+                maxName="maxDate"
+                minValue={minDate}
+                maxValue={maxDate}
+                type="date"
+              />
+            </div>
+            <div className="grid grid-cols-3 w-full gap-4">
+              <div>
+                <SelectFilter
+                  label="Account Type"
+                  name="accountType"
+                  options={Object.keys(AccountType)}
+                  value={accountType}
+                />
+              </div>
+            </div>
+          </form>
+
+          <div className="w-full h-[calc(100%-100px)] flex flex-col items-center py-6 gap-4">
+            <p className="font-bold w-full border-b-2">Accounts</p>
+            <AccountsTable accounts={accountData} />
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }
