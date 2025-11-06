@@ -13,6 +13,7 @@ import { EllipsisVertical } from "lucide-react";
 import { Account, Customer, Transaction } from "@prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { censorString, formatCurrency } from "@/lib/utils";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export function TransactionsTable(transactions: {
   transactions: Record<string, any>;
@@ -79,7 +80,21 @@ export function TransactionsTable(transactions: {
                   {transaction.created_at.toLocaleTimeString()}
                 </TableCell>
                 <TableCell className="hover:cursor-pointer">
-                  <EllipsisVertical />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger>
+                      <EllipsisVertical className="hover:cursor-pointer"/>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuLabel>Manage Transaction</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem>View Details</DropdownMenuItem>
+                      <DropdownMenuItem disabled={transaction.transaction_status != 'PENDING'}>Approve</DropdownMenuItem>
+                      <DropdownMenuItem>Flag</DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem>Cancel</DropdownMenuItem>
+                      <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             )

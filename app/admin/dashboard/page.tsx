@@ -84,7 +84,7 @@ export default async function AdminDashboardPage() {
       </div>
       <div className="w-full h-fit p-2 justify-center items-center">
         <TrendsCard
-          title="Money Transferred This Month"
+          title="This Month's Trends"
           trendData={{
             balance: account.balanceHistory,
             transactions: transaction.transactionHistory,

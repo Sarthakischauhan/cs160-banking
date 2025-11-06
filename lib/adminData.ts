@@ -158,7 +158,8 @@ export async function getAccountsSummary(timeFrame: "month" | "year") {
 
   const balances = calculateBalanceHistory(
     deposits,
-    Number(overall._sum.balance)
+    Number(overall._sum.balance),
+    timeFrameOptions['month']
   );
 
   return {
@@ -240,30 +241,30 @@ function calculateTransactionHistory(
 
 function calculateBalanceHistory(
   deposits: DepositTest[],
-  currentBalance: number
+  currentBalance: number,
+  timeFrame: number
 ) {
   // 1. Aggregate amounts per day
   const dailyTotals = new Map<string, number>();
-
   for (const t of deposits) {
     const date = t.created_at.toISOString().split("T")[0]; // YYYY-MM-DD
     dailyTotals.set(date, (dailyTotals.get(date) || 0) + Number(t.amount));
   }
 
-  // 2. Get all dates sorted ascending
-  const dates = Array.from(dailyTotals.keys()).sort(
-    (a, b) => new Date(a).getTime() - new Date(b).getTime()
-  );
-
-  // 3. Work backward from current balance
-  let amount = currentBalance;
+  // 2. Generate all dates in the timeframe
   const history: { date: string; amount: number }[] = [];
+  let amount = currentBalance;
 
-  for (let i = dates.length - 1; i >= 0; i--) {
-    const date = dates[i];
-    history.push({ date, amount });
-    amount -= dailyTotals.get(date)!; // reverse the transactions
+  const end = new Date(); // today
+  const start = new Date();
+  start.setDate(end.getDate() - timeFrame + 1); // include today as last day
+
+  for (let d = new Date(end); d >= start; d.setDate(d.getDate() - 1)) {
+    const dateStr = d.toISOString().split("T")[0];
+    history.push({ date: dateStr, amount });
+    amount -= dailyTotals.get(dateStr) || 0; // subtract if there was a transaction
   }
 
   return history.reverse(); // oldest date first
 }
+
