@@ -15,11 +15,13 @@ import { HistgraphCard } from "./components/histgraph-card";
 import { UpcomingCard } from "./components/upcoming-card";
 import { ATMCard } from "./components/atm-card";
 import { AccountSelect } from "./components/account-select";
+import {prisma, supabase} from "@/prisma/prisma1";
 
 type Account = { // Makes structure to hold account info
   customer_id: string | null;
   balance: number | null;
 }
+
 
 export default function Dashboard() { // Initilize with grabbing info from api Account 
   const [account, setAccount] = useState< Account | null>(null);
@@ -31,12 +33,30 @@ export default function Dashboard() { // Initilize with grabbing info from api A
       window.location.href = "/auth/login";
       return;
     }
-
+    
     const accountsData = await res.json();
     const firstAccount = accountsData[0]; // gets the first account info for now will change in the future
 
-    setAccount(firstAccount);
-}
+
+    const createRes = await fetch("/api/accountProcessing", { // creates an account in database if not exist yet
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ customer_id: firstAccount.customer_id }),
+    });
+
+    const result = await createRes.json();
+    if (result.error) {
+      console.error("Account creation error:", result.error);
+    } else {
+      setAccount(result.account);
+    }
+
+    const pendingRes = await fetch("/api/processPending", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ customer_id: firstAccount.customer_id }),
+    });
+  }
     fetchProfile();
 }, []);
 
