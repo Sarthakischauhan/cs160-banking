@@ -9,18 +9,6 @@ import Decimal from "decimal.js";
 
 type userDataProps = {
     userId: string;
-    // accountId?: string;
-    // customerId?: string
-}
-
-interface SerializedTransaction {
-  id: string;
-  account_id: string | null;
-  account_id2: string | null;
-  amount: number | string;
-  created_at: string | null;
-  // add other fields you rely on as needed
-  [key: string]: any;
 }
 
 interface userDataReturn{
@@ -32,7 +20,6 @@ interface userDataReturn{
         account_type: string;
     }> ,
     isOnboarded: boolean;
-    transactions: SerializedTransaction[]
 }
 
 
@@ -41,7 +28,6 @@ const nullUser : userDataReturn = {
     lastName: "", 
     accounts: [],
     isOnboarded: false,
-    transactions: [],
 }
 
 export const getUserData = cache(async ({
@@ -67,24 +53,6 @@ export const getUserData = cache(async ({
         return nullUser
     }
    
-    const activeAccountId = await handleCurrentId();  
-
-    const transactionsRaw = await prisma.transaction.findMany({
-        where : {
-            OR:[
-            { account_id: activeAccountId ?? accountData[0].account_id },
-            { account_id2: activeAccountId ?? accountData[0].account_id }
-            ]
-        }
-    })
-
-    // serialize transactions so they contain only plain JS types
-    const transactions = transactionsRaw.map((t) => ({
-        ...t,
-        amount: new Decimal(t.amount),
-        created_at: (t as any).created_at ? (t as any).created_at.toISOString() : null,
-    }))
-
     // convert account balances (Decimal) to plain numbers
     const accounts = accountData.map((a) => ({
         account_id: a.account_id,
@@ -97,7 +65,6 @@ export const getUserData = cache(async ({
         lastName : customerData.last_name,
         accounts : accounts,
         isOnboarded: (customerData?.first_name && customerData?.last_name) ? true : false,
-        transactions: transactions
     }
     
     return user;

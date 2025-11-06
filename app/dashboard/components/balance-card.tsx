@@ -7,11 +7,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { AccountType } from "@prisma/client";
 
 import { ChevronUp, ChevronDown } from "lucide-react";
 
 interface BalanceProps {
   userBalance: number;
+  account_type: AccountType | undefined; // will change later, brain not braining rt now
   monthIncome?: number;
   monthExpense?: number;
 }
@@ -27,7 +29,7 @@ export function BalanceCard(props: BalanceProps) {
     <>
       <Card className="h-full">
         <CardHeader>
-          <CardTitle>Current Balance</CardTitle>
+          <CardTitle><h1>Current Balance</h1></CardTitle>
           {!(props.monthIncome === undefined) &&
           !(props.monthExpense === undefined) ? (
             <CardAction>
@@ -51,7 +53,7 @@ export function BalanceCard(props: BalanceProps) {
             <></>
           )}
         </CardHeader>
-        <CardContent className="text-center">
+        <CardContent>
           <div className="text-5xl my-10">
             <span>${props.userBalance.toFixed(2).toLocaleString()}</span>
           </div>
