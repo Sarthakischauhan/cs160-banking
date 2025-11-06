@@ -1,12 +1,11 @@
-"use client";
-
 import { BalanceCard } from "../components/balance-card";
-import { TransferCard } from "./components/transfer-card";
-import { RecentTransfersCard } from "./components/recent-transfers-card";
-import { useState } from "react";
+import { getAccount } from "@/lib/accounts";
+import { handleCurrentId } from "@/lib/user";
+import TransferShell from "./components/transfer-shell";
 
-export default function TransferPage() {
-  const [selected, setSelected] = useState<string | null>(null);
+export default async function TransferPage() {
+  const activeId = (await handleCurrentId()) ?? "";
+  const account = await getAccount({ account_id: activeId });
 
   return (
     <>
@@ -17,18 +16,16 @@ export default function TransferPage() {
           {/* Left Column */}
           <div className="flex flex-col gap-6 w-fit">
             <div className="flex-1">
-              <BalanceCard userBalance={1000} />
-            </div>
-
-            <div className="flex-1">
-              <RecentTransfersCard onSelect={setSelected} />
+              <BalanceCard
+                userBalance={Number(account?.balance ?? 0)}
+                account_type={account?.account_type}
+              />
             </div>
           </div>
 
-          {/* Right Column */}
           <div className="flex">
             <div className="w-full max-w-xl">
-              <TransferCard selectedRecipient={selected} />
+              <TransferShell account_id={activeId} />
             </div>
           </div>
         </div>
