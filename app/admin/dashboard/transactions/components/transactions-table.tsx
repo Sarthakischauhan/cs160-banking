@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Table,
   TableBody,
@@ -8,16 +10,13 @@ import {
 } from "@/components/ui/table";
 import { EllipsisVertical } from "lucide-react";
 
-import { Transaction } from "@prisma/client";
+import { Account, Customer, Transaction } from "@prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { censorString, formatCurrency } from "@/lib/utils";
 
-interface TransactionsTableProps {
-  transactions: Transaction[];
-}
-
-export async function TransactionsTable(props: TransactionsTableProps) {
-
+export function TransactionsTable(transactions: {
+  transactions: Record<string, any>;
+}) {
   return (
     <div className="w-full h-fit border-2 rounded-md">
       <Table>
@@ -36,36 +35,55 @@ export async function TransactionsTable(props: TransactionsTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {props.transactions.map((transaction: Transaction) => (
-            <TableRow key={transaction.transaction_id}>
-              <TableCell>
-                {censorString(transaction.transaction_id)}
-              </TableCell>
-              <TableCell>
-                {censorString(transaction.account_id)}
-              </TableCell>
-              <TableCell>
-                {transaction.account_id2 && censorString(transaction.account_id2)}
-              </TableCell>
-              <TableCell>{transaction.transaction_type}</TableCell>
-              <TableCell>{transaction.transaction_status}</TableCell>
-              <TableCell>
-                {formatCurrency(Number(transaction.amount))}
-              </TableCell>
-              <TableCell>
-                {transaction.amount_after_transaction && formatCurrency(Number(transaction.amount_after_transaction))}
-              </TableCell>
-              <TableCell>
-                {transaction.created_at.toLocaleDateString()}
-              </TableCell>
-              <TableCell>
-                {transaction.created_at.toLocaleTimeString()}
-              </TableCell>
-              <TableCell className="hover:cursor-pointer">
-                <EllipsisVertical />
-              </TableCell>
-            </TableRow>
-          ))}
+          {transactions.transactions.map(
+            (
+              transaction: Transaction & {
+                Account: Account & { Customer: Customer };
+              } & {
+                Account_Transaction_account_id2ToAccount: Account & {
+                  Customer: Customer;
+                };
+              }
+            ) => (
+              <TableRow key={transaction.transaction_id}>
+                <TableCell>
+                  {censorString(transaction.transaction_id)}
+                </TableCell>
+                <TableCell>
+                  {transaction.Account.Customer.first_name +
+                    " " +
+                    transaction.Account.Customer.last_name}
+                </TableCell>
+                <TableCell>
+                  {transaction.Account_Transaction_account_id2ToAccount.Customer
+                    .first_name +
+                    " " +
+                    transaction.Account_Transaction_account_id2ToAccount
+                      .Customer.last_name}
+                </TableCell>
+                <TableCell>{transaction.transaction_type}</TableCell>
+                <TableCell>{transaction.transaction_status}</TableCell>
+                <TableCell>
+                  {formatCurrency(Number(transaction.amount))}
+                </TableCell>
+                <TableCell>
+                  {transaction.amount_after_transaction &&
+                    formatCurrency(
+                      Number(transaction.amount_after_transaction)
+                    )}
+                </TableCell>
+                <TableCell>
+                  {transaction.created_at.toLocaleDateString()}
+                </TableCell>
+                <TableCell>
+                  {transaction.created_at.toLocaleTimeString()}
+                </TableCell>
+                <TableCell className="hover:cursor-pointer">
+                  <EllipsisVertical />
+                </TableCell>
+              </TableRow>
+            )
+          )}
         </TableBody>
       </Table>
     </div>

@@ -13,7 +13,7 @@ import { EllipsisVertical } from "lucide-react";
 export type AccountWithExtraData = Account & {
   Customer: Customer;
   _count: {
-    Transaction_Transaction_account_idToAccount: number;
+    Transaction_Transaction_account_idToAccount : number;
   };
 };
 
@@ -29,7 +29,8 @@ export function AccountsTable(props: AccountsTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Customer ID</TableHead>
+            <TableHead>First Name</TableHead>
+            <TableHead>Last Name</TableHead>
             <TableHead>Account ID</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Balance</TableHead>
@@ -41,7 +42,8 @@ export function AccountsTable(props: AccountsTableProps) {
         <TableBody>
           {props.accounts.map((account: AccountWithExtraData) => (
             <TableRow key={account.account_id}>
-              <TableCell>{censorString(account.customer_id)}</TableCell>
+              <TableCell className="max-w-[120px]">{account.Customer.first_name?.toLocaleUpperCase()}</TableCell>
+              <TableCell>{account.Customer.last_name?.toLocaleUpperCase()}</TableCell>
               <TableCell>{censorString(account.account_id)}</TableCell>
               <TableCell>{account.account_type}</TableCell>
               <TableCell>
