@@ -1,81 +1,133 @@
+"use client"
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Card,
   CardAction,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { TableHeader } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Transaction, TransactionType } from "@prisma/client";
+import { Check, CircleDashed, X } from "lucide-react";
+import Link from "next/link";
 
-const transactions = [
-  {
-    id: "tx001",
-    date: "2025-09-29T14:30:00Z",
-    description: "Starbucks - Coffee",
-    category: "Food & Drink",
-    amount: -5.75,
-    account: "Checking ••••1234",
-    balance: 1244.25,
-    img: "https://cdn.jsdelivr.net/gh/alohe/avatars/png/toon_9.png"
-  },
-  {
-    id: "tx002",
-    date: "2025-09-28T20:10:00Z",
-    description: "Payroll Deposit",
-    category: "Income",
-    amount: 1850.00,
-    account: "Checking ••••1234",
-    balance: 1250.00,
-    img: "https://cdn.jsdelivr.net/gh/alohe/avatars/png/teams_7.png"
-  },
-  {
-    id: "tx003",
-    date: "2025-09-27T17:45:00Z",
-    description: "Amazon Purchase - Electronics",
-    category: "Shopping",
-    amount: -129.99,
-    account: "Credit ••••5678",
-    balance: 870.01,
-    img: "https://cdn.jsdelivr.net/gh/alohe/avatars/png/notion_3.png"
-  },
-  {
-    id: "tx004",
-    date: "2025-09-26T12:15:00Z",
-    description: "Safeway - Groceries",
-    category: "Groceries",
-    amount: -76.40,
-    account: "Checking ••••1234",
-    balance: 400.55,
-    img: "https://cdn.jsdelivr.net/gh/alohe/avatars/png/vibrent_21.png"
-  },
-];
+const DEFAULT_AVATAR = "https://cdn.jsdelivr.net/gh/alohe/avatars/png/toon_9.png";
 
+export function TransactionCard({
+  transactions = [],
+  activeAccountId,
+}: {
+  transactions?: Transaction[];
+  activeAccountId: string;
+}) {
+  const formatter = new Intl.NumberFormat(undefined, {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 2,
+  });
 
-export function TransactionCard() {
-    return (
-        <>
-        <Card className="h-full">
-            <CardHeader>
-                <CardTitle>Recent Transactions</CardTitle>
-                <CardAction>View Transactions</CardAction>
-            </CardHeader>
-            <CardContent>
-                {transactions.map((transaction) => (
-                    <div className="grid grid-cols-5 justify-center items-center my-2" key={transaction.id}>
-                        <Avatar className="h-13 w-13">
-                            <AvatarImage src={transaction.img} />
-                            <AvatarFallback>{transaction.id.substring(0,2)}</AvatarFallback> 
-                        </Avatar>
-                        <span className="text-sm col-span-2">{transaction.description}</span>
-                        <span>${transaction.amount}</span>
-                        <span>{new Date(transaction.date).toLocaleDateString()}</span>
-                    </div>
-                ))}
-            </CardContent>
-        </Card>
-        </>
-    )
+  const amountClass = (tx: Transaction) => {
+    if (tx.transaction_type === TransactionType.TRANSFER) {
+      console.log(tx.account_id,activeAccountId)
+      if (tx.account_id === activeAccountId) {
+        console.log(tx.description)
+        // user sent money
+        return "text-red-600 font-medium";
+      }
+      if (tx.account_id2 === activeAccountId) {
+        // user received money
+        return "text-green-600 font-medium";
+      }
+    }
+
+    if (tx.transaction_type === TransactionType.DEPOSIT) {
+      return "text-green-600 font-medium";
+    }
+
+    if (tx.transaction_type === TransactionType.WITHDRAWAL) {
+      return "text-red-600 font-medium";
+    }
+
+    // fallback
+    return Number(tx.amount) >= 0
+      ? "text-green-600 font-medium"
+      : "text-red-600 font-medium";
+  };
+
+  return (
+    <Card className="h-full">
+      <CardHeader>
+        <CardTitle>Recent Transactions</CardTitle>
+        <CardAction>
+          <Link href="/dashboard/transaction-history">View Transactions</Link>
+        </CardAction>
+      </CardHeader>
+
+      <CardContent className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-12"></TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+              <TableHead className="text-right">Type</TableHead>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            {transactions.map((transaction, idx) => (
+              <TableRow key={idx}>
+                <TableCell className="p-2">
+                  <Avatar className="h-7 w-7">
+                    <AvatarImage src={DEFAULT_AVATAR} />
+                    <AvatarFallback>S</AvatarFallback>
+                  </Avatar>
+                </TableCell>
+
+                <TableCell className="font-medium truncate capitalize">
+                  {transaction.description.slice(0, 20 - 3) + "..." ||
+                    "Unknown Transaction"}
+                </TableCell>
+
+                <TableCell className="text-sm text-muted-foreground">
+                  {transaction.created_at.toLocaleDateString()}
+                </TableCell>
+
+                <TableCell className="flex justify-center text-sm mx-auto text-muted-foreground">
+                  {transaction.transaction_status === "COMPLETED" ? (
+                    <Check className="w-6 h-6 text-green-500" />
+                  ) : transaction.transaction_status === "PENDING" ? (
+                    <CircleDashed className="w-6 h-6 text-yellow-500" />
+                  ) : (
+                    <X className="w-6 h-6 text-red-600" />
+                  )}
+                </TableCell>
+
+                <TableCell
+                  className={`text-right ${amountClass(transaction)}`}
+                >
+                  {formatter.format(Number(transaction.amount))}
+                </TableCell>
+
+                <TableCell className="text-right text-xs text-muted-foreground">
+                  {transaction.transaction_type}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
 }

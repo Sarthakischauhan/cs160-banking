@@ -13,7 +13,7 @@ import { ChevronUp, ChevronDown } from "lucide-react";
 
 interface BalanceProps {
   userBalance: number;
-  account_type: AccountType | undefined; // will change later, brain not braining rt now
+  account_type: AccountType;
   monthIncome?: number;
   monthExpense?: number;
 }
