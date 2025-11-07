@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { MoneyInput } from "../../deposit/components/money-input";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+
 
 type Transfer = {
   account_id: string | null;
@@ -32,10 +32,6 @@ type Transfer = {
   description: string | null;
 };
 
-let test = ""; 
-let test2 = ""; 
-
-
 export function TransferCard({
   selectedRecipient,
   activeAccountId,
@@ -45,7 +41,6 @@ export function TransferCard({
 }) {
     
   const router = useRouter();
-  const [accountId, setAccountId] = useState<Transfer | null>(null);
 
   const form = useForm<Transfer>({
     defaultValues: {
@@ -57,27 +52,13 @@ export function TransferCard({
     },
   });
 
-  // activeAccountId is provided from the server page; fall back to fetched account if not present
-  useEffect(() => {
-    if (!activeAccountId) return;
-    // keep accountId state minimal for compatibility
-    setAccountId({
-      account_id: activeAccountId,
-      account_id2: null,
-      amount: null,
-      balance: null,
-      transaction_type: "immediate",
-      description: null,
-    });
-  }, [activeAccountId]);
-
   const handleClick = async (values: any) => {
-    const fromAccount = activeAccountId ?? accountId?.account_id;
+    const fromAccount = activeAccountId;
     if (!fromAccount) return;
 
     const payload = {
       from_account_id: fromAccount,
-      to_account_id: values.account_id2,
+      to_account_id: selectedRecipient ?? values.account_id2,
       amount: Number(values.amount),
       description: values.description,
     };
@@ -195,8 +176,8 @@ export function TransferCard({
             />
 
             {/* Submit */}
-            <Button type="submit" variant="success" disabled={!accountId}>
-              {accountId ? "Send" : "Loading..."}
+            <Button type="submit" variant="success">
+              Send
             </Button>
           </form>
         </Form>

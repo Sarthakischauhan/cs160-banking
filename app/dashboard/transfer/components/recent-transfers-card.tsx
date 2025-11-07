@@ -57,6 +57,7 @@ const recentRecipients = [
 ];
 
 export function RecentTransfersCard({onSelect}: {onSelect?: (id: string) => void}) {
+  
   return (
     <>
       <Card className="h-full w-full">
@@ -69,7 +70,7 @@ export function RecentTransfersCard({onSelect}: {onSelect?: (id: string) => void
         <CardContent>
           <div className="grid grid-cols-2 max-h-72 overflow-y-auto mx-2 w-fit">
             {recentRecipients.slice(0, 4).map((recipient) => (
-              <Card key={recipient.id} className="w-git m-1 bg-transparent hover:cursor-pointer hover:bg-gray-200 transition-colors duration-200" onClick={() => onSelect ? onSelect(recipient.email) : {}}>
+              <Card key={recipient.id} className="w-git m-1 bg-transparent hover:cursor-pointer hover:bg-gray-200 transition-colors duration-200" onClick={() => onSelect ? onSelect(recipient.id) : {}}>
                 <CardContent>
                   <span className="font-bold text-center">
                     {recipient.name}

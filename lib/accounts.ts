@@ -20,7 +20,6 @@ export const getAccount = async ({account_id}:getAccountProps) => {
             balance: true, 
         }
     })
-
     if (!accountData){
         return null;
     }
