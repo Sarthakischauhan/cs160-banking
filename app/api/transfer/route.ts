@@ -105,42 +105,16 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
         data: { balance: { increment: amount } },
       });
 
-      // ledger entry
       const txn = await tx.transaction.create({
         data: {
           account_id: fromAccount.account_id,
           account_id2: toAccount.account_id,
           description: description || `Transfer of ${amount} from ${fromAccount.account_id} to ${toAccount.account_id}`,
-          transaction_status: "COMPLETED",
+          transaction_status: "PENDING",
           transaction_type: "TRANSFER",
           amount: amount,
         },
       });
-
-      // notification for sender
-      await tx.notifications.create({
-        data: {
-          notification_type: "TRANSACTION",
-          message: `You sent ${amount} from ${fromAccount.account_type} account to ${toAccount.account_type} account.`,
-          customer: customer.customer_id,
-        },
-      });
-
-      // notification for receiver (if they exist as customer)
-      const receiverCustomer = await tx.customer.findFirst({
-        where: { customer_id: toAccount.customer_id },
-        select: { customer_id: true },
-      });
-
-      if (receiverCustomer) {
-        await tx.notifications.create({
-          data: {
-            notification_type: "TRANSACTION",
-            message: `You received ${amount} from ${fromAccount.account_type} account.`,
-            customer: receiverCustomer.customer_id,
-          },
-        });
-      }
 
       return txn;
     });

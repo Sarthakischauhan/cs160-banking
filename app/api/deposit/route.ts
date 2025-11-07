@@ -77,18 +77,9 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
           account_id: account.account_id,
           account_id2: account.account_id,
           description: `${account.account_id} deposited ${amount} in their ${account.account_type} account`,
-          transaction_status: "COMPLETED",
+          transaction_status: "PENDING",
           transaction_type: "DEPOSIT",
           amount: amount,
-        },
-      });
-
-      // notification entry
-      await tx.notifications.create({
-        data: {
-          notification_type: "TRANSACTION",
-          message: `Successfully deposited ${amount} in ${account.account_type} account`,
-          customer: customer.customer_id,
         },
       });
 
