@@ -78,14 +78,14 @@ export default async function Page({ searchParams } : DashboardProps) {
           )}
         </div>
         <div className="col-span-3 mr-4 ml-2">
-          <NotificationCard />
+          <TransactionCard  transactions={user.transactions[accountId]} activeAccountId={accountId} />
         </div>
       </div>
 
       {/* ROW 3 */}
       <div className="grid grid-cols-2 my-2 h-fit">
         <div className="ml-4 mr-2">
-          <TransactionCard  transactions={user.transactions[accountId]} activeAccountId={accountId} />
+          <NotificationCard notifications={user?.notifications}/>
         </div>
         <div className="mr-4 ml-2">
           <HistgraphCard  />

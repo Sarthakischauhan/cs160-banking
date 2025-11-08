@@ -116,12 +116,21 @@ export const getUserData = cache(async ({
         transactionsMap[acc.account_id] = cleanTxns;
     }
 
+    const notifications = await prisma.notifications.findMany({
+        where:{
+            customer: customerData.customer_id,
+            dismissed: false, 
+        }
+    })
+
+   
     // 4. Final user object
     const user = {
         firstName: customerData.first_name,
         lastName: customerData.last_name,
         accounts,
         transactions: transactionsMap,
+        notifications: notifications,
         isOnboarded:
             customerData.first_name && customerData.last_name ? true : false,
     };

@@ -37,14 +37,10 @@ export function TransactionCard({
 
   const amountClass = (tx: Transaction) => {
     if (tx.transaction_type === TransactionType.TRANSFER) {
-      console.log(tx.account_id,activeAccountId)
       if (tx.account_id === activeAccountId) {
-        console.log(tx.description)
-        // user sent money
         return "text-red-600 font-medium";
       }
       if (tx.account_id2 === activeAccountId) {
-        // user received money
         return "text-green-600 font-medium";
       }
     }
@@ -96,7 +92,7 @@ export function TransactionCard({
                 </TableCell>
 
                 <TableCell className="font-medium truncate capitalize">
-                  {transaction.description.slice(0, 20 - 3) + "..." ||
+                  {transaction.description.slice(0, 50 - 3) + "..." ||
                     "Unknown Transaction"}
                 </TableCell>
 
