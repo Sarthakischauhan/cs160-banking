@@ -109,7 +109,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
         data: {
           account_id: fromAccount.account_id,
           account_id2: toAccount.account_id,
-          description: description || `Transfer of ${amount} from ${fromAccount.account_id} to ${toAccount.account_id}`,
+          description: description,
           transaction_status: "PENDING",
           transaction_type: "TRANSFER",
           amount: amount,
