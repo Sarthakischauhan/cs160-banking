@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { MoneyInput } from "../../deposit/components/money-input";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+
 
 type Transfer = {
   account_id: string | null;
@@ -32,16 +32,15 @@ type Transfer = {
   description: string | null;
 };
 
-let test = ""; 
-let test2 = ""; 
-
-
 export function TransferCard({
-  selectedRecipient, }: {
-  selectedRecipient?: string | null; }) {
+  selectedRecipient,
+  activeAccountId,
+}: {
+  selectedRecipient?: string | null;
+  activeAccountId?: string;
+}) {
     
   const router = useRouter();
-  const [accountId, setAccountId] = useState<Transfer | null>(null);
 
   const form = useForm<Transfer>({
     defaultValues: {
@@ -53,47 +52,31 @@ export function TransferCard({
     },
   });
 
-   useEffect(() => { // Fetchs the api to get Account info 
-      async function fetchProfile() {
-        const res = await fetch("/api/account");
-        if (res.status === 401) { // Ensures user is logged in correctly
-          window.location.href = "/auth/login";
-          return;
-        }
-    
-        const data = await res.json();
-        const firstAccount = data[0]; 
-        setAccountId(firstAccount); //gets the first account ID
-     
-        if (!firstAccount.account_id) {
-          console.error("No account_id found!");
-          return;
-        }
+  const handleClick = async (values: any) => {
+    const fromAccount = activeAccountId;
+    if (!fromAccount) return;
 
-        test = firstAccount.account_id; //Just to retain value
-        test2 = firstAccount.balance
-  
-      }
-  
-      fetchProfile();      
-    }, []);
-    
-    const handleClick = async (values: any) =>{
-      if (!accountId?.account_id) return;
-      const res = await fetch("/api/transactions", {
+    const payload = {
+      from_account_id: fromAccount,
+      to_account_id: selectedRecipient ?? values.account_id2,
+      amount: Number(values.amount),
+      description: values.description,
+    };
+
+    const res = await fetch("/api/transfer", {
       method: "POST",
       headers: {
-      "Content-Type": "application/json",
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ // Will give api deposit these values to allow it to work
-      account_id : test,
-      account_id2: values.account_id2,
-      amount: Number(values.amount),
-      balance: test2,
-      transaction_type: values.transaction_type,
-      description: values.description, 
-      }),
+      body: JSON.stringify(payload),
     });
+
+    if (!res.ok) {
+      // minimal error handling: log and return
+      console.error("Transfer failed", await res.text());
+      return;
+    }
+
     router.push("/dashboard"); // Return to dashboard
   };
 
@@ -193,8 +176,8 @@ export function TransferCard({
             />
 
             {/* Submit */}
-            <Button type="submit" variant="success" disabled={!accountId}>
-              {accountId ? "Send" : "Loading..."}
+            <Button type="submit" variant="success">
+              Send
             </Button>
           </form>
         </Form>

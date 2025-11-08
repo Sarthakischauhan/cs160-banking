@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/prisma/prisma";
 import { auth0 } from "@/lib/auth0";
+import { TransactionType } from "@prisma/client";
 
 export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
   try {
@@ -68,7 +69,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
       // update balance
       await tx.account.update({
         where: { account_id: account.account_id },
-        data: { balance: { increment: amount } },
+        data: { balance: { decrement: amount } },
       });
 
       // transaction ledger entry
@@ -76,9 +77,9 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
         data: {
           account_id: account.account_id,
           account_id2: account.account_id,
-          description: description,
+          description: `${account.account_id} deposited ${amount} in their ${account.account_type} account`,
           transaction_status: "PENDING",
-          transaction_type: "DEPOSIT",
+          transaction_type: "WITHDRAWAL",
           amount: amount,
         },
       });
@@ -88,7 +89,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
 
     return NextResponse.json(
       {
-        message: "Deposit successful",
+        message: "Withdrawal successful",
         transaction: result,
       },
       { status: 200 }

@@ -24,6 +24,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
       );
     }
 
+    // all accounts owned by this user
     const accounts = await prisma.account.findMany({
       where: { customer_id: customer.customer_id },
     });
@@ -35,50 +36,82 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
       );
     }
 
-    const { account_id, amount, description } = await req.json();
+    const { from_account_id, to_account_id, amount, description } = await req.json();
 
-    if (!account_id || !amount || !description) {
+    if (!from_account_id || !to_account_id || !amount || !description) {
       return NextResponse.json(
         { message: "Bad request: missing fields" },
         { status: 400 }
       );
     }
 
-    // validating user account
-    const account = accounts.find(
-      (acc) => acc.account_id === account_id
+    // validate sender account is user's own account
+    const fromAccount = accounts.find(
+      (acc) => acc.account_id === from_account_id
     );
 
-    if (!account) {
+    if (!fromAccount) {
       return NextResponse.json(
-        { message: "Invalid user account" },
-        { status: 400 }
-      );
-    }
-
-    if (account.account_status !== "ACTIVE") {
-      return NextResponse.json(
-        { message: "Account no longer active" },
+        { message: "Invalid user account: cannot transfer from account not owned" },
         { status: 403 }
       );
     }
 
-    // MAIN TRANSACTION BLOCK
+    if (fromAccount.account_status !== "ACTIVE") {
+      return NextResponse.json(
+        { message: "Source account no longer active" },
+        { status: 403 }
+      );
+    }
+
+    // validate receiving account exists (can belong to another customer)
+    const toAccount = await prisma.account.findUnique({
+      where: { account_id: to_account_id },
+    });
+
+    if (!toAccount) {
+      return NextResponse.json(
+        { message: "Receiving account does not exist" },
+        { status: 400 }
+      );
+    }
+
+    if (toAccount.account_status !== "ACTIVE") {
+      return NextResponse.json(
+        { message: "Destination account not active" },
+        { status: 403 }
+      );
+    }
+
+    // balance check
+    if (fromAccount.balance < amount) {
+      return NextResponse.json(
+        { message: "Insufficient funds" },
+        { status: 400 }
+      );
+    }
+
+    // MAIN TRANSFER TRANSACTION BLOCK
     const result = await prisma.$transaction(async (tx) => {
-      // update balance
+      // subtract from sender
       await tx.account.update({
-        where: { account_id: account.account_id },
+        where: { account_id: fromAccount.account_id },
+        data: { balance: { decrement: amount } },
+      });
+
+      // add to receiver
+      await tx.account.update({
+        where: { account_id: toAccount.account_id },
         data: { balance: { increment: amount } },
       });
 
-      // transaction ledger entry
       const txn = await tx.transaction.create({
         data: {
-          account_id: account.account_id,
-          account_id2: account.account_id,
+          account_id: fromAccount.account_id,
+          account_id2: toAccount.account_id,
           description: description,
           transaction_status: "PENDING",
-          transaction_type: "DEPOSIT",
+          transaction_type: "TRANSFER",
           amount: amount,
         },
       });
@@ -88,14 +121,13 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
 
     return NextResponse.json(
       {
-        message: "Deposit successful",
+        message: "Transfer successful",
         transaction: result,
       },
       { status: 200 }
     );
   } catch (err: any) {
-    console.error("Deposit API Error:", err);
-    // TODO -> make sure to create new transaction for failed stuff
+    console.error("Transfer API Error:", err);
     return NextResponse.json(
       { message: "Internal Server Error", error: err?.message },
       { status: 500 }
