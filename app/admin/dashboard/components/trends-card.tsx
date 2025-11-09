@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -14,6 +15,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -31,14 +33,11 @@ type TimeMetric = {
 export interface TrendsCardProps {
   title: string;
   description?: string;
-  data: TimeMetric[];
+  trendData: Record<string, TimeMetric[]>;
 }
 
-export function TrendsCard({
-  title,
-  description,
-  data,
-}: TrendsCardProps) {
+export function TrendsCard({ title, description, trendData }: TrendsCardProps) {
+  const [data, setData] = useState(trendData["transactions"])
   const chartConfig = {
     amount: {
       label: "Amount",
@@ -53,46 +52,49 @@ export function TrendsCard({
           <CardTitle>{title}</CardTitle>
           {description && <CardDescription>{description}</CardDescription>}
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col">
+          <div className="flex px-20 pb-5 gap-4 ">
+            <Button variant={"outline"} onClick={(e) => setData(trendData['balance'])}>Balance</Button>
+            <Button variant={"outline"} onClick={(e) => setData(trendData['transactions'])}>Transactions</Button>
+          </div>
+
           <ChartContainer config={chartConfig} className="w-full h-[250px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                accessibilityLayer
-                data={data ?? []}
-                margin={{
-                  left: 12,
-                  right: 12,
-                }}
-              >
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  tickLine={false}
-                  axisLine={true}
-                  tickMargin={10}
-                  interval={7}
-                  tickFormatter={(value) => value.slice(5)}
-                />
-                <YAxis
-                  tickLine={false}
-                  axisLine={true}
-                  tickMargin={8}
-                  domain={["dataMin - 500", "dataMax + 500"]}
-                  tickFormatter={(value) => `$${value.toLocaleString()}`}
-                />
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent hideLabel />}
-                />
-                <Line
-                  dataKey="amount"
-                  type="linear"
-                  stroke="var(--chart-3)"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <LineChart
+              accessibilityLayer
+              data={data ?? []}
+              margin={{
+                left: 25,
+                right: 25,
+              }}
+            >
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={true}
+                tickMargin={10}
+                interval={7}
+                tickFormatter={(value) => value.slice(5)}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={true}
+                tickMargin={8}
+                domain={["dataMin - 500", "dataMax + 500"]}
+                tickFormatter={(value) => `$${value.toLocaleString()}`}
+              />
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent className="px-5"/>}
+              />
+              <Line
+                dataKey="amount"
+                type="linear"
+                stroke="var(--chart-3)"
+                strokeWidth={2}
+                dot={false}
+              />
+            </LineChart>
           </ChartContainer>
         </CardContent>
       </Card>

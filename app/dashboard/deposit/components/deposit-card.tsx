@@ -18,25 +18,55 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { MoneyInput } from "./money-input";
+import { useEffect, useState } from "react";
+import Decimal from "decimal.js";
+import type { AccountType } from "@prisma/client";
 
-export function DepositCard() {
-  const form = useForm({
+type DepositCardProps = {
+  account_id: string
+}
+
+export function DepositCard({account_id} : DepositCardProps) {
+
+  const router = useRouter() // Allows us to navigate back to dashboard
+  
+  const form = useForm({ // Initalize the structre with placeholder values 
     defaultValues: {
       amount: "",
       description: "",
     },
   });
 
-  const router = useRouter();
+  const handleClick = async (values: any) =>{ 
+     // When submit button is clicked api for deposit will hit
+     const payload = {
+      amount: values.amount,
+      account_id: account_id,
+      description: values.description
+     }
+    
+     const response = await fetch("/api/deposit",{
+      method: "POST",
+      headers: {
+          'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+     })
+
+     if(!response.ok){
+      return new Error("Couldn't deposit money")
+     }
+
+     router.push("/dashboard")
+  };
 
   return (
     <>
-      <Card className="w-[50%]">
+      <Card className="w-2/3">
         <CardHeader>
           <CardTitle>Deposit</CardTitle>
           <CardDescription>Transfer funds into your account</CardDescription>
@@ -44,9 +74,7 @@ export function DepositCard() {
         <CardContent>
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit(() => {
-                router.push("/dashboard");
-              })}
+              onSubmit={form.handleSubmit(handleClick)}
               className="space-y-6"
             >
               <FormField
@@ -57,9 +85,6 @@ export function DepositCard() {
                     <FormLabel>Amount</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-4xl">
-                          $
-                        </span>
                         <MoneyInput field={field} />
                       </div>
                     </FormControl>
@@ -85,10 +110,6 @@ export function DepositCard() {
                   </FormItem>
                 )}
               />
-              <div className="flex flex-col items-center justify-center gap-2">
-                <Button>Use Check</Button>
-                <span className="text-sm">Upload a Check</span>
-              </div>
               <div className="">
                 <Button type="submit" variant="success">
                   Submit

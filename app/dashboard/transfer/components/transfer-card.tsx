@@ -21,96 +21,63 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { MoneyInput } from "../../deposit/components/money-input";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+
 
 type Transfer = {
   account_id: string | null;
   account_id2: string | null;
   amount: number | null;
-  type: "immediate" | "scheduled";
+  balance: number | null;
+  transaction_type: "immediate" | "scheduled";
   description: string | null;
 };
 
 export function TransferCard({
   selectedRecipient,
+  activeAccountId,
 }: {
   selectedRecipient?: string | null;
+  activeAccountId?: string;
 }) {
+    
   const router = useRouter();
-  const [accountId, setAccountId] = useState<string | null>(null);
 
   const form = useForm<Transfer>({
     defaultValues: {
       account_id: null,
       account_id2: selectedRecipient ?? null,
       amount: null,
-      type: "immediate",
+      transaction_type: "immediate",
       description: null,
     },
   });
 
-  useEffect(() => {
-    async function fetchTransactions() {
-      try {
-        const res = await fetch("/api/transactions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-        });
+  const handleClick = async (values: any) => {
+    const fromAccount = activeAccountId;
+    if (!fromAccount) return;
 
-        if (res.status === 401) {
-          window.location.href = "/auth/login";
-          return;
-        }
+    const payload = {
+      from_account_id: fromAccount,
+      to_account_id: selectedRecipient ?? values.account_id2,
+      amount: Number(values.amount),
+      description: values.description,
+    };
 
-        await res.json(); // we don’t actually use the transactions result
+    const res = await fetch("/api/transfer", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
 
-        // Fetch the user’s account
-        const res2 = await fetch("/api/account");
-        if (res2.status === 401) {
-          window.location.href = "/auth/login";
-          return;
-        }
-
-        const data2 = await res2.json();
-        const firstAccount = data2[0];
-
-        if (!firstAccount?.account_id) {
-          console.error("No account_id found!");
-          return;
-        }
-
-        // Set the user’s account ID
-        setAccountId(firstAccount.account_id);
-        form.setValue("account_id", firstAccount.account_id);
-      } catch (error) {
-        console.error("Failed to fetch transactions:", error);
-      }
-    }
-
-    fetchTransactions();
-
-    if (selectedRecipient) {
-      form.setValue("account_id2", selectedRecipient);
-    }
-  }, [selectedRecipient, form]);
-
-  const onSubmit = async (values: Transfer) => {
-    if (!accountId) {
-      console.error("Account not ready yet");
+    if (!res.ok) {
+      // minimal error handling: log and return
+      console.error("Transfer failed", await res.text());
       return;
     }
 
-    const res = await fetch("/api/transactions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
-    });
-
-    if (res.ok) {
-      router.push("/dashboard");
-    } else {
-      console.error("Transfer failed:", await res.text());
-    }
+    router.push("/dashboard"); // Return to dashboard
   };
 
   return (
@@ -122,7 +89,7 @@ export function TransferCard({
 
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleClick)} className="space-y-6">
             {/* Amount */}
             <FormField
               control={form.control}
@@ -169,7 +136,7 @@ export function TransferCard({
             {/* Transfer Type */}
             <FormField
               control={form.control}
-              name="type"
+              name="transaction_type"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Transfer Type</FormLabel>
@@ -209,8 +176,8 @@ export function TransferCard({
             />
 
             {/* Submit */}
-            <Button type="submit" variant="success" disabled={!accountId}>
-              {accountId ? "Send" : "Loading..."}
+            <Button type="submit" variant="success">
+              Send
             </Button>
           </form>
         </Form>

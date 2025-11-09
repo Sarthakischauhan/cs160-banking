@@ -6,13 +6,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { censorString, formatCurrency } from "@/lib/utils";
 import { Account, Customer, Transaction } from "@prisma/client";
 import { EllipsisVertical } from "lucide-react";
 
 export type AccountWithExtraData = Account & {
   Customer: Customer;
   _count: {
-    Transaction: number;
+    Transaction_Transaction_account_idToAccount : number;
   };
 };
 
@@ -28,7 +29,8 @@ export function AccountsTable(props: AccountsTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Customer ID</TableHead>
+            <TableHead>First Name</TableHead>
+            <TableHead>Last Name</TableHead>
             <TableHead>Account ID</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Balance</TableHead>
@@ -40,13 +42,14 @@ export function AccountsTable(props: AccountsTableProps) {
         <TableBody>
           {props.accounts.map((account: AccountWithExtraData) => (
             <TableRow key={account.account_id}>
-              <TableCell className="text-wrap">{account.Customer.customer_id}</TableCell>
-              <TableCell className="text-wrap">{account.account_id}</TableCell>
-              <TableCell>{account.account_type ? decoder.decode(account.account_type) : ""}</TableCell>
+              <TableCell className="max-w-[120px]">{account.Customer.first_name?.toLocaleUpperCase()}</TableCell>
+              <TableCell>{account.Customer.last_name?.toLocaleUpperCase()}</TableCell>
+              <TableCell>{censorString(account.account_id)}</TableCell>
+              <TableCell>{account.account_type}</TableCell>
               <TableCell>
-                ${account.balance.toFixed(2).toLocaleString()}
+                {formatCurrency(Number(account.balance))}
               </TableCell>
-              <TableCell>{account._count.Transaction}</TableCell>
+              <TableCell>{account._count.Transaction_Transaction_account_idToAccount}</TableCell>
               <TableCell>{account.created_at.toLocaleDateString()}</TableCell>
               <TableCell className="hover:cursor-pointer"><EllipsisVertical /></TableCell>
             </TableRow>
