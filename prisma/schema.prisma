@@ -27,6 +27,22 @@ model Account {
 
 model Checks {
   check_id       String       @id @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  Checks                                       Checks[]
+  Statements                                   Statements[]
+  Transaction_Transaction_account_id2ToAccount Transaction[] @relation("Transaction_account_id2ToAccount")
+  Transaction_Transaction_account_idToAccount  Transaction[] @relation("Transaction_account_idToAccount")
+}
+
+model CardInfo {
+  cardNum     BigInt    @default(autoincrement())
+  cardPin     Int       @db.SmallInt
+  accountID   String    @id(map: "cardInfo_pkey") @db.Uuid
+  expiry_date DateTime? @db.Date
+  Account     Account   @relation(fields: [accountID], references: [account_id], onDelete: NoAction, onUpdate: NoAction, map: "cardInfo_accountID_fkey")
+}
+
+model Checks {
+  check_id       String       @id @unique @db.Uuid
   created_at     DateTime?    @db.Timestamptz(6)
   front_image    String?
   back_image     String?
@@ -56,6 +72,15 @@ model Customer {
   Notifications Notifications[]
   Settings      Settings?
   Statements    Statements[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model DepositTest {
+  transactionId String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  account_id    String?
+  amount        Decimal  @db.Decimal
+  description   String?
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
 }
 
 model Email {
