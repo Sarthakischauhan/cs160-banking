@@ -40,8 +40,8 @@ export function AccountsTable(props: AccountsTableProps) {
         <TableBody>
           {props.accounts.map((account: AccountWithExtraData) => (
             <TableRow key={account.account_id}>
-              <TableCell className="text-wrap">{account.Customer.customer_id}</TableCell>
-              <TableCell className="text-wrap">{account.account_id}</TableCell>
+              <TableCell>{account.Customer.customer_id.slice(0, 4) + "********"}</TableCell>
+              <TableCell>{account.account_id.slice(0, 4) + "********"}</TableCell>
               <TableCell>{account.account_type ? decoder.decode(account.account_type) : ""}</TableCell>
               <TableCell>
                 ${account.balance.toFixed(2).toLocaleString()}

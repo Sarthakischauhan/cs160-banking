@@ -41,7 +41,7 @@ export function MetricCard({
             </span>
           </div>
           <div className="text-sm text-muted-foreground">
-            {change} in the past month
+            {change > 0 ? "+" : ""}{change} change vs. yesterday
           </div>
         </CardContent>
       </Card>

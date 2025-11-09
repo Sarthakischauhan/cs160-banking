@@ -2,6 +2,7 @@ import { prisma } from "@/prisma/prisma";
 import { AccountsTable } from "./components/accounts-table";
 import { Button } from "@/components/ui/button";
 import { FilterGroup, FilterInput, FilterRange } from "../components/filters";
+import { DataTable } from "../components/data-table";
 
 export default async function AccountManagementPage() {
   const accountData = await prisma.account.findMany({
