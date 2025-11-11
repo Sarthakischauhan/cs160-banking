@@ -6,9 +6,7 @@ import { HistgraphCard } from "./components/histgraph-card";
 import { UpcomingCard } from "./components/upcoming-card";
 import { ATMCard } from "./components/atm-card";
 import { AccountSelect } from "./components/account-select";
-<<<<<<< HEAD
-import {prisma, supabase} from "@/prisma/prisma1";
-=======
+
 import { getUserData, handleCurrentId } from "@/lib/user"
 import { auth0 } from "@/lib/auth0"
 import { ProfileCompletion } from "./components/onboard/ProfileCompletion";
@@ -17,51 +15,13 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { AccountType } from "@prisma/client";
->>>>>>> origin/main
+
 
 interface DashboardParams {
   [key: string]: string | undefined;
 }
 
-<<<<<<< HEAD
 
-export default function Dashboard() { // Initilize with grabbing info from api Account 
-  const [account, setAccount] = useState< Account | null>(null);
-
-    useEffect(() => {
-    async function fetchProfile() {
-    const res = await fetch("/api/account");
-    if (res.status === 401) {
-      window.location.href = "/auth/login";
-      return;
-    }
-    
-    const accountsData = await res.json();
-    const firstAccount = accountsData[0]; // gets the first account info for now will change in the future
-
-
-    const createRes = await fetch("/api/accountProcessing", { // creates an account in database if not exist yet
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ customer_id: firstAccount.customer_id }),
-    });
-
-    const result = await createRes.json();
-    if (result.error) {
-      console.error("Account creation error:", result.error);
-    } else {
-      setAccount(result.account);
-    }
-
-    const pendingRes = await fetch("/api/processPending", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ customer_id: firstAccount.customer_id }),
-    });
-  }
-    fetchProfile();
-}, []);
-=======
 type DashboardProps = {
   searchParams: DashboardParams
 }
@@ -81,7 +41,7 @@ export default async function Page({ searchParams } : DashboardProps) {
 
   const accountId = currentAccountId ?? accountNames[0]?.account_id
   const currentAccount = accountNames.find((account) => account.account_id === accountId)
->>>>>>> origin/main
+  
 
   return (
     <>
@@ -122,14 +82,16 @@ export default async function Page({ searchParams } : DashboardProps) {
           )}
         </div>
         <div className="col-span-3 mr-4 ml-2">
-          <TransactionCard  transactions={user.transactions[accountId]} activeAccountId={accountId} />
+          <TransactionCard  transactions={(user.transactions as Record<string, any[]>)[accountId]} activeAccountId={accountId} />
         </div>
       </div>
 
       {/* ROW 3 */}
       <div className="grid grid-cols-2 my-2 h-fit">
         <div className="ml-4 mr-2">
-          <NotificationCard notifications={user?.notifications}/>
+          { "notifications" in user && (
+            <NotificationCard notifications={user.notifications} />
+          )}
         </div>
         <div className="mr-4 ml-2">
           <HistgraphCard  />
