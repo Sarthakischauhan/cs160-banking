@@ -1,6 +1,3 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import {
   Card,
   CardAction,
@@ -10,40 +7,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-
-type Customer = {
-  first_name: string | null;
-  last_name: string | null;
-  email: string | null;
-};
-
-export function WelcomeCard() {
-   const [customer, setCustomer] = useState<Customer | null>(null);
-
-  useEffect(() => {
-    async function fetchProfile() {
-      const res = await fetch("/api/customer");
-      if (res.status === 401) {
-        window.location.href = "/auth/login";
-        return;
-      }
-
-      const data: Customer = await res.json();
-      setCustomer(data);
-    }
-
-    fetchProfile();
-  }, []);
-
-  const username = customer
-    ? `${customer.first_name ?? ""} ${customer.last_name ?? ""}`.trim()
-    : "User";
-
+interface WelcomeCardProps {
+    firstName: string
+}
+export function WelcomeCard({firstName} : WelcomeCardProps) {
     return (
         <>
         <Card>
             <CardHeader>
-                <CardTitle>Welcome, {username}!</CardTitle>
+                <CardTitle>Welcome, {firstName}!</CardTitle>
                 <CardDescription>This is your dashboard!</CardDescription>
             </CardHeader>
             <CardContent>

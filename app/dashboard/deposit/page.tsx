@@ -1,59 +1,27 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "../components/app-sidebar";
 import { DepositCard } from "./components/deposit-card";
 import { BalanceCard } from "../components/balance-card";
+import { getAccount } from "@/lib/accounts";
+import { handleCurrentId } from "@/lib/user";
 
-type Customer = {
-  customer_id: string | null;
-  balance: number | null;
-};
-
-export default function DepositPage({ roles }: { roles: string[] }) {
-  const [customer, setCustomer] = useState<Customer | null>(null);
-
-  useEffect(() => {
-    async function fetchProfile() {
-      const res = await fetch("/api/account");
-      if (res.status === 401) {
-        window.location.href = "/auth/login";
-        return;
-      }
-
-      const data = await res.json();
-      const account = data[0]; 
-      console.log("Fetched account:", account);
-
-      if (!account.customer_id) {
-        console.error("No customer_id found!");
-        return;
-      }
-
-      setCustomer({
-        customer_id: account.customer_id,
-        balance: Number(account.balance), 
-      });
-    }
-
-    fetchProfile();
-  }, []);
-
+export default async function DepositPage() {
+  const activeId = (await handleCurrentId()) ?? ""
+  const account = await getAccount({account_id:activeId})
+  
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <div className="p-10">
-          <h1 className="text-4xl font-bold">Deposit</h1>
-        </div>
-        <div className="flex h-60 p-2 justify-center">
-          <BalanceCard userBalance={customer?.balance ?? 0} />
-        </div>
-        <div className="flex h-fit p-2 justify-center">
-          <DepositCard />
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+    <>
+      <div className="p-10">
+        <h1 className="text-4xl font-bold">Deposit</h1>
+      </div>
+      <div className="px-10">
+      <div className="flex h-60 p-2">
+        <BalanceCard userBalance={Number(account?.balance)} account_type={account?.account_type} />
+      </div>
+      <div className="flex h-fit p-2">
+        {account && <DepositCard account_id={activeId} />}
+      </div>
+      </div>
+    </>
   );
 }

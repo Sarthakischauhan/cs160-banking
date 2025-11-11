@@ -1,86 +1,104 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/prisma/prisma";
-import { auth0, getRole } from "@/lib/auth0";
+import { auth0 } from "@/lib/auth0";
 
 export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
-    try {
-        const session = await auth0.getSession();
-        if (!session) {
-            return NextResponse.json({ message: "Unauthenticated" }, { status: 401 });
-        }
+  try {
+    const session = await auth0.getSession();
+    if (!session) {
+      return NextResponse.json(
+        { message: "Unauthenticated" },
+        { status: 401 }
+      );
+    }
 
-        const role = getRole(session as any);
-        const isAdmin = role?.includes("Admin");
+    const customer = await prisma.customer.findFirst({
+      where: { auth0_user_id: session.user.sub },
+      select: { customer_id: true },
+    });
 
-        if (isAdmin) {
-            const accounts = await prisma.account.findMany();
-            return NextResponse.json(accounts, { status: 200 });
-        }
+    if (!customer) {
+      return NextResponse.json(
+        { message: "Bad request: customer not found" },
+        { status: 400 }
+      );
+    }
 
-        const auth0UserId = session.user?.sub || "";
-        console.log(auth0UserId)
-        if (!auth0UserId) {
-            return NextResponse.json({ message: "User not found in session" }, { status: 400 });
-        }
+    const accounts = await prisma.account.findMany({
+      where: { customer_id: customer.customer_id },
+    });
 
-        const customer = await prisma.customer.findUnique({ where: { auth0_user_id: auth0UserId } });
-        if (!customer) {
-            return NextResponse.json([], { status: 200 });
-        }
+    if (accounts.length === 0) {
+      return NextResponse.json(
+        { message: "Bad request: no accounts found" },
+        { status: 400 }
+      );
+    }
 
-        const { account_id, amount, description } = await req.json();
+    const { account_id, amount, description } = await req.json();
 
-        if (!description || !amount) {
-        return NextResponse.json(
-            { message: "Amount and description are required" },
-            { status: 399 }
-            );
-        }
+    if (!account_id || !amount || !description) {
+      return NextResponse.json(
+        { message: "Bad request: missing fields" },
+        { status: 400 }
+      );
+    }
 
-        if (!description ) {
-        return NextResponse.json(
-            { message: "Description is required" },
-            { status: 398 }
-            );
-        }
-        if (!amount) {
-        return NextResponse.json(
-            { message: "Amount is required" },
-            { status: 397}
-            );
-        }
+    // validating user account
+    const account = accounts.find(
+      (acc) => acc.account_id === account_id
+    );
 
-        if (amount <=0) {
-             return NextResponse.json(
-            { message: "Amount can't be a negative amount" },
-            { status: 396}
-            );
-        }
+    if (!account) {
+      return NextResponse.json(
+        { message: "Invalid user account" },
+        { status: 400 }
+      );
+    }
 
-        const deposit = await prisma.depositTest.create({
+    if (account.account_status !== "ACTIVE") {
+      return NextResponse.json(
+        { message: "Account no longer active" },
+        { status: 403 }
+      );
+    }
+
+    // MAIN TRANSACTION BLOCK
+    const result = await prisma.$transaction(async (tx) => {
+      // update balance
+      await tx.account.update({
+        where: { account_id: account.account_id },
+        data: { balance: { increment: amount } },
+      });
+
+      // transaction ledger entry
+      const txn = await tx.transaction.create({
         data: {
-        account_id,
-        amount,
-        description,
-        created_at: new Date(),
-            },
-        });
-        
-        const updatedAccount = await prisma.account.update({
-            where: { account_id },
-            data: {
-            balance: {
-            increment: amount, // increases existing balance by amount
+          account_id: account.account_id,
+          account_id2: account.account_id,
+          description: description,
+          transaction_status: "PENDING",
+          transaction_type: "DEPOSIT",
+          amount: amount,
         },
-        },
-        });
+      });
 
-        return NextResponse.json({ deposit }, { status: 201 });
-            } catch (error) {
-            console.error(error);
-            return NextResponse.json(
-            { message: "Failed to create deposit" },
-            { status: 500 }
-        );
-        }
+      return txn;
+    });
+
+    return NextResponse.json(
+      {
+        message: "Deposit successful",
+        transaction: result,
+      },
+      { status: 200 }
+    );
+  } catch (err: any) {
+    console.error("Deposit API Error:", err);
+    // TODO -> make sure to create new transaction for failed stuff
+    return NextResponse.json(
+      { message: "Internal Server Error", error: err?.message },
+      { status: 500 }
+    );
+  }
 });

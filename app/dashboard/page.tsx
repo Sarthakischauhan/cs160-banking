@@ -1,12 +1,3 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import {
-  Sidebar,
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
-import { AppSidebar } from "./components/app-sidebar";
 import { WelcomeCard } from "./components/welcome-card";
 import { BalanceCard } from "./components/balance-card";
 import { NotificationCard } from "./components/notification-card";
@@ -15,13 +6,24 @@ import { HistgraphCard } from "./components/histgraph-card";
 import { UpcomingCard } from "./components/upcoming-card";
 import { ATMCard } from "./components/atm-card";
 import { AccountSelect } from "./components/account-select";
+<<<<<<< HEAD
 import {prisma, supabase} from "@/prisma/prisma1";
+=======
+import { getUserData, handleCurrentId } from "@/lib/user"
+import { auth0 } from "@/lib/auth0"
+import { ProfileCompletion } from "./components/onboard/ProfileCompletion";
+import { redirect } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Plus } from "lucide-react";
+import { AccountType } from "@prisma/client";
+>>>>>>> origin/main
 
-type Account = { // Makes structure to hold account info
-  customer_id: string | null;
-  balance: number | null;
+interface DashboardParams {
+  [key: string]: string | undefined;
 }
 
+<<<<<<< HEAD
 
 export default function Dashboard() { // Initilize with grabbing info from api Account 
   const [account, setAccount] = useState< Account | null>(null);
@@ -59,50 +61,88 @@ export default function Dashboard() { // Initilize with grabbing info from api A
   }
     fetchProfile();
 }, []);
+=======
+type DashboardProps = {
+  searchParams: DashboardParams
+}
+
+export default async function Page({ searchParams } : DashboardProps) {
+  const session = await auth0.getSession();
+  if (!session) {
+    redirect("/");
+  }
+  const user = await getUserData({ userId: session.user.sub });
+  if (!user?.isOnboarded) {
+    return <ProfileCompletion />;
+  }
+
+  const accountNames = user?.accounts ?? [];
+  const currentAccountId = await handleCurrentId()
+
+  const accountId = currentAccountId ?? accountNames[0]?.account_id
+  const currentAccount = accountNames.find((account) => account.account_id === accountId)
+>>>>>>> origin/main
 
   return (
     <>
       {/* Header */}
       <div className="grid grid-cols-3 m-4">
-        <AccountSelect />
+        {accountNames ? (
+          <div className="flex gap-2">
+          <AccountSelect 
+            accounts={accountNames} 
+            currentAccountId={accountId} 
+          />
+          <Button asChild>
+            <Link href={"/dashboard/create-account"}><Plus width={3} height={3}/></Link>
+          </Button>
+          </div>
+        ) : (
+          <Button asChild>
+            <Link href={"/dashboard/create-account"}>Don't have an account ? Create one</Link>
+          </Button>
+        )}
       </div>
 
       {/* ROW 1 */}
       <div className="mx-4 my-2">
-        <WelcomeCard />
+        <WelcomeCard firstName={user.firstName as string} />
       </div>
 
-          {/* ROW 2 */}
-          <div className="grid grid-cols-4 h-fit">
-            <div className="col-span-1 ml-4 mr-2">
-              <BalanceCard
-                userBalance={account?.balance ?? 0} //Sets balance to info from first account
-                monthIncome={1400}
-                monthExpense={1000}
-              />
-            </div>
-            <div className="col-span-3 mr-4 ml-2">
-              <NotificationCard />
-            </div>
-          </div>
+      {/* ROW 2 */}
+      <div className="grid grid-cols-4 h-fit">
+        <div className="col-span-1 ml-4 mr-2">
+          {currentAccount && (
+            <BalanceCard
+              userBalance={(currentAccount.balance)}
+              monthIncome={1400}
+              monthExpense={1000}
+              account_type={currentAccount.account_type === "SAVINGS" ? AccountType.SAVINGS : AccountType.CHECKING }
+            />
+          )}
+        </div>
+        <div className="col-span-3 mr-4 ml-2">
+          <TransactionCard  transactions={user.transactions[accountId]} activeAccountId={accountId} />
+        </div>
+      </div>
 
       {/* ROW 3 */}
       <div className="grid grid-cols-2 my-2 h-fit">
         <div className="ml-4 mr-2">
-          <TransactionCard />
+          <NotificationCard notifications={user?.notifications}/>
         </div>
         <div className="mr-4 ml-2">
-          <HistgraphCard />
+          <HistgraphCard  />
         </div>
       </div>
 
       {/* ROW 4 */}
       <div className="grid grid-cols-7 my-2 h-fit">
         <div className="ml-4 col-span-3 mr-2">
-          <UpcomingCard />
+          <UpcomingCard  />
         </div>
         <div className="mr-2 ml-2 col-span-2">
-          <ATMCard />
+          <ATMCard  />
         </div>
       </div>
     </>

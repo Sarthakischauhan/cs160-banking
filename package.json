@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build --turbopack",
+    "dev": "next dev --turbopack",
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write"
@@ -12,8 +11,8 @@
   "dependencies": {
     "@auth0/nextjs-auth0": "^4.10.0",
     "@hookform/resolvers": "^5.2.2",
-    "@prisma/adapter-pg": "^6.18.0",
-    "@prisma/client": "^6.16.3",
+    "@prisma/client": "^6.18.0",
+    "@prisma/adapter-pg": "^6.17.0",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-checkbox": "^1.3.3",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -22,19 +21,25 @@
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@supabase/supabase-js": "^2.76.1",
     "@react-google-maps/api": "^2.20.7",
-    "@supabase/supabase-js": "^2.75.0",
     "axios": "^1.12.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "decimal.js": "^10.6.0",
+    "fs": "^0.0.1-security",
+    "embla-carousel-react": "^8.6.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.544.0",
     "next": "15.5.4",
+    "next-themes": "^0.4.6",
     "pg": "^8.16.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.63.0",
     "recharts": "2.15.4",
+    "sonner": "^2.0.7",
+    "sooner": "^1.1.4",
     "supabase": "^2.45.5",
     "tailwind-merge": "^3.3.1",
     "tesseract.js": "^6.0.1",
@@ -44,6 +49,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
     "@tailwindcss/postcss": "^4",
+    "@types/decimal.js": "^7.4.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/pg": "^8.15.5",
@@ -51,8 +57,7 @@
     "@types/react-dom": "^19",
     "supabase": "^2.48.3",
     "tailwindcss": "^4",
-    "ts-node": "^10.9.2",
     "tw-animate-css": "^1.4.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5"
   }
 }
