@@ -5,6 +5,7 @@ import { TransactionCard } from "./components/transaction-card";
 import { HistgraphCard } from "./components/histgraph-card";
 import { UpcomingCard } from "./components/upcoming-card";
 import { ATMCard } from "./components/atm-card";
+import { ReportCard } from "./components/report-card";
 import { AccountSelect } from "./components/account-select";
 import { getUserData, handleCurrentId } from "@/lib/user"
 import { auth0 } from "@/lib/auth0"
@@ -99,6 +100,9 @@ export default async function Page({ searchParams } : DashboardProps) {
         </div>
         <div className="mr-2 ml-2 col-span-2">
           <ATMCard  />
+        </div>
+        <div className="mr-4 ml-2 col-span-2">
+          <ReportCard  />
         </div>
       </div>
     </>
