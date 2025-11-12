@@ -3,6 +3,7 @@ import { AccountsTable } from "./components/accounts-table";
 import { Button } from "@/components/ui/button";
 import { RangeFilter, SelectFilter, TextFilter } from "../components/filters";
 import { AccountType } from "@prisma/client";
+import { fetchAccounts } from "@/lib/adminData";
 
 export default async function AccountManagementPage({
   searchParams,
@@ -18,56 +19,7 @@ export default async function AccountManagementPage({
   const maxDate = params.maxDate ?? "";
   const accountType = params.accountType ?? "";
 
-  const accountData = await prisma.account.findMany({
-    where: {
-      ...(accountType ? { account_type: accountType as AccountType } : {}),
-      ...(firstName
-        ? {
-            Customer: {
-              first_name: {
-                contains: firstName,
-                mode: "insensitive"
-              }
-            },
-          }
-        : {}),
-      ...(lastName
-        ? {
-            Customer: {
-              last_name: {
-                contains: lastName,
-                mode: "insensitive"
-              }
-            },
-          }
-        : {}),
-      ...(minBalance || maxBalance
-        ? {
-            balance: {
-              gte: minBalance ? Number(minBalance) : undefined,
-              lte: maxBalance ? Number(maxBalance) : undefined,
-            },
-          }
-        : {}),
-      ...(minDate || maxDate
-        ? {
-            created_at: {
-              gte: minDate ? new Date(minDate) : undefined,
-              lte: maxDate ? new Date(maxDate) : undefined,
-            },
-          }
-        : {}),
-    },
-    include: {
-      Customer: true,
-      _count: {
-        select: { Transaction_Transaction_account_idToAccount: true },
-      },
-    },
-    orderBy: {
-      created_at: "desc",
-    },
-  });
+  const accountData = await fetchAccounts(params);
 
   console.log(accountData);
 

@@ -2,6 +2,7 @@
 
 import { prisma } from "@/prisma/prisma";
 import {
+  AccountType,
   DepositTest,
   Transaction,
   TransactionStatus,
@@ -268,3 +269,59 @@ function calculateBalanceHistory(
   return history.reverse(); // oldest date first
 }
 
+export async function fetchAccounts (
+  searchParams: {
+  [key: string]: string | undefined;
+}) {
+  const accountData = await prisma.account.findMany({
+    where: {
+      ...(searchParams.accountType ? { account_type: searchParams.accountType as AccountType } : {}),
+      ...(searchParams.firstName
+        ? {
+            Customer: {
+              first_name: {
+                contains: searchParams.firstName,
+                mode: "insensitive"
+              }
+            },
+          }
+        : {}),
+      ...(searchParams.lastName
+        ? {
+            Customer: {
+              last_name: {
+                contains: searchParams.lastName,
+                mode: "insensitive"
+              }
+            },
+          }
+        : {}),
+      ...(searchParams.minBalance || searchParams.maxBalance
+        ? {
+            balance: {
+              gte: searchParams.minBalance ? Number(searchParams.minBalance) : undefined,
+              lte: searchParams.maxBalance ? Number(searchParams.maxBalance) : undefined,
+            },
+          }
+        : {}),
+      ...(searchParams.minDate || searchParams.maxDate
+        ? {
+            created_at: {
+              gte: searchParams.minDate ? new Date(searchParams.minDate) : undefined,
+              lte: searchParams.maxDate ? new Date(searchParams.maxDate) : undefined,
+            },
+          }
+        : {}),
+    },
+    include: {
+      Customer: true,
+      _count: {
+        select: { Transaction_Transaction_account_idToAccount: true },
+      },
+    },
+    orderBy: {
+      created_at: "desc",
+    },
+  });
+  return accountData;
+}
