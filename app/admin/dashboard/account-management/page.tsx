@@ -102,6 +102,7 @@ export default async function AccountManagementPage({
                 maxValue={maxBalance}
                 minPlaceholder="Minimum Balance"
                 maxPlaceholder="Maximum Balance"
+                type="number"
                 prefix="$"
               />
               <RangeFilter

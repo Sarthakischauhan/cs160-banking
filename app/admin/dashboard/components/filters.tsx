@@ -1,3 +1,5 @@
+"use client";
+
 import { Input } from "@/components/ui/input";
 import {
   InputGroup,
@@ -5,8 +7,22 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
-import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent, SelectGroup } from "@/components/ui/select";
+import {
+  Select,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectGroup,
+} from "@/components/ui/select";
+import {
+  usePathname,
+  useSearchParams,
+  useRouter,
+  ReadonlyURLSearchParams,
+} from "next/navigation";
 
+import { useDebouncedCallback } from "use-debounce";
 
 /** Single text input */
 interface TextFilterProps {
@@ -18,29 +34,54 @@ interface TextFilterProps {
   type?: string;
 }
 
+function useURLFilter(delay = 300) {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+
+  const updateFilter = useDebouncedCallback((name: string, value: string) => {
+    const params = new URLSearchParams(searchParams);
+
+    if (value.trim()) {
+      params.set(name, value);
+    } else {
+      params.delete(name);
+    }
+
+    const queryString = params.toString();
+    replace(queryString ? `${pathname}?${queryString}` : pathname);
+  }, delay);
+
+  return { updateFilter, searchParams };
+}
+
 /**
  * Single filter input component.
  * @param param0 - Properties for a single filter input including label, placeholder, and type.
  * @returns Component rendering a single input field for filtering.
  */
-
 export function TextFilter({
   label,
-  name,
+  name = "",
   value = "",
   placeholder,
   type = "text",
   ...props
 }: TextFilterProps) {
+  const { updateFilter, searchParams } = useURLFilter(500);
+
   return (
     <div {...props}>
       <Label className="mb-2">{label}</Label>
       <Input
         type={type}
         placeholder={placeholder}
-        defaultValue={value}
         name={name}
         className="w-full"
+        onChange={(e) => {
+          updateFilter(name, e.target.value);
+        }}
+        defaultValue={searchParams.get(name)?.toString()}
       />
     </div>
   );
@@ -64,8 +105,8 @@ interface RangeFilterProps {
  */
 export function RangeFilter({
   label,
-  minName,
-  maxName,
+  minName = "",
+  maxName = "",
   maxValue,
   minValue,
   minPlaceholder,
@@ -74,6 +115,8 @@ export function RangeFilter({
   type = "text",
   ...props
 }: RangeFilterProps) {
+  const { updateFilter, searchParams } = useURLFilter(500);
+
   return (
     <div {...props}>
       <Label className="mb-2">{label}</Label>
@@ -85,6 +128,9 @@ export function RangeFilter({
             type={type}
             placeholder={minPlaceholder}
             defaultValue={minValue ? minValue : ""}
+            onChange={(e) => {
+              updateFilter(minName, e.target.value);
+            }}
           />
         </InputGroup>
         <span>-</span>
@@ -95,6 +141,9 @@ export function RangeFilter({
             type={type}
             placeholder={maxPlaceholder}
             defaultValue={maxValue ? maxValue : ""}
+            onChange={(e) => {
+              updateFilter(maxName, e.target.value);
+            }}
           />
         </InputGroup>
       </div>
@@ -122,13 +171,24 @@ export function SelectFilter({
   options,
   value,
   defaultValue,
-  name,
+  name = "",
   ...props
 }: SelectFilterProps) {
+  const { updateFilter, searchParams } = useURLFilter(500);
+
   return (
     <div className="flex flex-col" {...props}>
-      <label className="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 py-2">{label}</label>
-      <select name={name} defaultValue={value} className="border p-2 rounded-md">
+      <label className="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 py-2">
+        {label}
+      </label>
+      <select
+        name={name}
+        defaultValue={value}
+        className="border p-2 rounded-md"
+        onChange={(e) => {
+          updateFilter(name, e.target.value);
+        }}
+      >
         <option value="">ANY</option>
         {options.map((opt) => (
           <option key={opt} value={opt}>
