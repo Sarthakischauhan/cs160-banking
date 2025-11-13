@@ -12,13 +12,14 @@ import { Label } from "@/components/ui/label";
 import { prisma } from "@/prisma/prisma";
 import { TransactionStatus, TransactionType } from "@prisma/client";
 import { getTransactions } from "@/lib/adminData";
+import { Suspense } from "react";
 
 export default async function TransactionsPage({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
 }) {
-  const params = searchParams;
+  const params = await searchParams;
   const firstName = params.firstName ?? "";
   const lastName = params.lastName ?? "";
   const minAmount = params.minAmount ?? "";
@@ -46,11 +47,7 @@ export default async function TransactionsPage({
               name="firstName"
               value={firstName}
             />
-            <TextFilter
-              label={"Last Name"}
-              name="lastName"
-              value={lastName}
-            />
+            <TextFilter label={"Last Name"} name="lastName" value={lastName} />
             <RangeFilter
               label={"Amount"}
               minName="minAmount"
@@ -59,6 +56,7 @@ export default async function TransactionsPage({
               maxValue={maxAmount}
               minPlaceholder="Minimum Amount"
               maxPlaceholder="Maximum Amount"
+              type="number"
               prefix="$"
             />
             <RangeFilter

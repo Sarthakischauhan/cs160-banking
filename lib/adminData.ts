@@ -2,6 +2,7 @@
 
 import { prisma } from "@/prisma/prisma";
 import {
+  AccountType,
   DepositTest,
   Transaction,
   TransactionStatus,
@@ -159,7 +160,7 @@ export async function getAccountsSummary(timeFrame: "month" | "year") {
   const balances = calculateBalanceHistory(
     deposits,
     Number(overall._sum.balance),
-    timeFrameOptions['month']
+    timeFrameOptions["month"]
   );
 
   return {
@@ -268,3 +269,123 @@ function calculateBalanceHistory(
   return history.reverse(); // oldest date first
 }
 
+export async function fetchAccounts(searchParams: {
+  [key: string]: string | undefined;
+}) {
+  const accountData = await prisma.account.findMany({
+    where: {
+      ...(searchParams.accountType
+        ? { account_type: searchParams.accountType as AccountType }
+        : {}),
+      ...(searchParams.firstName
+        ? {
+            Customer: {
+              first_name: {
+                contains: searchParams.firstName,
+                mode: "insensitive",
+              },
+            },
+          }
+        : {}),
+      ...(searchParams.lastName
+        ? {
+            Customer: {
+              last_name: {
+                contains: searchParams.lastName,
+                mode: "insensitive",
+              },
+            },
+          }
+        : {}),
+      ...(searchParams.minBalance || searchParams.maxBalance
+        ? {
+            balance: {
+              gte: searchParams.minBalance
+                ? Number(searchParams.minBalance)
+                : undefined,
+              lte: searchParams.maxBalance
+                ? Number(searchParams.maxBalance)
+                : undefined,
+            },
+          }
+        : {}),
+      ...(searchParams.minDate || searchParams.maxDate
+        ? {
+            created_at: {
+              gte: searchParams.minDate
+                ? new Date(searchParams.minDate)
+                : undefined,
+              lte: searchParams.maxDate
+                ? new Date(searchParams.maxDate)
+                : undefined,
+            },
+          }
+        : {}),
+    },
+    include: {
+      Customer: true,
+      _count: {
+        select: { Transaction_Transaction_account_idToAccount: true },
+      },
+    },
+    orderBy: {
+      created_at: "desc",
+    },
+  });
+  return accountData;
+}
+
+export async function getNotifications(params: {
+  [key: string]: string | undefined;
+}) {
+  const where: any = {};
+
+  if (params.firstName) {
+    where.Customer = {
+      ...(where.Customer || {}),
+      is: {
+        ...(where.Customer?.is || {}),
+        first_name: {
+          contains: params.firstName,
+          mode: "insensitive",
+        },
+      },
+    };
+  }
+
+  if (params.lastName) {
+    where.Customer = {
+      ...(where.Customer || {}),
+      is: {
+        ...(where.Customer?.is || {}),
+        last_name: {
+          contains: params.lastName,
+          mode: "insensitive",
+        },
+      },
+    };
+  }
+
+  if (params.notificationType) {
+    where.notification_type = params.notificationType;
+  }
+  if (params.dismissed) {
+    where.dismissed = params.dismissed === "True" ? true : false;
+  }
+  if (params.minDate || params.maxDate) {
+    where.created_at = {};
+    if (params.minDate) where.created_at.gte = new Date(params.minDate);
+    if (params.maxDate) where.created_at.lte = new Date(params.maxDate);
+  }
+
+  const notifications = await prisma.notifications.findMany({
+    where,
+    orderBy: {
+      created_at: "desc",
+    },
+    include: {
+      Customer: true,
+    },
+  });
+  return notifications;
+}

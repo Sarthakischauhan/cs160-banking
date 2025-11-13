@@ -13,7 +13,14 @@ import { EllipsisVertical } from "lucide-react";
 import { Account, Customer, Transaction } from "@prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { censorString, formatCurrency } from "@/lib/utils";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function TransactionsTable(transactions: {
   transactions: Record<string, any>;
@@ -56,11 +63,13 @@ export function TransactionsTable(transactions: {
                     transaction.Account.Customer.last_name}
                 </TableCell>
                 <TableCell>
-                  {transaction.Account_Transaction_account_id2ToAccount.Customer
-                    .first_name +
-                    " " +
+                  {transaction.Account_Transaction_account_id2ToAccount
+                    .Customer &&
                     transaction.Account_Transaction_account_id2ToAccount
-                      .Customer.last_name}
+                      .Customer.first_name +
+                      " " +
+                      transaction.Account_Transaction_account_id2ToAccount
+                        .Customer.last_name}
                 </TableCell>
                 <TableCell>{transaction.transaction_type}</TableCell>
                 <TableCell>{transaction.transaction_status}</TableCell>
@@ -82,17 +91,23 @@ export function TransactionsTable(transactions: {
                 <TableCell className="hover:cursor-pointer">
                   <DropdownMenu>
                     <DropdownMenuTrigger>
-                      <EllipsisVertical className="hover:cursor-pointer"/>
+                      <EllipsisVertical className="hover:cursor-pointer" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                       <DropdownMenuLabel>Manage Transaction</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem>View Details</DropdownMenuItem>
-                      <DropdownMenuItem disabled={transaction.transaction_status != 'PENDING'}>Approve</DropdownMenuItem>
+                      <DropdownMenuItem
+                        disabled={transaction.transaction_status != "PENDING"}
+                      >
+                        Approve
+                      </DropdownMenuItem>
                       <DropdownMenuItem>Flag</DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem>Cancel</DropdownMenuItem>
-                      <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+                      <DropdownMenuItem variant="destructive">
+                        Delete
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

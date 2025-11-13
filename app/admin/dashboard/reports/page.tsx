@@ -1,7 +1,9 @@
+import ReportGenerator from "./ReportGenerator";
+
 export default function ReportsPage() {
     return (
-        <div>
-            <h1>Reports Page</h1>
-        </div>
-    )
+        <main className="p-8">
+            <ReportGenerator />
+        </main>
+    );
 }
