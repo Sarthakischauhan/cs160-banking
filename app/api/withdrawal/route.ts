@@ -66,12 +66,6 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
 
     // MAIN TRANSACTION BLOCK
     const result = await prisma.$transaction(async (tx) => {
-      // update balance
-      await tx.account.update({
-        where: { account_id: account.account_id },
-        data: { balance: { decrement: amount } },
-      });
-
       // transaction ledger entry
       const txn = await tx.transaction.create({
         data: {
