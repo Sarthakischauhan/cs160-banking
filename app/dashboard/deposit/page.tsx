@@ -2,18 +2,25 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "../components/app-sidebar";
 import { DepositCard } from "./components/deposit-card";
 import { BalanceCard } from "../components/balance-card";
+import { getAccount } from "@/lib/accounts";
+import { handleCurrentId } from "@/lib/user";
 
-export default function DepositPage() {
+export default async function DepositPage() {
+  const activeId = (await handleCurrentId()) ?? ""
+  const account = await getAccount({account_id:activeId})
+  
   return (
     <>
       <div className="p-10">
         <h1 className="text-4xl font-bold">Deposit</h1>
       </div>
-      <div className="flex h-60 p-2 justify-center">
-        <BalanceCard userBalance={1000} />
+      <div className="px-10">
+      <div className="flex h-60 p-2">
+        <BalanceCard userBalance={Number(account?.balance)} account_type={account?.account_type} />
       </div>
-      <div className="flex h-fit p-2 justify-center">
-        <DepositCard />
+      <div className="flex h-fit p-2">
+        {account && <DepositCard account_id={activeId} />}
+      </div>
       </div>
     </>
   );
