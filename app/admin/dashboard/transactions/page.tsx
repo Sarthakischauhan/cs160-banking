@@ -19,7 +19,7 @@ export default async function TransactionsPage({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) {
-  const params = searchParams;
+  const params = await searchParams;
   const firstName = params.firstName ?? "";
   const lastName = params.lastName ?? "";
   const minAmount = params.minAmount ?? "";

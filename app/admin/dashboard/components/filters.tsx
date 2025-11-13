@@ -68,7 +68,7 @@ export function TextFilter({
   type = "text",
   ...props
 }: TextFilterProps) {
-  const { updateFilter, searchParams } = useURLFilter(500);
+  const { updateFilter, searchParams } = useURLFilter();
 
   return (
     <div {...props}>
@@ -115,7 +115,7 @@ export function RangeFilter({
   type = "text",
   ...props
 }: RangeFilterProps) {
-  const { updateFilter, searchParams } = useURLFilter(500);
+  const { updateFilter, searchParams } = useURLFilter();
 
   return (
     <div {...props}>
@@ -174,11 +174,11 @@ export function SelectFilter({
   name = "",
   ...props
 }: SelectFilterProps) {
-  const { updateFilter, searchParams } = useURLFilter(500);
+  const { updateFilter, searchParams } = useURLFilter();
 
   return (
     <div className="flex flex-col" {...props}>
-      <label className="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 py-2">
+      <label className="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 mb-2">
         {label}
       </label>
       <select
