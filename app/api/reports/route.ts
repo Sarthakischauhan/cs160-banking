@@ -33,7 +33,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
 
         const accounts = await prisma.account.findMany({
             where,
-            include: { Customer: true, _count: { select: { Transaction: true } } },
+            include: { Customer: true, _count: { select: { Transaction_Transaction_account_id2ToAccount: true } } },
         });
 
         return NextResponse.json(accounts, { status: 200 });
