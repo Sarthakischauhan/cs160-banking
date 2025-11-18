@@ -7,7 +7,8 @@ import {
   Bell,
   MapPin,
   HandCoins,
-  Banknote
+  Banknote,
+  LogOut
 } from "lucide-react";
 
 import {
@@ -51,7 +52,7 @@ const sidebarOptions = [
   },
   {
     title: "Account Settings",
-    url: "#",
+    url: "/dashboard/account-settings",
     img: Settings,
   },
   {
@@ -91,15 +92,18 @@ export function AppSidebar({currentAccountId}: {currentAccountId?: string}) {
         </SidebarMenu>
         <SidebarGroup />
       </SidebarContent>
+
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton>
-              <a 
-                href="/auth/logout"
-                className="bg-black text-white rounded-lg w-1/2 mx-auto text-center py-2 hover:bg-opacity-80"
-              >
-                Logout
+            <SidebarMenuButton asChild className="
+              text-red-600 dark:text-red-400
+              hover:bg-red-100 dark:hover:bg-red-900/40
+              transition-colors
+            ">
+              <a href="/auth/logout">
+                <LogOut className="mr-2" />
+                <span className="text-lg">Logout</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
