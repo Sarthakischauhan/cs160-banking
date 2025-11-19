@@ -14,7 +14,6 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { AccountType } from "@prisma/client";
-import { useEffect, useState } from "react";
 
 interface DashboardParams {
   [key: string]: string | undefined;
@@ -23,12 +22,6 @@ interface DashboardParams {
 type DashboardProps = {
   searchParams: DashboardParams
 }
-
-type Account = { // Makes structure to hold account info
-  customer_id: string | null;
-  balance: number | null;
-}
-
 
 export default async function Page({ searchParams } : DashboardProps) {
   const session = await auth0.getSession();
@@ -39,49 +32,12 @@ export default async function Page({ searchParams } : DashboardProps) {
   if (!user?.isOnboarded) {
     return <ProfileCompletion />;
   }
-  
+
   const accountNames = user?.accounts ?? [];
   const currentAccountId = await handleCurrentId()
 
   const accountId = currentAccountId ?? accountNames[0]?.account_id
   const currentAccount = accountNames.find((account) => account.account_id === accountId)
-
-   const [account, setAccount] = useState< Account | null>(null);
-
-    useEffect(() => {
-    async function fetchProfile() {
-    const res = await fetch("/api/account");
-    if (res.status === 401) {
-      window.location.href = "/auth/login";
-      return;
-    }
-    
-    const accountsData = await res.json();
-    const firstAccount = accountsData[0]; // gets the first account info for now will change in the future
-
-
-    const createRes = await fetch("/api/accountProcessing", { // creates an account in database if not exist yet
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ customer_id: firstAccount.customer_id }),
-    });
-
-    const result = await createRes.json();
-    if (result.error) {
-      console.error("Account creation error:", result.error);
-    } else {
-      setAccount(result.account);
-    }
-
-    const pendingRes = await fetch("/api/processPending", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ customer_id: firstAccount.customer_id }),
-    });
-  }
-    fetchProfile();
-}, []);
-
 
   return (
     <>
