@@ -29,6 +29,7 @@
     "clsx": "^2.1.1",
     "decimal.js": "^10.6.0",
     "embla-carousel-react": "^8.6.0",
+    "framer-motion": "^12.23.24",
     "fs": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.544.0",

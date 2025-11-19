@@ -4,10 +4,14 @@ import { useState, useEffect } from "react";
 import ReportFilters from "./ReportFilters";
 import ReportsCharts from "./ReportsCharts";
 import { Card } from "@/components/ui/card";
+import CustomerCards from "./CustomerCards";
+import {Button} from "@/components/ui/button"
+
 
 export default function ReportGenerator() {
     const [reportData, setReportData] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+    const [view, setView] = useState<"charts" | "cards">("cards");
 
     async function handleGenerate(filters: any) {
         setLoading(true);
@@ -34,7 +38,7 @@ export default function ReportGenerator() {
 
 
     useEffect(() => {
-        handleGenerate({}); 
+        handleGenerate({});
     }, []);
 
     const totalBalance = reportData.reduce(
@@ -71,30 +75,46 @@ export default function ReportGenerator() {
                 </Card>
             ) : (
                 <>
-                    {/* Summary cards */}
+                               {/* Summary cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <Card className="p-4 text-center border">
                             <h3>Total Balance</h3>
-                            <p className="text-2xl font-bold ">
+                            <p className="text-2xl font-bold">
                                 ${totalBalance.toFixed(2)}
                             </p>
                         </Card>
                         <Card className="p-4 text-center border">
                             <h3>Total Transactions</h3>
-                            <p className="text-2xl font-bold">
-                                {totalTransactions}
-                            </p>
+                            <p className="text-2xl font-bold">{totalTransactions}</p>
                         </Card>
                         <Card className="p-4 text-center border">
                             <h3>Average Balance</h3>
-                            <p className="text-2xl font-bold">
-                                ${avgBalance}
-                            </p>
+                            <p className="text-2xl font-bold">${avgBalance}</p>
                         </Card>
                     </div>
 
-                    <ReportsCharts chartData={chartData} />
+                    {/* Optional toggle buttons */}
+                    <div className="flex justify-end gap-2">
+                        <Button
+                            variant={view === "cards" ? "default" : "outline"}
+                            onClick={() => setView("cards")}
+                        >
+                            Cards
+                        </Button>
+                        <Button
+                            variant={view === "charts" ? "default" : "outline"}
+                            onClick={() => setView("charts")}
+                        >
+                            Charts
+                        </Button>
+                    </div>
 
+                    {/* View switch */}
+                    {view === "cards" ? (
+                        <CustomerCards reportData={reportData} />
+                    ) : (
+                        <ReportsCharts chartData={chartData} />
+                    )}
                 </>
             )}
         </section>
