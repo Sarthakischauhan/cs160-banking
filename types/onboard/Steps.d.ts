@@ -1,1 +1,0 @@
-export type OnboardStep = "verify" | "profile" | "pending" | "complete";
