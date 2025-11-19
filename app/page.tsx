@@ -34,5 +34,10 @@ export default async function Home() {
     );
   }
   const { redirect } = await import("next/navigation");
-  redirect("/dashboard");
+  const roles = getRole(session);
+  console.log(roles)
+  if (roles.includes("Admin")) {
+    redirect("/admin/dashboard");
+  }
+  redirect('/dashboard')
 }
