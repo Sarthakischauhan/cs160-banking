@@ -9,6 +9,14 @@ interface Place {
   location?: { latitude: number; longitude: number };
 }
 
+function createBankIcon(): google.maps.Icon {
+  return {
+    url: '/bank.png',
+    scaledSize: new google.maps.Size(40, 40),
+    anchor: new google.maps.Point(20, 40),
+  };
+}
+
 export default function ChaseMap() {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -34,6 +42,45 @@ export default function ChaseMap() {
       const mapInstance = new google.maps.Map(mapRef.current, {
         center: { lat: 37.33537673950195, lng: -121.87994384765625 },
         zoom: 12,
+        styles: [
+          {
+            featureType: 'poi',
+            elementType: 'labels',
+            stylers: [{ visibility: 'off' }],
+          },
+          {
+            featureType: 'poi.business',
+            stylers: [{ visibility: 'off' }],
+          },
+          {
+            featureType: 'poi.attraction',
+            stylers: [{ visibility: 'off' }],
+          },
+          {
+            featureType: 'poi.school',
+            stylers: [{ visibility: 'off' }],
+          },
+          {
+            featureType: 'poi.sports_complex',
+            stylers: [{ visibility: 'off' }],
+          },
+          {
+            featureType: 'poi.place_of_worship',
+            stylers: [{ visibility: 'off' }],
+          },
+          {
+            featureType: 'poi.park',
+            stylers: [{ visibility: 'off' }],
+          },
+          {
+            featureType: 'transit',
+            stylers: [{ visibility: 'off' }],
+          },
+          {
+            featureType: 'transit.station',
+            stylers: [{ visibility: 'off' }],
+          },
+        ],
       });
 
       const infoWin = new google.maps.InfoWindow();
@@ -87,6 +134,7 @@ export default function ChaseMap() {
             position: { lat, lng },
             map: mapInstance,
             title: place.displayName?.text || 'Chase ATM',
+            icon: createBankIcon(),
           });
 
           marker.addListener('click', () => {

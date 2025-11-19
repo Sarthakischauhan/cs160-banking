@@ -1,25 +1,39 @@
 import { prisma } from "@/prisma/prisma";
 import { AccountsTable } from "./components/accounts-table";
 import { Button } from "@/components/ui/button";
-import { RangeFilter, SelectFilter, TextFilter } from "../components/filters";
+import {
+  PaginationControls,
+  RangeFilter,
+  SelectFilter,
+  TextFilter,
+} from "../components/filters";
 import { AccountType } from "@prisma/client";
-import { fetchAccounts } from "@/lib/adminData";
+import { getAccounts } from "@/lib/adminData";
+import { get } from "http";
 
 export default async function AccountManagementPage({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
 }) {
-  const params = await searchParams
-  const firstName = params.firstName ?? "";
-  const lastName = params.lastName ?? "";
-  const minBalance = params.minBalance ?? "";
-  const maxBalance = params.maxBalance ?? "";
-  const minDate = params.minDate ?? "";
-  const maxDate = params.maxDate ?? "";
-  const accountType = params.accountType ?? "";
+  const params = await searchParams;
 
-  const accountData = await fetchAccounts(params);
+  const pageSize = 20;
+  const {
+    firstName = "",
+    lastName = "",
+    minBalance = "",
+    maxBalance = "",
+    minDate = "",
+    maxDate = "",
+    accountType = "",
+    cursor = undefined,
+  } = params;
+
+  const accountData = await getAccounts(params, cursor, pageSize);
+  const nextCursor = accountData.accounts.length
+    ? accountData.accounts[accountData.accounts.length - 1].account_id
+    : null;
 
   console.log(accountData);
 
@@ -77,7 +91,10 @@ export default async function AccountManagementPage({
 
           <div className="w-full h-[calc(100%-100px)] flex flex-col items-center py-6 gap-4">
             <p className="font-bold w-full border-b-2">Accounts</p>
-            <AccountsTable accounts={accountData} />
+            <AccountsTable accounts={accountData.accounts} />
+          </div>
+          <div className="w-full flex justify-center items-center">
+            <PaginationControls nextCursor={nextCursor} />
           </div>
         </div>
       </div>

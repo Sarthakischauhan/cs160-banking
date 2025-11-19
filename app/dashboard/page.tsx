@@ -5,6 +5,7 @@ import { TransactionCard } from "./components/transaction-card";
 import { HistgraphCard } from "./components/histgraph-card";
 import { UpcomingCard } from "./components/upcoming-card";
 import { ATMCard } from "./components/atm-card";
+import { ReportCard } from "./components/report-card";
 import { AccountSelect } from "./components/account-select";
 import { getUserData, handleCurrentId } from "@/lib/user"
 import { auth0 } from "@/lib/auth0"
@@ -12,8 +13,8 @@ import { ProfileCompletion } from "./components/onboard/ProfileCompletion";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Suspense } from "react";
 import { Plus } from "lucide-react";
+import { AccountType } from "@prisma/client";
 
 interface DashboardParams {
   [key: string]: string | undefined;
@@ -32,9 +33,9 @@ export default async function Page({ searchParams } : DashboardProps) {
   if (!user?.isOnboarded) {
     return <ProfileCompletion />;
   }
+
   const accountNames = user?.accounts ?? [];
   const currentAccountId = await handleCurrentId()
-  console.log(currentAccountId)
 
   const accountId = currentAccountId ?? accountNames[0]?.account_id
   const currentAccount = accountNames.find((account) => account.account_id === accountId)
@@ -73,18 +74,19 @@ export default async function Page({ searchParams } : DashboardProps) {
               userBalance={(currentAccount.balance)}
               monthIncome={1400}
               monthExpense={1000}
+              account_type={currentAccount.account_type === "SAVINGS" ? AccountType.SAVINGS : AccountType.CHECKING }
             />
           )}
         </div>
         <div className="col-span-3 mr-4 ml-2">
-          <NotificationCard />
+          <TransactionCard  transactions={user.transactions[accountId]} activeAccountId={accountId} />
         </div>
       </div>
 
       {/* ROW 3 */}
       <div className="grid grid-cols-2 my-2 h-fit">
         <div className="ml-4 mr-2">
-          <TransactionCard />
+          <NotificationCard notifications={user?.notifications}/>
         </div>
         <div className="mr-4 ml-2">
           <HistgraphCard  />
@@ -98,6 +100,9 @@ export default async function Page({ searchParams } : DashboardProps) {
         </div>
         <div className="mr-2 ml-2 col-span-2">
           <ATMCard  />
+        </div>
+        <div className="mr-4 ml-2 col-span-2">
+          <ReportCard  />
         </div>
       </div>
     </>

@@ -14,25 +14,23 @@ const timeFrameOptions = {
   year: 365,
 };
 
-export async function getTransactions(searchParams: {
-  [key: string]: string | undefined;
-}) {
+export async function getTransactions(
+  searchParams: { [key: string]: string | undefined },
+  cursor?: string,          // The transactionId of the last item from the previous page
+  pageSize: number = 20     // Number of items per page
+) {
   const where: any = {};
 
   if (searchParams.minAmount || searchParams.maxAmount) {
     where.amount = {};
-    if (searchParams.minAmount)
-      where.amount.gte = Number(searchParams.minAmount);
-    if (searchParams.maxAmount)
-      where.amount.lte = Number(searchParams.maxAmount);
+    if (searchParams.minAmount) where.amount.gte = Number(searchParams.minAmount);
+    if (searchParams.maxAmount) where.amount.lte = Number(searchParams.maxAmount);
   }
 
   if (searchParams.minDate || searchParams.maxDate) {
     where.created_at = {};
-    if (searchParams.minDate)
-      where.created_at.gte = new Date(searchParams.minDate);
-    if (searchParams.maxDate)
-      where.created_at.lte = new Date(searchParams.maxDate);
+    if (searchParams.minDate) where.created_at.gte = new Date(searchParams.minDate);
+    if (searchParams.maxDate) where.created_at.lte = new Date(searchParams.maxDate);
   }
 
   if (searchParams.firstName) {
@@ -40,20 +38,14 @@ export async function getTransactions(searchParams: {
       {
         Account: {
           Customer: {
-            first_name: {
-              contains: searchParams.firstName,
-              mode: "insensitive",
-            },
+            first_name: { contains: searchParams.firstName, mode: "insensitive" },
           },
         },
       },
       {
         Account_Transaction_account_id2ToAccount: {
           Customer: {
-            first_name: {
-              contains: searchParams.firstName,
-              mode: "insensitive",
-            },
+            first_name: { contains: searchParams.firstName, mode: "insensitive" },
           },
         },
       },
@@ -65,20 +57,14 @@ export async function getTransactions(searchParams: {
       {
         Account: {
           Customer: {
-            last_name: {
-              contains: searchParams.lastName,
-              mode: "insensitive",
-            },
+            last_name: { contains: searchParams.lastName, mode: "insensitive" },
           },
         },
       },
       {
         Account_Transaction_account_id2ToAccount: {
           Customer: {
-            last_name: {
-              contains: searchParams.lastName,
-              mode: "insensitive",
-            },
+            last_name: { contains: searchParams.lastName, mode: "insensitive" },
           },
         },
       },
@@ -86,8 +72,7 @@ export async function getTransactions(searchParams: {
   }
 
   if (searchParams.transactionStatus) {
-    where.transaction_status =
-      searchParams.transactionStatus as TransactionStatus;
+    where.transaction_status = searchParams.transactionStatus as TransactionStatus;
   }
 
   if (searchParams.transactionType) {
@@ -97,38 +82,37 @@ export async function getTransactions(searchParams: {
   const data = await prisma.transaction.findMany({
     where,
     include: {
-      Account: {
-        include: {
-          Customer: true,
-        },
-      },
-      Account_Transaction_account_id2ToAccount: {
-        include: {
-          Customer: true,
-        },
-      },
+      Account: { include: { Customer: true } },
+      Account_Transaction_account_id2ToAccount: { include: { Customer: true } },
     },
-    orderBy: {
-      created_at: "desc",
-    },
+    orderBy: { created_at: "desc" }, // cursor must use a unique field
+    take: pageSize + 1, // fetch one extra to check if there’s a next page
+    cursor: cursor ? { transaction_id: cursor } : undefined,
+    skip: cursor ? 1 : 0, // skip the cursor itself
   });
 
-  const result = data.map((t) => ({
+  // Determine if there is a next page
+  const hasNextPage = data.length > pageSize;
+  const items = hasNextPage ? data.slice(0, pageSize) : data;
+
+  const result = items.map((t) => ({
     ...t,
     amount: Number(t.amount),
     amount_after_transaction: Number(t.amount_after_transaction),
-    Account: {
-      ...t.Account,
-      balance: Number(t.Account.balance),
-    },
+    Account: { ...t.Account, balance: Number(t.Account.balance) },
     Account_Transaction_account_id2ToAccount: {
       ...t.Account_Transaction_account_id2ToAccount,
       balance: Number(t.Account_Transaction_account_id2ToAccount?.balance),
     },
   }));
 
-  return result;
+  return {
+    data: result,
+    nextCursor: hasNextPage ? items[items.length - 1].transaction_id : null,
+    hasNextPage,
+  };
 }
+
 
 export async function getAccountsSummary(timeFrame: "month" | "year") {
   const [count, overall, byType] = await Promise.all([
@@ -269,9 +253,13 @@ function calculateBalanceHistory(
   return history.reverse(); // oldest date first
 }
 
-export async function fetchAccounts(searchParams: {
-  [key: string]: string | undefined;
-}) {
+export async function getAccounts(
+  searchParams: { [key: string]: string | undefined },
+  cursor?: string,          // The transactionId of the last item from the previous page
+  pageSize: number = 20     // Number of items per page
+) {
+  const limit = pageSize
+
   const accountData = await prisma.account.findMany({
     where: {
       ...(searchParams.accountType
@@ -331,9 +319,21 @@ export async function fetchAccounts(searchParams: {
     orderBy: {
       created_at: "desc",
     },
+    take: limit,
+    ...(cursor
+      ? {
+          cursor: { account_id: cursor },
+          skip: 1, // skip the cursor itself
+        }
+      : {}),
   });
-  return accountData;
+
+  // Determine the next cursor
+  const nextCursor = accountData.length > 0 ? accountData[accountData.length - 1].account_id : null;
+
+  return { accounts: accountData, nextCursor };
 }
+
 
 export async function getNotifications(params: {
   [key: string]: string | undefined;

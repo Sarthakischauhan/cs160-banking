@@ -1,164 +1,138 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
 import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
+  Card, CardHeader, CardTitle, CardContent, CardAction,
   CardFooter,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-
 import {
-  Table,
-  TableCaption,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
+  Table, TableHeader, TableHead, TableRow, TableBody, TableCell,
 } from "@/components/ui/table";
-import { useState } from "react";
-import { set } from "react-hook-form";
+import { BadgeDollarSign, Key, Settings as SettingsIcon } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import type { Notifications } from "@prisma/client";
+import { dismissNotificationsBatch } from "@/lib/notification";
 
-// We can either retrieve notifications in here, or in the page file and pass it as a prop.
-// This is the same dilemma with balance
+type NotificationType = "TRANSACTION" | "SYSTEM" | "SECURITY" | "GENERAL" | null;
 
-// Here is some sample data to show what notifs would look like on the dashboard
-let sampleNotifs = [
-  {
-    id: 1,
-    type: "transaction",
-    title: "Deposit Posted",
-    message:
-      "Your deposit of $1,250.00 has been posted to Checking Account •••• 1234.",
-    date: "2025-09-29T09:45:00Z",
-    read: false,
-    actionUrl: "/accounts/checking/transactions/12345",
-    icon: "DollarSign",
-  },
-  {
-    id: 2,
-    type: "security",
-    title: "New Device Login",
-    message:
-      "A new device signed in from San Jose, CA. If this wasn’t you, please secure your account.",
-    date: "2025-09-28T21:30:00Z",
-    read: false,
-    actionUrl: "/settings/security",
-    icon: "ShieldAlert",
-  },
-  {
-    id: 3,
-    type: "payment",
-    title: "Bill Payment Completed",
-    message: "Your scheduled payment of $85.20 to PG&E has been completed.",
-    date: "2025-09-27T15:00:00Z",
-    read: true,
-    actionUrl: "/payments/4567",
-    icon: "CreditCard",
-  },
-  {
-    id: 4,
-    type: "low_balance",
-    title: "Low Balance Alert",
-    message: "Your Savings Account •••• 5678 balance dropped below $100.00.",
-    date: "2025-09-26T11:20:00Z",
-    read: true,
-    actionUrl: "/transfers/new",
-    icon: "AlertTriangle",
-  },
-  {
-    id: 5,
-    type: "promotion",
-    title: "New Savings Bonus",
-    message:
-      "Earn 4.25% APY when you open a new High-Yield Savings Account before Oct 15.",
-    date: "2025-09-25T08:00:00Z",
-    read: false,
-    actionUrl: "/promotions/high-yield-savings",
-    icon: "Gift",
-  },
-];
+export function NotificationCard({
+  notifications = [],
+}: {
+  notifications?: Notifications[];
+}) {
+  const [checkedSet, setCheckedSet] = useState<Set<bigint>>(new Set());
+  const [loading, setLoading] = useState(false);
 
-/**
- * Truncates a long string and adds an ellipsis at the end
- * @param str The message string to be truncated
- * @param num The max length of the message before truncation
- * @returns Truncated string with an ellipsis at the end
- */
-function truncateStringWithEllipsis(str: string, num: number) {
-  if (str.length > num) {
-    return str.slice(0, num) + "...";
-  } else {
-    return str;
-  }
-}
+  const toggleCheck = (id: bigint, checked: boolean | "indeterminate") => {
+    setCheckedSet(prev => {
+      const next = new Set(prev);
+      if (checked === true) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
 
-export function NotificationCard({ full }: { full?: boolean }) {
-  const [notifications, setNotifications] = useState(sampleNotifs);
+  const typeIcon = (type: NotificationType) => {
+    switch (type) {
+      case "TRANSACTION": return <BadgeDollarSign className="w-5 h-5" />;
+      case "SYSTEM": return <SettingsIcon className="w-5 h-5" />;
+      case "SECURITY": return <Key className="w-5 h-5" />;
+      default: return <span className="text-xl">🔔</span>;
+    }
+  };
+
+  const handleMarkAsRead = async () => {
+    const ids = Array.from(checkedSet);
+    if (!ids.length) return;
+
+    setLoading(true);
+    try {
+      await dismissNotificationsBatch(ids);
+      // remove dismissed from UI
+      setCheckedSet(new Set());
+    } catch (err) {
+      console.error("Dismiss failed:", err);
+      alert("Failed to mark notifications as read");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <>
-      <Card className="h-full">
-        <CardHeader>
-          <CardTitle>Recent Notifications</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Seen</TableHead>
-                <TableHead>Subject</TableHead>
-                <TableHead>Message</TableHead>
-                <TableHead>Sent</TableHead>
+    <Card className="h-full relative">
+      <CardHeader>
+        <div>
+          <CardTitle>Notifications</CardTitle>
+          <CardAction>
+            <Link href="/dashboard/notifications">View All</Link>
+          </CardAction>
+        </div>
+      </CardHeader>
 
-                <TableHead></TableHead>
+      <CardContent className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead></TableHead>
+              <TableHead>Message</TableHead>
+              {/* <TableHead>Account</TableHead> */}
+              <TableHead>Date</TableHead>
+              <TableHead className="text-center">Dismiss</TableHead>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            {notifications.map((n) => (
+              <TableRow key={n.id}>
+                <TableCell className="text-center">
+                  {typeIcon(n.notification_type as NotificationType)}
+                </TableCell>
+
+                <TableCell className="font-medium truncate max-w-[200px]">
+                  {n.message}
+                </TableCell>
+{/* 
+                <TableCell className="text-sm text-muted-foreground">
+                  {n.account_id}
+                </TableCell> */}
+
+                <TableCell className="text-sm text-muted-foreground">
+                  {n.created_at.toLocaleDateString()}
+                </TableCell>
+
+                <TableCell className="text-center">
+                  <Checkbox
+                    checked={checkedSet.has(n.id)}
+                    onCheckedChange={(v) => toggleCheck(n.id, v)}
+                  />
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {(full ? notifications : notifications.slice(0, 4)).map(
-                (notification) => (
-                  <TableRow key={notification.id}>
-                    <TableCell className="flex justify-center">
-                      <Checkbox
-                        checked={notification.read}
-                        onCheckedChange={(checked) => {
-                          setNotifications((prevNotifs) =>
-                            prevNotifs.map((notif) =>
-                              notif.id === notification.id
-                                ? { ...notif, read: checked as boolean }
-                                : notif
-                            )
-                          );
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell>{notification.title}</TableCell>
-                    <TableCell>
-                      {full
-                        ? truncateStringWithEllipsis(notification.message, 120)
-                        : truncateStringWithEllipsis(notification.message, 40)}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(notification.date).toLocaleDateString()}
-                    </TableCell>
-                  </TableRow>
-                )
-              )}
-            </TableBody>
-          </Table>
-          {full ? (
-            <p className="text-center text-gray-500 mt-4">
-              No other notifications
-            </p>
-          ) : (
-            <></>
-          )}
-        </CardContent>
-      </Card>
-    </>
+            ))}
+
+            {notifications.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-6">
+                  No notifications
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </CardContent>
+      <CardFooter>
+        {checkedSet.size > 0 && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleMarkAsRead}
+            disabled={loading}
+          >
+            {loading ? "Marking..." : "Mark as Read"}
+          </Button>
+        )}
+      </CardFooter>
+    </Card>
   );
 }

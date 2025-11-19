@@ -43,7 +43,7 @@ export function TransactionsTable(transactions: {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {transactions.transactions.map(
+          {transactions.transactions.data.map(
             (
               transaction: Transaction & {
                 Account: Account & { Customer: Customer };
