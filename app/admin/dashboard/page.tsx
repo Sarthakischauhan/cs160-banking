@@ -16,6 +16,7 @@ import {
 } from "@/lib/adminData";
 import { formatCurrency } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default async function AdminDashboardPage() {
   const start = new Date();
@@ -61,8 +62,18 @@ export default async function AdminDashboardPage() {
   console.log(data);
   return (
     <div className="w-full h-fit">
-      <div className="p-10">
+      <div className="p-10 grid grid-cols-2">
         <h1 className="text-4xl font-bold">Welcome, Administrator!</h1>
+        <div className="w-full flex justify-end">
+          <Button className="w-[200] hover:cursor-pointer">
+            <a
+              href="/dashboard"
+              className="bg-black text-white rounded-lg text-center py-2 hover:bg-opacity-80"
+            >
+              View User Dashboard
+            </a>
+          </Button>
+        </div>
       </div>
       <div className="px-10 py-5 w-full">
         <h1 className="text-4xl font-bold">Metrics</h1>

@@ -76,9 +76,14 @@ export function AdminSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <h1 className="text-center">Username</h1>
-          </SidebarMenuItem>
+          <SidebarMenuButton>
+              <a 
+                href="/auth/logout"
+                className="bg-black text-white rounded-lg w-1/2 mx-auto text-center py-2 hover:bg-opacity-80"
+              >
+                Logout
+              </a>
+            </SidebarMenuButton>
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
