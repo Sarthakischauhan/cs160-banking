@@ -95,7 +95,7 @@ export function TransactionsTable(transactions: {
                       <DropdownMenuSeparator />
                       <TransactionDetailsButton transaction={transaction} />
                       <DropdownMenuItem
-                        disabled={transaction.transaction_status != "PENDING"}
+                        disabled={["COMPLETED"].includes(transaction.transaction_status)}
                       >
                         Approve
                       </DropdownMenuItem>

@@ -106,7 +106,7 @@ export default async function AdminDashboardPage() {
       <div className="px-10 py-5 w-full">
         <h1 className="text-4xl font-bold">Pending</h1>
       </div>
-      <div className="grid grid-cols-2 w-full h-fit p-2 justify-center items-center gap-4">
+      <div className="grid w-full h-fit p-2 justify-center items-center gap-4">
         <TableCard
           title="Pending Support Tickets"
           description="See recent support tickets from users"
@@ -118,7 +118,7 @@ export default async function AdminDashboardPage() {
             title="Pending Transfers"
             description="See pending transfers requiring your attention"
             data={transaction.pendingTransactions}
-            disable={["id"]}
+            disable={["transaction_id", "account_id", "account_id2"]}
           />
         ) : (
           <Card className="flex h-full ">
