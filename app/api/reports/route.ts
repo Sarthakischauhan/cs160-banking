@@ -6,11 +6,11 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
     try {
         const session = await auth0.getSession();
         const role = getRole(session as any);
-        const isAdmin = role?.includes("Admin");
+        // const isAdmin = role?.includes("Admin");
 
-        if (!isAdmin) {
-            return NextResponse.json({ message: "Forbidden" }, { status: 403 });
-        }
+        // if (!isAdmin) {
+        //     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+        // }
 
         const { customerId, accountType, minBalance, maxBalance, startDate, endDate } =
             await req.json();
@@ -35,6 +35,10 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
             where,
             include: { Customer: true, _count: { select: { Transaction_Transaction_account_id2ToAccount: true } } },
         });
+        const formatted = accounts.map((acc) => ({
+            ...acc,
+            balance: Number(acc.balance ?? 0),
+        }));
 
         return NextResponse.json(accounts, { status: 200 });
     } catch (err) {
