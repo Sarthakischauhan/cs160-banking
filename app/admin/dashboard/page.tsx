@@ -15,6 +15,7 @@ import {
   getTransactionSummary,
 } from "@/lib/adminData";
 import { formatCurrency } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function AdminDashboardPage() {
   const start = new Date();
@@ -101,12 +102,23 @@ export default async function AdminDashboardPage() {
           data={supportTickets}
           disable={["ticketId"]}
         />
-        <TableCard
-          title="Pending Transfers"
-          description="See pending transfers requiring your attention"
-          data={pendingTransfers}
-          disable={["id"]}
-        />
+        {transaction.pendingTransactions.length > 0 ? (
+          <TableCard
+            title="Pending Transfers"
+            description="See pending transfers requiring your attention"
+            data={transaction.pendingTransactions}
+            disable={["id"]}
+          />
+        ) : (
+          <Card className="flex h-full ">
+            <CardHeader>
+              <CardTitle>Pending Transactions</CardTitle>
+            </CardHeader>
+            <CardContent className="flex justify-center items-center h-full">
+              No Pending Transactions
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

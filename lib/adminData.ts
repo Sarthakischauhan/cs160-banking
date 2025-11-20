@@ -16,21 +16,25 @@ const timeFrameOptions = {
 
 export async function getTransactions(
   searchParams: { [key: string]: string | undefined },
-  cursor?: string,          // The transactionId of the last item from the previous page
-  pageSize: number = 20     // Number of items per page
+  cursor?: string, // The transactionId of the last item from the previous page
+  pageSize: number = 20 // Number of items per page
 ) {
   const where: any = {};
 
   if (searchParams.minAmount || searchParams.maxAmount) {
     where.amount = {};
-    if (searchParams.minAmount) where.amount.gte = Number(searchParams.minAmount);
-    if (searchParams.maxAmount) where.amount.lte = Number(searchParams.maxAmount);
+    if (searchParams.minAmount)
+      where.amount.gte = Number(searchParams.minAmount);
+    if (searchParams.maxAmount)
+      where.amount.lte = Number(searchParams.maxAmount);
   }
 
   if (searchParams.minDate || searchParams.maxDate) {
     where.created_at = {};
-    if (searchParams.minDate) where.created_at.gte = new Date(searchParams.minDate);
-    if (searchParams.maxDate) where.created_at.lte = new Date(searchParams.maxDate);
+    if (searchParams.minDate)
+      where.created_at.gte = new Date(searchParams.minDate);
+    if (searchParams.maxDate)
+      where.created_at.lte = new Date(searchParams.maxDate);
   }
 
   if (searchParams.firstName) {
@@ -38,14 +42,20 @@ export async function getTransactions(
       {
         Account: {
           Customer: {
-            first_name: { contains: searchParams.firstName, mode: "insensitive" },
+            first_name: {
+              contains: searchParams.firstName,
+              mode: "insensitive",
+            },
           },
         },
       },
       {
         Account_Transaction_account_id2ToAccount: {
           Customer: {
-            first_name: { contains: searchParams.firstName, mode: "insensitive" },
+            first_name: {
+              contains: searchParams.firstName,
+              mode: "insensitive",
+            },
           },
         },
       },
@@ -72,7 +82,8 @@ export async function getTransactions(
   }
 
   if (searchParams.transactionStatus) {
-    where.transaction_status = searchParams.transactionStatus as TransactionStatus;
+    where.transaction_status =
+      searchParams.transactionStatus as TransactionStatus;
   }
 
   if (searchParams.transactionType) {
@@ -112,7 +123,6 @@ export async function getTransactions(
     hasNextPage,
   };
 }
-
 
 export async function getAccountsSummary(timeFrame: "month" | "year") {
   const [count, overall, byType] = await Promise.all([
@@ -167,16 +177,32 @@ export async function getTransactionSummary(timeFrame: "month" | "year") {
   const end = new Date();
   start.setDate(end.getDate() - timeFrameOptions[timeFrame]);
 
-  const count = await prisma.transaction.count();
+  // --- Total count of all transactions in the timeframe ---
+  const count = await prisma.transaction.count({
+    where: {
+      created_at: {
+        gte: start,
+        lte: end,
+      },
+    },
+  });
 
+  // --- Sum of amounts by transaction type ---
   const types = await prisma.transaction.groupBy({
     by: ["transaction_type"],
     _sum: {
       amount: true,
     },
+    where: {
+      created_at: {
+        gte: start,
+        lte: end,
+      },
+    },
   });
 
-  const transactions = await prisma.transaction.findMany({
+  // --- All deposits for history chart ---
+  const deposits = await prisma.transaction.findMany({
     where: {
       transaction_type: "DEPOSIT",
       created_at: {
@@ -187,11 +213,26 @@ export async function getTransactionSummary(timeFrame: "month" | "year") {
     orderBy: { created_at: "asc" },
   });
 
-  const history = calculateTransactionHistory(transactions, start, end);
+  const history = calculateTransactionHistory(deposits, start, end);
+
+  // --- Pending transactions themselves ---
+  const pendingTransactions = await prisma.transaction.findMany({
+    where: {
+      transaction_status: "PENDING",
+      created_at: {
+        gte: start,
+        lte: end,
+      },
+    },
+    orderBy: { created_at: "desc" },
+    take: 4,
+  });
+
   return {
     count: count,
     transactionTotal: types,
     transactionHistory: history,
+    pendingTransactions: pendingTransactions,
   };
 }
 
@@ -255,10 +296,10 @@ function calculateBalanceHistory(
 
 export async function getAccounts(
   searchParams: { [key: string]: string | undefined },
-  cursor?: string,          // The transactionId of the last item from the previous page
-  pageSize: number = 20     // Number of items per page
+  cursor?: string, // The transactionId of the last item from the previous page
+  pageSize: number = 20 // Number of items per page
 ) {
-  const limit = pageSize
+  const limit = pageSize;
 
   const accountData = await prisma.account.findMany({
     where: {
@@ -329,11 +370,13 @@ export async function getAccounts(
   });
 
   // Determine the next cursor
-  const nextCursor = accountData.length > 0 ? accountData[accountData.length - 1].account_id : null;
+  const nextCursor =
+    accountData.length > 0
+      ? accountData[accountData.length - 1].account_id
+      : null;
 
   return { accounts: accountData, nextCursor };
 }
-
 
 export async function getNotifications(params: {
   [key: string]: string | undefined;
