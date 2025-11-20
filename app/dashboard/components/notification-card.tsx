@@ -54,14 +54,14 @@ export function NotificationCard({
       setCheckedSet(new Set());
     } catch (err) {
       console.error("Dismiss failed:", err);
-      alert("Failed to mark notifications as read");
+      alert("Failed to mark notificgations as read");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Card className="h-full relative">
+    <Card className="w-full h-full relative">
       <CardHeader>
         <div>
           <CardTitle>Notifications</CardTitle>
