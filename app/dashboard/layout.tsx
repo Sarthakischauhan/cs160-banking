@@ -32,9 +32,6 @@ export default async function dashboardLayout({
   // const accountId = await handleCurrentId();
   return (
     <html lang="en" className={theme}>
-      <head>
-        <ThemeScript />
-      </head>
       <HideBalanceProvider initialHideBalance={hideBalance}>
         <SidebarProvider>
           {user?.isOnboarded ? <AppSidebar />  : <OnboardSidebar />}

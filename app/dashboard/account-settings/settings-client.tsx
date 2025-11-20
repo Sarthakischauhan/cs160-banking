@@ -4,8 +4,9 @@ import { useState, useTransition } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { toggleThemeAction, toggleHideBalanceAction } from "./actions";
+import { toggleHideBalanceAction } from "./actions";
 import { useHideBalance } from "../providers/hide-balance-provider";
+import { ThemeToggleButton } from "@/components/ui/ThemeToggleButton";
 
 interface SettingsClientProps {
 	initialTheme: string;
@@ -14,25 +15,8 @@ interface SettingsClientProps {
 export function SettingsClient({
 	initialTheme,
 }: SettingsClientProps) {
-	const [theme, setTheme] = useState(initialTheme);
 	const { hideBalance, setHideBalance } = useHideBalance();
-	const [isPendingTheme, startThemeTransition] = useTransition();
 	const [isPendingBalance, startBalanceTransition] = useTransition();
-
-	const handleThemeToggle = () => {
-		const newTheme = theme === "dark" ? "light" : "dark";
-
-		// Optimistically update the UI immediately
-		setTheme(newTheme);
-
-		// Apply theme to document immediately for smooth visual transition
-		document.documentElement.className = newTheme;
-
-		// Then update the server
-		startThemeTransition(async () => {
-			await toggleThemeAction(newTheme);
-		});
-	};
 
 	const handleBalanceToggle = () => {
 		const newValue = !hideBalance;
@@ -63,13 +47,7 @@ export function SettingsClient({
 							</p>
 						</div>
 
-						<button
-							type="button"
-							onClick={handleThemeToggle}
-							disabled={isPendingTheme}
-						>
-							<Switch checked={theme === "dark"} />
-						</button>
+						<ThemeToggleButton />
 					</div>
 
 					<div className="border-t border-gray-300 dark:border-gray-700" />
