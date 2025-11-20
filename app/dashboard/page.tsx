@@ -125,7 +125,7 @@ export default async function Page({ searchParams }: DashboardProps) {
       {/* ROW 4 */}
       <div className="grid grid-cols-7 my-2 h-fit">
         <div className="ml-4 col-span-3 mr-2">
-          <UpcomingCard />
+          <UpcomingCard  />
         </div>
         <div className="mr-2 ml-2 col-span-2">
           <ATMCard />
