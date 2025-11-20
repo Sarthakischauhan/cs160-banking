@@ -67,7 +67,7 @@ export default async function Page({ searchParams }: DashboardProps) {
         )}
         <div />
         {getRole(session).includes("Admin") ? (
-          <div className="flex justify-endg">
+          <div className="flex justify-end">
             <Button className="w-[200] hover:cursor-pointer">
               <a
                 href="/admin/dashboard"
