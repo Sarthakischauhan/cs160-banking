@@ -30,9 +30,6 @@ export default async function AccountManagementPage({
           <h1 className="text-4xl font-bold mb-10">Account Management</h1>
           <form method="GET" className="flex flex-col gap-4">
             <p className="font-bold w-full border-b-2">Filters</p>
-            <div className="flex gap-4">
-              <Button type="submit">Apply Filters</Button>
-            </div>
             <div className="grid grid-cols-4 w-full gap-4">
               <TextFilter
                 label={"First Name"}
