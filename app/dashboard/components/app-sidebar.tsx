@@ -2,7 +2,7 @@ import {
   House,
   ArrowLeftRight,
   FileClock,
-  Settings,
+  Settings as SettingsIcon,
   Landmark,
   Bell,
   MapPin,
@@ -52,7 +52,7 @@ const sidebarOptions = [
   {
     title: "Account Settings",
     url: "#",
-    img: Settings,
+    img: SettingsIcon,
   },
   {
     title: "Nearby ATMs",
@@ -94,7 +94,14 @@ export function AppSidebar({currentAccountId}: {currentAccountId?: string}) {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <h1 className="text-center">Username</h1>
+            <SidebarMenuButton>
+              <a 
+                href="/auth/logout"
+                className="bg-black text-white rounded-lg w-1/2 mx-auto text-center py-2 hover:bg-opacity-80"
+              >
+                Logout
+              </a>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

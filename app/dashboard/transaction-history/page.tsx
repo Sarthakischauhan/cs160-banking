@@ -1,101 +1,48 @@
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "../components/app-sidebar";
+import { prisma } from "@/prisma/prisma";
 import { TransactionTableCard } from "./components/transactiontable-card";
+import { auth0 } from "@/lib/auth0";
 
-const transactions = [
-  {
-    id: "tx001",
-    date: "2025-09-25",
-    description: "Starbucks Coffee",
-    amount: -5.75,
-    type: "debit",
-    category: "Food & Drink",
-  },
-  {
-    id: "tx002",
-    date: "2025-09-24",
-    description: "Paycheck",
-    amount: 1500.0,
-    type: "credit",
-    category: "Income",
-  },
-  {
-    id: "tx003",
-    date: "2025-09-23",
-    description: "Amazon Purchase",
-    amount: -42.99,
-    type: "debit",
-    category: "Shopping",
-  },
-  {
-    id: "tx004",
-    date: "2025-09-22",
-    description: "Netflix Subscription",
-    amount: -15.99,
-    type: "debit",
-    category: "Entertainment",
-  },
-  {
-    id: "tx005",
-    date: "2025-09-21",
-    description: "Grocery Store",
-    amount: -120.45,
-    type: "debit",
-    category: "Groceries",
-  },
-  {
-    id: "tx006",
-    date: "2025-09-20",
-    description: "Electric Bill",
-    amount: -60.0,
-    type: "debit",
-    category: "Utilities",
-  },
-  {
-    id: "tx007",
-    date: "2025-09-19",
-    description: "Transfer from Savings",
-    amount: 200.0,
-    type: "credit",
-    category: "Transfer",
-  },
-  {
-    id: "tx008",
-    date: "2025-09-18",
-    description: "Gas Station",
-    amount: -35.25,
-    type: "debit",
-    category: "Transportation",
-  },
-  {
-    id: "tx009",
-    date: "2025-09-17",
-    description: "Spotify Subscription",
-    amount: -9.99,
-    type: "debit",
-    category: "Entertainment",
-  },
-  {
-    id: "tx010",
-    date: "2025-09-16",
-    description: "Coffee with Friends",
-    amount: -12.5,
-    type: "debit",
-    category: "Food & Drink",
-  },
-];
+export default async function TransactionHistoryPage() {
+  // Get the current authenticated user session
+  const session = await auth0.getSession();
 
-export default function TransactionHistoryPage() {
+  if (!session) {
+    return <div>Please log in to view your transactions.</div>;
+  }
+
+  // Find the customer_id for the logged-in user
+  const customer = await prisma.customer.findFirst({
+    where: { auth0_user_id: session.user.sub },
+    select: { customer_id: true },
+  });
+
+  if (!customer) {
+    return <div>No customer found for this user.</div>;
+  }
+
+  // Get all transactions for accounts owned by this customer
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      Account: {
+        customer_id: customer.customer_id,
+      },
+    },
+    orderBy: {
+      created_at: "desc",
+    },
+  });
+
   return (
-    <>
-      <div className="w-full h-full">
-        <div className="p-10">
-          <h1 className="text-4xl font-bold">Transaction History</h1>
-        </div>
-        <div className="grid justify-items-center">
-          <TransactionTableCard transactions={transactions} />
-        </div>
+    <div className="w-full h-full">
+      <div className="p-10">
+        <h1 className="text-4xl font-bold">Transaction History</h1>
       </div>
-    </>
+      <div className="grid justify-items-center">
+        <TransactionTableCard
+          transactions={transactions}
+          activeAccountId={customer.customer_id} // or some default account id
+        />
+      </div>
+    </div>
   );
 }

@@ -7,6 +7,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import {
   Select,
   SelectItem,
@@ -21,6 +22,7 @@ import {
   useRouter,
   ReadonlyURLSearchParams,
 } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 import { useDebouncedCallback } from "use-debounce";
 
@@ -199,3 +201,85 @@ export function SelectFilter({
     </div>
   );
 }
+
+export function usePagination() {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const initialCursor = searchParams.get("cursor"); // null if first page
+  const historyRef = useRef<(string | null)[]>([initialCursor]);
+
+  // Sync history if URL cursor changes externally (e.g., back button)
+  useEffect(() => {
+    const cursor = searchParams.get("cursor") ?? null;
+    const last = historyRef.current[historyRef.current.length - 1];
+    if (cursor !== last) {
+      historyRef.current.push(cursor);
+    }
+  }, [searchParams]);
+
+  const goNext = (cursor: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("cursor", cursor);
+    router.replace(`${pathname}?${params.toString()}`);
+    historyRef.current.push(cursor);
+  };
+
+  const goPrevious = () => {
+    if (historyRef.current.length < 2) return; // can't go back from first page
+    historyRef.current.pop(); // remove current cursor
+    const previousCursor = historyRef.current[historyRef.current.length - 1];
+    const params = new URLSearchParams(searchParams.toString());
+    if (previousCursor) params.set("cursor", previousCursor);
+    else params.delete("cursor");
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+
+  return {
+    goNext,
+    goPrevious,
+    hasPrevious: historyRef.current.length > 1,
+  };
+}
+
+interface PaginationControlsProps {
+  nextCursor: string | null;
+}
+
+export function PaginationControls({ nextCursor }: PaginationControlsProps) {
+  const { goNext, goPrevious, hasPrevious } = usePagination();
+
+  return (
+    <Pagination>
+      <PaginationContent>
+        <PaginationItem>
+          <PaginationPrevious
+            href="#"
+            className={!hasPrevious ? "pointer-events-none opacity-50" : ""}
+            onClick={(e) => {
+              e.preventDefault();
+              goPrevious();
+            }}
+          >
+            Previous
+          </PaginationPrevious>
+        </PaginationItem>
+
+        <PaginationItem>
+          <PaginationNext
+            href="#"
+            className={!nextCursor ? "pointer-events-none opacity-50" : ""}
+            onClick={(e) => {
+              e.preventDefault();
+              if (nextCursor) goNext(nextCursor);
+            }}
+          >
+            Next
+          </PaginationNext>
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
+  );
+}
+
