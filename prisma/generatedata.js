@@ -1,13 +1,10 @@
 import {prisma, supabase} from './prisma1.js';
 
-
 async function main() {
   const customers = await prisma.customer.findMany();
  
   for (const customer of customers) {
     const customerId = customer.customer_id;
-
-
    
   const { data: existingAccount, error: accountError } = await supabase
     .from('Account')
@@ -26,10 +23,12 @@ async function main() {
           balance: 0,
           created_at: new Date(),
           updated_at: new Date(),
-          account_type: 'null',
-          account_status: 'active',
+          account_type: 'CHECKING',
+          account_status: 'ACTIVE',
           })
         .select()
+
+        console.log(newAccount, createError);
    
     if (newAccount && Array.isArray(newAccount) && newAccount.length > 0) {
       const newAccountPrisma = await prisma.account.findUnique({
@@ -44,25 +43,6 @@ async function main() {
     console.log("works");
   }
 }
-// Supabase auto creates primary key
-// async function createId() {
-//     const { data: maxAccount, error: maxError } = await supabase
-//     .from('Account')
-//     .select('account_id')
-//     .order('account_id', { ascending: false })
-//     .limit(1)
-//     .single();
-
-
-//     if (!maxAccount) {
-//     return "1";
-//   }
-
-
-//     return String(Number(maxAccount.account_id) + 1); // returns 1 bigger than biggest acountId number
-   
-// }
-
 
 main()
   .catch((e) => {
