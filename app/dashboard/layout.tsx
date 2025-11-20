@@ -3,12 +3,19 @@ import { AppSidebar } from "./components/app-sidebar";
 import { getUserData, handleCurrentId } from "@/lib/user";
 import { auth0 } from "@/lib/auth0";
 import { OnboardSidebar } from "./components/onboard-sidebar";
+import { cookies } from "next/headers";
+import { ThemeScript } from "@/components/theme-script";
+import { HideBalanceProvider } from "./providers/hide-balance-provider";
 
 export default async function dashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  const theme = cookieStore.get("theme")?.value ?? "light";
+  const hideBalance = cookieStore.get("hideBalance")?.value === "true";
+
   const session = await auth0.getSession()
   if (!session){
     return (
@@ -24,11 +31,16 @@ export default async function dashboardLayout({
   const user = await getUserData({ userId: userSub })
   // const accountId = await handleCurrentId();
   return (
-    <>
-      <SidebarProvider>
-        {user?.isOnboarded ? <AppSidebar />  : <OnboardSidebar />}
-        <SidebarInset>{children}</SidebarInset>
-      </SidebarProvider>
-    </>
+    <html lang="en" className={theme}>
+      <head>
+        <ThemeScript />
+      </head>
+      <HideBalanceProvider initialHideBalance={hideBalance}>
+        <SidebarProvider>
+          {user?.isOnboarded ? <AppSidebar />  : <OnboardSidebar />}
+          <SidebarInset>{children}</SidebarInset>
+        </SidebarProvider>
+      </HideBalanceProvider>
+    </html>
   );
 }
