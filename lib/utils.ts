@@ -24,5 +24,8 @@ export const dataFormatter: Record<string, (value: any) => React.ReactNode> = {
   createdAt: (v) => new Date(v).toLocaleDateString(),
   created_at: (v) => new Date(v).toLocaleDateString(),
   updated_at: (v) => new Date(v).toLocaleDateString(),
+  scheduled: (v) => new Date(v).toLocaleDateString(),
   limit_amount: (v) => (v ? v : "No limit"),
+  default: (value) => 
+    value instanceof Date ? value.toLocaleString() : value
 };

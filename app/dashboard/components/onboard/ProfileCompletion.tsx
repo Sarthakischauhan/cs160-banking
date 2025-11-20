@@ -370,6 +370,14 @@ export const ProfileCompletion = () => {
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Saving Profile..." : "Complete Profile"}
           </Button>
+          <Button>
+              <a 
+                href="/auth/logout"
+                className="bg-black text-white rounded-lg w-1/2 mx-auto text-center py-2 hover:bg-opacity-80"
+              >
+                Logout
+              </a>
+            </Button>
         </form>
       </CardContent>
     </Card>
