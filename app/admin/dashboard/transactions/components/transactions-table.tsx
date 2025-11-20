@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TransactionDetailsButton } from "./transaction-details";
+import { CancelTransactionItem } from "./cancel-transaction";
 
 export function TransactionsTable(transactions: {
   transactions: Record<string, any>;
@@ -101,7 +102,7 @@ export function TransactionsTable(transactions: {
                       </DropdownMenuItem>
                       <DropdownMenuItem>Flag</DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem>Cancel</DropdownMenuItem>
+                      <CancelTransactionItem id={transaction.transaction_id} />
                       <DropdownMenuItem variant="destructive">
                         Delete
                       </DropdownMenuItem>

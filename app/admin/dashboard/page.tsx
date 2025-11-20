@@ -106,7 +106,7 @@ export default async function AdminDashboardPage() {
       <div className="px-10 py-5 w-full">
         <h1 className="text-4xl font-bold">Pending</h1>
       </div>
-      <div className="grid w-full h-fit p-2 justify-center items-center gap-4">
+      <div className="flex flex-col w-full h-fit p-2 gap-5">
         <TableCard
           title="Pending Support Tickets"
           description="See recent support tickets from users"
@@ -121,7 +121,7 @@ export default async function AdminDashboardPage() {
             disable={["transaction_id", "account_id", "account_id2"]}
           />
         ) : (
-          <Card className="flex h-full ">
+          <Card className="flex h-full">
             <CardHeader>
               <CardTitle>Pending Transactions</CardTitle>
             </CardHeader>
