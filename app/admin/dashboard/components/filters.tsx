@@ -40,6 +40,7 @@ function useURLFilter(delay = 300) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
+  const { reset } = usePagination();
 
   const updateFilter = useDebouncedCallback((name: string, value: string) => {
     const params = new URLSearchParams(searchParams);
@@ -49,6 +50,10 @@ function useURLFilter(delay = 300) {
     } else {
       params.delete(name);
     }
+
+    // ⚡ Clear the cursor whenever a filter changes
+    reset();
+    params.delete("cursor");
 
     const queryString = params.toString();
     replace(queryString ? `${pathname}?${queryString}` : pathname);
@@ -206,12 +211,17 @@ export function usePagination() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-
-  const initialCursor = searchParams.get("cursor"); // null if first page
+  
+  const initialCursor = searchParams.get("cursor"); 
   const historyRef = useRef<(string | null)[]>([initialCursor]);
 
-  // Sync history if URL cursor changes externally (e.g., back button)
+  const ignoreNextPush = useRef(false); // 🔑 new
+
   useEffect(() => {
+    if (ignoreNextPush.current) {
+      ignoreNextPush.current = false;
+      return; // skip adding current cursor
+    }
     const cursor = searchParams.get("cursor") ?? null;
     const last = historyRef.current[historyRef.current.length - 1];
     if (cursor !== last) {
@@ -227,8 +237,8 @@ export function usePagination() {
   };
 
   const goPrevious = () => {
-    if (historyRef.current.length < 2) return; // can't go back from first page
-    historyRef.current.pop(); // remove current cursor
+    if (historyRef.current.length < 2) return;
+    historyRef.current.pop();
     const previousCursor = historyRef.current[historyRef.current.length - 1];
     const params = new URLSearchParams(searchParams.toString());
     if (previousCursor) params.set("cursor", previousCursor);
@@ -236,12 +246,19 @@ export function usePagination() {
     router.replace(`${pathname}?${params.toString()}`);
   };
 
+  const reset = () => {
+    historyRef.current = [null];
+    ignoreNextPush.current = true; // 🔑 ignore next effect push
+  };
+
   return {
     goNext,
     goPrevious,
+    reset,
     hasPrevious: historyRef.current.length > 1,
   };
 }
+
 
 interface PaginationControlsProps {
   nextCursor: string | null;
@@ -250,13 +267,18 @@ interface PaginationControlsProps {
 export function PaginationControls({ nextCursor }: PaginationControlsProps) {
   const { goNext, goPrevious, hasPrevious } = usePagination();
 
+  const searchParams = useSearchParams();
+
+  // get cursor from URL
+  const cursor = searchParams.get("cursor");
+
   return (
     <Pagination>
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
             href="#"
-            className={!hasPrevious ? "pointer-events-none opacity-50" : ""}
+            className={!hasPrevious || !cursor ? "pointer-events-none opacity-50" : ""}
             onClick={(e) => {
               e.preventDefault();
               goPrevious();

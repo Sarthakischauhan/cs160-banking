@@ -16,7 +16,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { prisma } from "@/prisma/prisma";
 import { TransactionStatus, TransactionType } from "@prisma/client";
-import { getTransactions } from "@/lib/adminData";
+import { getTransactions } from "@/lib/admin/adminData";
 import { Suspense } from "react";
 
 import {

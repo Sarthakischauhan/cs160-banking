@@ -13,7 +13,7 @@ import {
   getAccountsSummary,
   getCustomerSummary,
   getTransactionSummary,
-} from "@/lib/adminData";
+} from "@/lib/admin/adminData";
 import { formatCurrency } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

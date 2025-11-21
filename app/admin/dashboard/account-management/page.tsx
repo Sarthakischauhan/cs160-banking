@@ -8,7 +8,7 @@ import {
   TextFilter,
 } from "../components/filters";
 import { AccountType } from "@prisma/client";
-import { getAccounts } from "@/lib/adminData";
+import { getAccounts } from "@/lib/admin/adminData";
 import { get } from "http";
 
 export default async function AccountManagementPage({

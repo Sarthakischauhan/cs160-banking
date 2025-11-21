@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { getNotifications } from "@/lib/adminData";
+import { getNotifications } from "@/lib/admin/adminData";
 import NotificationTable from "./components/notification-table";
 import { Notifications } from "@prisma/client";
 import { RangeFilter, SelectFilter, TextFilter } from "../components/filters";
