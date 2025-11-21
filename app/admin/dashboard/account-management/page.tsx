@@ -31,9 +31,10 @@ export default async function AccountManagementPage({
   } = params;
 
   const accountData = await getAccounts(params, cursor, pageSize);
-  const nextCursor = accountData.accounts.length
-    ? accountData.accounts[accountData.accounts.length - 1].account_id
-    : null;
+  const nextCursor =
+    accountData.accounts.length >= pageSize
+      ? accountData.accounts[accountData.accounts.length - 1].account_id
+      : null;
 
   console.log(accountData);
 

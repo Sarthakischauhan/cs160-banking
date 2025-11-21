@@ -8,6 +8,10 @@ import {
   TransactionStatus,
   TransactionType,
 } from "@prisma/client";
+import {
+  calculateBalanceHistory,
+  calculateTransactionHistory,
+} from "./history";
 
 const timeFrameOptions = {
   month: 30,
@@ -151,8 +155,41 @@ export async function getAccountsSummary(timeFrame: "month" | "year") {
     orderBy: { created_at: "asc" },
   });
 
+  const deposits2 = await prisma.transaction.findMany({
+    where: {
+      created_at: {
+        gte: start,
+        lte: end,
+      },
+      transaction_type: "DEPOSIT",
+    },
+    orderBy: {
+      created_at: "asc",
+    },
+    select: {
+      account_id: true,
+      created_at: true,
+      amount: true,
+      description: true,
+      transaction_id: true,
+    },
+  });
+
+  const depositsRenamed = deposits2.map((d) => ({
+    account_id: d.account_id,
+    created_at: d.created_at,
+    amount: d.amount,
+    description: d.description,
+    transactionId: d.transaction_id,
+  }));
+
+  const merged = [...deposits, ...depositsRenamed].sort(
+    (a, b) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  );
+
   const balances = calculateBalanceHistory(
-    deposits,
+    merged,
     Number(overall._sum.balance),
     timeFrameOptions["month"]
   );
@@ -204,7 +241,6 @@ export async function getTransactionSummary(timeFrame: "month" | "year") {
   // --- All deposits for history chart ---
   const deposits = await prisma.transaction.findMany({
     where: {
-      transaction_type: "DEPOSIT",
       created_at: {
         gte: start,
         lte: end,
@@ -234,64 +270,6 @@ export async function getTransactionSummary(timeFrame: "month" | "year") {
     transactionHistory: history,
     pendingTransactions: pendingTransactions,
   };
-}
-
-function calculateTransactionHistory(
-  transactions: Transaction[],
-  start: Date,
-  end: Date
-) {
-  // Pre-fill the map with all dates in the range
-  const dateMap = new Map<string, number>();
-  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-    const dateStr = d.toISOString().split("T")[0];
-    dateMap.set(dateStr, 0);
-  }
-
-  // Sum transaction amounts
-  for (const t of transactions) {
-    const dateStr = t.created_at.toISOString().split("T")[0];
-    if (dateMap.has(dateStr)) {
-      dateMap.set(dateStr, dateMap.get(dateStr)! + Number(t.amount));
-    }
-  }
-
-  // Convert map to sorted array
-  const arr: { date: string; amount: number }[] = [];
-  for (const [date, amount] of dateMap) {
-    arr.push({ date, amount });
-  }
-
-  return arr;
-}
-
-function calculateBalanceHistory(
-  deposits: DepositTest[],
-  currentBalance: number,
-  timeFrame: number
-) {
-  // 1. Aggregate amounts per day
-  const dailyTotals = new Map<string, number>();
-  for (const t of deposits) {
-    const date = t.created_at.toISOString().split("T")[0]; // YYYY-MM-DD
-    dailyTotals.set(date, (dailyTotals.get(date) || 0) + Number(t.amount));
-  }
-
-  // 2. Generate all dates in the timeframe
-  const history: { date: string; amount: number }[] = [];
-  let amount = currentBalance;
-
-  const end = new Date(); // today
-  const start = new Date();
-  start.setDate(end.getDate() - timeFrame + 1); // include today as last day
-
-  for (let d = new Date(end); d >= start; d.setDate(d.getDate() - 1)) {
-    const dateStr = d.toISOString().split("T")[0];
-    history.push({ date: dateStr, amount });
-    amount -= dailyTotals.get(dateStr) || 0; // subtract if there was a transaction
-  }
-
-  return history.reverse(); // oldest date first
 }
 
 export async function getAccounts(
@@ -378,10 +356,15 @@ export async function getAccounts(
   return { accounts: accountData, nextCursor };
 }
 
-export async function getNotifications(params: {
-  [key: string]: string | undefined;
-}) {
+export async function getNotifications(
+  params: {
+    [key: string]: string | undefined;
+  },
+  cursor?: string,
+  pageSize: number = 20
+) {
   const where: any = {};
+  const limit = pageSize;
 
   if (params.firstName) {
     where.Customer = {
@@ -429,6 +412,13 @@ export async function getNotifications(params: {
     include: {
       Customer: true,
     },
+    take: limit,
+    ...(cursor
+      ? {
+          cursor: { id: Number(cursor)},
+          skip: 1, // skip the cursor itself
+        }
+      : {}),
   });
   return notifications;
 }

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { getNotifications } from "@/lib/admin/adminData";
 import NotificationTable from "./components/notification-table";
 import { Notifications } from "@prisma/client";
-import { RangeFilter, SelectFilter, TextFilter } from "../components/filters";
+import { PaginationControls, RangeFilter, SelectFilter, TextFilter } from "../components/filters";
 
 enum NotificationType {
   TRANSACTION = "TRANSACTION",
@@ -14,15 +14,21 @@ export default async function NotificationsPage({
   searchParams: { [key: string]: string | undefined };
 }) {
   const params = await searchParams;
-  const firstName = params.firstName ?? "";
-  const lastName = params.lastName ?? "";
-  const notificationType = params.notificationType ?? "";
-  const dismissed = params.dismissed ?? "";
-  const minDate = params.minDate ?? "";
-  const maxDate = params.maxDate ?? "";
+  const pageSize = 20;
+  const {
+    firstName = "",
+    lastName = "",
+    notificationType = "",
+    dismissed = "",
+    minDate = "",
+    maxDate = "",
+    cursor = undefined
+  } = await params
 
-  const notifications = await getNotifications(params);
+  const notifications = await getNotifications(params, cursor, pageSize);
   console.log(notifications);
+
+  const nextCursor = notifications.length >= pageSize ? notifications[notifications.length - 1].id.toString() : null;
 
   return (
     <div className="w-full h-full">
@@ -65,6 +71,7 @@ export default async function NotificationsPage({
         <div className="w-full h-[calc(100%-100px)] flex justify-center items-center py-6">
           <NotificationTable notifications={notifications} />
         </div>
+        <PaginationControls nextCursor={nextCursor} />
       </div>
     </div>
   );

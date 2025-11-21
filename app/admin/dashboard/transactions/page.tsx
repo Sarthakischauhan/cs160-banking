@@ -52,7 +52,7 @@ export default async function TransactionsPage({
 
     // Determine the next cursor (last item's ID)
   const transactions = data.data
-  const nextCursor = transactions.length ? transactions[transactions.length - 1].transaction_id : null;
+  const nextCursor = transactions.length >= pageSize ? transactions[transactions.length - 1].transaction_id : null;
 
   return (
     <div className="w-full h-fit">
