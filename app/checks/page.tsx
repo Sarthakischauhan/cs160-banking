@@ -61,7 +61,7 @@ export default function Page() {
         startCamera();
     }, [showCamera]);
 
-    // 🔹 Capture photo from camera
+    //  Capture photo from camera
     function capturePhoto() {
         if (!canvasRef.current || !videoRef.current) return;
         const canvas = canvasRef.current;
@@ -82,7 +82,7 @@ export default function Page() {
         }, "image/jpeg");
     }
 
-    // 🔹 Stop camera stream when closed
+    //  Stop camera stream when closed
     useEffect(() => {
         if (!showCamera && videoRef.current?.srcObject) {
             const stream = videoRef.current.srcObject as MediaStream;
@@ -148,7 +148,7 @@ export default function Page() {
             const data = await res.json();
             setresult(data);
             ~
-            alert("Check submitted successfully! We will review and approve it shortly.");
+                alert("Check submitted successfully! We will review and approve it shortly.");
         } catch (error) {
             seterror("Error cannot process the image");
         }
@@ -161,74 +161,102 @@ export default function Page() {
             </p>
             <form onSubmit={handleUpload} className="flex flex-col items-center gap-4 justify-start">
                 <div className="flex flex-col justify-center items-center gap-10 w-full">
-                    <label>
-                        <Card className="w-65 h-45 flex flex-col items-center justify-center bg-background border border-border shadow-sm hover:bg-accent/10 rounded-none hover:shadow-md hover:border-accent hover:scale-[1.02]">
+                    <Card className="w-65 h-55 flex flex-col items-center justify-between bg-background border border-border shadow-sm hover:bg-accent/10 rounded-none hover:shadow-md hover:border-accent hover:scale-[1.02] relative p-3">
+                        <CardHeader>
+                            <CardTitle className="text-blue-600">Front</CardTitle>
+                        </CardHeader>
 
-                            <CardHeader>
-                                <CardTitle className="text-blue-600">Front</CardTitle>
-                            </CardHeader>
-                            <CardAction className="flex items-center justify-center h-64 text-center">
-                                {front_image ? (
-                                    <img
-                                        src={URL.createObjectURL(front_image)}
-                                        alt=" Front Preview"
-                                        className="object-cover rounded-md border"
-                                    />
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center w-full h-full text-center gap-1">
-                                        <p className="text-sm italic text-muted-foreground">Click to upload</p>
-                                        <p className="text-xs font-semibold text-muted-foreground">OR</p>
-                                    </div>
+                        <div className="flex items-center justify-center w-full h-full overflow-hidden border border-dashed rounded-md mb-2">
+                            {front_image ? (
+                                <img
+                                    src={URL.createObjectURL(front_image)}
+                                    alt="Front Preview"
+                                    className="object-contain w-full h-full"
+                                />
+                            ) : (
+                                <div className="flex flex-col items-center justify-center text-center w-full h-full gap-1">
+                                    <p className="text-sm italic text-muted-foreground">Click Upload</p>
+                                    <p className="text-xs font-semibold text-muted-foreground">OR</p>
+                                    <p className="text-sm italic text-muted-foreground">Take a Photo</p>
+                                </div>
+                            )}
+                        </div>
 
-                                )}
-                            </CardAction>
-                            <input type="file"
-                                accept="image/*"
-                                onChange={(e) => setimage1(e.target.files?.[0] ?? null)}
-                                className="hidden" />
+                        <div className="flex gap-2">
                             <Button
                                 variant="outline"
-                                className="mt-2"
+                                type="button"
+                                onClick={() => document.getElementById("frontUpload")?.click()}
+                            >
+                                Choose file
+                            </Button>
+
+                            <Button
+                                variant="outline"
+                                type="button"
                                 onClick={() => setShowCamera("front")}
                             >
                                 <Camera className="mr-2 h-4 w-4" /> Use Camera
                             </Button>
-                        </Card>
-                    </label>
-                    <label>
-                        <Card className="w-65 h-45 flex flex-col items-center justify-center bg-background border border-border shadow-sm hover:bg-accent/10 rounded-none hover:shadow-md hover:border-accent hover:scale-[1.02]">
 
-                            <CardHeader>
-                                <CardTitle className="text-blue-600" >Back</CardTitle>
-                            </CardHeader>
-                            <input type="file"
-                                accept="image/*"
-                                onChange={(e) => setimage2(e.target.files?.[0] ?? null)}
-                                className="hidden" />
+                        </div>
 
-                            <CardAction className="flex items-center justify-center h-64 text-center">
-                                {back_image ? (
-                                    <img
-                                        src={URL.createObjectURL(back_image)}
-                                        alt="Back Preview"
-                                        className="object-cover rounded-md border"
-                                    />
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center text-center w-full h-full gap-1">
-                                        <p className="text-sm italic text-muted-foreground">Click to upload</p>
-                                        <p className="text-xs font-semibold text-muted-foreground">OR</p>
-                                    </div>
-                                )}
-                            </CardAction>
+                        <input
+                            id="frontUpload"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => setimage1(e.target.files?.[0] ?? null)}
+                            className="hidden"
+                        />
+                    </Card>
+
+                    <Card className="w-65 h-55 flex flex-col items-center justify-between bg-background border border-border shadow-sm hover:bg-accent/10 rounded-none hover:shadow-md hover:border-accent hover:scale-[1.02] relative p-3">
+                        <CardHeader>
+                            <CardTitle className="text-blue-600">Back</CardTitle>
+                        </CardHeader>
+
+                        <div className="flex items-center justify-center w-full h-full overflow-hidden border border-dashed rounded-md mb-2">
+                            {back_image ? (
+                                <img
+                                    src={URL.createObjectURL(back_image)}
+                                    alt="Back Preview"
+                                    className="object-contain w-full h-full"
+                                />
+                            ) : (
+                                <div className="flex flex-col items-center justify-center text-center w-full h-full gap-1">
+                                    <p className="text-sm italic text-muted-foreground">Click Upload</p>
+                                    <p className="text-xs font-semibold text-muted-foreground">OR</p>
+                                    <p className="text-sm italic text-muted-foreground">Take a Photo</p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex gap-2">
                             <Button
                                 variant="outline"
-                                className="mt-2"
+                                type="button"
+                                onClick={() => document.getElementById("backUpload")?.click()}
+                            >
+                                Choose file
+                            </Button>
+                            <Button
+                                variant="outline"
+                                type="button"
                                 onClick={() => setShowCamera("back")}
                             >
                                 <Camera className="mr-2 h-4 w-4" /> Use Camera
                             </Button>
-                        </Card>
-                    </label>
+                        </div>
+
+                        <input
+                            id="backUpload"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => setimage2(e.target.files?.[0] ?? null)}
+                            className="hidden"
+                        />
+                    </Card>
+
                 </div>
                 <div>
                     <Input
