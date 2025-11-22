@@ -25,14 +25,6 @@ model Account {
   Transaction                                  Transaction[]
 }
 
-model Checks {
-  check_id       String       @id @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  Checks                                       Checks[]
-  Statements                                   Statements[]
-  Transaction_Transaction_account_id2ToAccount Transaction[] @relation("Transaction_account_id2ToAccount")
-  Transaction_Transaction_account_idToAccount  Transaction[] @relation("Transaction_account_idToAccount")
-}
-
 model CardInfo {
   cardNum     BigInt    @default(autoincrement())
   cardPin     Int       @db.SmallInt
@@ -42,18 +34,18 @@ model CardInfo {
 }
 
 model Checks {
-  check_id       String       @id @unique @db.Uuid
-  created_at     DateTime?    @db.Timestamptz(6)
+  check_id       String      @id @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_at     DateTime?   @db.Timestamptz(6)
   front_image    String?
   back_image     String?
-  updated_at     DateTime?    @db.Timestamptz(6)
-  deposit_date   DateTime?    @db.Timestamptz(6)
-  deposit_amount Decimal?     @db.Decimal
-  transactionId  String?      @unique(map: "Checks_deposit_id_key") @db.Uuid
-  check_approved Boolean      @default(false)
+  updated_at     DateTime?   @db.Timestamptz(6)
+  deposit_date   DateTime?   @db.Timestamptz(6)
+  deposit_amount Decimal?    @db.Decimal
+  transactionId  String      @unique @db.Uuid
+  check_approved Boolean     @default(false)
   front_text     String?
   back_text      String?
-  deposit        DepositTest? @relation("ChecksToDeposit", fields: [transactionId], references: [transactionId])
+  transaction    Transaction @relation(fields: [transactionId], references: [transaction_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model Customer {
@@ -70,14 +62,13 @@ model Customer {
   Account       Account[]
   Login         Login[]
   Notifications Notifications[]
-  Settings      Settings?
   Statements    Statements[]
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model DepositTest {
   transactionId String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  account_id    String?
+  account_id    String?  @db.Uuid
   amount        Decimal  @db.Decimal
   description   String?
   created_at    DateTime @default(now()) @db.Timestamptz(6)
@@ -110,6 +101,7 @@ model Notifications {
   customer          String?   @db.Uuid
   message           String?
   delivery_method   String?
+  dismissed         Boolean   @default(false)
   Email             Email[]
   Customer          Customer? @relation(fields: [customer], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
 }
@@ -129,46 +121,15 @@ model Transaction {
   account_id                               String            @db.Uuid
   amount                                   Decimal           @db.Decimal(12, 2)
   created_at                               DateTime          @default(now()) @db.Timestamptz(6)
-  amount_after_transaction                 Decimal?          @db.Decimal
   account_id2                              String?           @db.Uuid
   description                              String?
   transaction_status                       TransactionStatus @default(PENDING)
   transaction_type                         TransactionType   @default(DEPOSIT)
+  amount_after_transaction                 Decimal?          @db.Decimal
+  scheduled                                DateTime?         @db.Timestamptz(6)
+  checks                                   Checks[]
   Account_Transaction_account_id2ToAccount Account?          @relation("Transaction_account_id2ToAccount", fields: [account_id2], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
   Account                                  Account           @relation(fields: [account_id], references: [account_id], onDelete: Cascade, onUpdate: NoAction, map: "transaction_account_id_fkey")
-}
-
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model DepositTest {
-  transactionId String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  account_id    String?  @db.Uuid
-  amount        Decimal  @db.Decimal
-  description   String?
-  created_at    DateTime @default(now()) @db.Timestamptz(6)
-  check_id      String?  @db.Uuid
-  checks        Checks?  @relation("ChecksToDeposit")
-}
-
-model CardInfo {
-  cardNum     BigInt    @default(autoincrement())
-  cardPin     Int       @db.SmallInt
-  accountID   String    @id(map: "cardInfo_pkey") @db.Uuid
-  expiry_date DateTime? @db.Date
-  Account     Account   @relation(fields: [accountID], references: [account_id], onDelete: NoAction, onUpdate: NoAction, map: "cardInfo_accountID_fkey")
-}
-
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model Settings {
-  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  customer_id       String    @unique @db.Uuid
-  dark_mode         Boolean   @default(false)
-  hide_balance      Boolean?  @default(false)
-  email_transaction Boolean?  @default(true)
-  email_promotions  Boolean?  @default(true)
-  email_security    Boolean?  @default(true)
-  created_at        DateTime? @default(now()) @db.Timestamp(6)
-  updated_at        DateTime? @default(now()) @db.Timestamp(6)
-  Customer          Customer  @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 enum AccountStatus {
@@ -192,6 +153,7 @@ enum TransactionStatus {
   COMPLETED
   FAILED
   CANCELED
+  SCHEDULED
 }
 
 enum TransactionType {

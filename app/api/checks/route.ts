@@ -1,5 +1,6 @@
 import { prisma } from "@/prisma/prisma";
 import { createClient } from "@supabase/supabase-js";
+import { GoogleGenerativeAI, type Content } from "@google/generative-ai";
 
 const supabase = createClient(
     process.env.SUPABASE_URL!,
@@ -79,32 +80,73 @@ export async function POST(req: Request) {
 
         }
 
+
+        async function checkValidator(imageFile: File, amount: number): Promise<boolean> {
+            const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+            const arrayBuffer = await imageFile.arrayBuffer();
+            const base64Image = Buffer.from(arrayBuffer).toString("base64");
+
+            const contents: Content[] = [
+                {
+                    role: "user",
+                    parts: [
+                        {
+                            text: `
+            You are validating a bank check image for a deposit system.
+            Return ONLY 'true' if:
+            1. The image clearly shows a valid bank check (front or back).
+            2. The deposit amount "$${amount}" (or numerically equivalent) is visible on the check.
+            Otherwise return 'false'.`,
+                        },
+                        {
+                            inlineData: {
+                                mimeType: imageFile.type,
+                                data: base64Image,
+                            },
+                        },
+                    ],
+                },
+            ];
+
+            const result = await model.generateContent({ contents });
+            const answer = result.response.text().trim().toLowerCase();
+            console.log("Gemini validation result:", answer);
+            return answer.includes("true") && !answer.includes("false");
+        }
+
         const [front, back] = await Promise.all(
             [performOcr(front_image),
             performOcr(back_image)]
         );
-        const [frontUrl, backUrl] = await Promise.all([
-            getUrl(front_image, "front"),
-            getUrl(back_image, "back"),
-        ]);
 
         const amount = Number(formData.get("amount"));
         if (!amount || amount <= 0) {
             return new Response("Deposit amount must be a positive number", { status: 400 });
         }
+        const [frontValid, backValid] = await Promise.all([
+            checkValidator(front_image, amount),
+            checkValidator(back_image, 0),
+        ]);
+        if (!frontValid || !backValid) {
+            console.log("❌ Check image failed validation — rejecting deposit.");
+            return new Response(
+                "Invalid or unreadable check image. Deposit rejected.",
+                { status: 400 }
+            );
+        }
+
+        const [frontUrl, backUrl] = await Promise.all([
+            getUrl(front_image, "front"),
+            getUrl(back_image, "back"),
+        ]);
 
         const transactionId = formData.get("transactionId") as string | null;
         if (!transactionId) {
             return new Response("Missing transaction ID", { status: 400 });
         }
-        const deposit = await prisma.depositTest.findUnique({
-            where: { transactionId },
-            select: { account_id: true },
-        });
 
-        if (!deposit) {
-            throw new Error("Deposit not found");
-        }
         const newCheck = await prisma.checks.create({
             data: {
                 front_text: front,
@@ -114,14 +156,9 @@ export async function POST(req: Request) {
                 front_image: frontUrl,
                 back_image: backUrl,
                 deposit_date: new Date(),
-                deposit: {
-                    connect: {
-                        transactionId
-                    }
-                }
+                transactionId
             }
         });
-        console.log("Supabase client:", supabase.storage.from("Checks"));
         console.log("OCR Result:", newCheck);
 
         return new Response(
