@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
   TextFilter,
   RangeFilter,
@@ -6,28 +5,8 @@ import {
   PaginationControls,
 } from "../components/filters";
 import { TransactionsTable } from "./components/transactions-table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { prisma } from "@/prisma/prisma";
 import { TransactionStatus, TransactionType } from "@prisma/client";
 import { getTransactions } from "@/lib/admin/adminData";
-import { Suspense } from "react";
-
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 
 export default async function TransactionsPage({
   searchParams,

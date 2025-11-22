@@ -103,6 +103,7 @@ interface RangeFilterProps {
   maxValue: string;
   minPlaceholder?: string;
   maxPlaceholder?: string;
+  className?: string;
   type?: string;
   prefix?: string;
 }
@@ -120,12 +121,13 @@ export function RangeFilter({
   maxPlaceholder,
   prefix,
   type = "text",
+  className,
   ...props
 }: RangeFilterProps) {
   const { updateFilter, searchParams } = useURLFilter();
 
   return (
-    <div {...props}>
+    <div className={className}>
       <Label className="mb-2">{label}</Label>
       <div className="flex gap-2 items-center">
         <InputGroup className="w-1/2">

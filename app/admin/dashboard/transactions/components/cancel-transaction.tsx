@@ -46,7 +46,7 @@ export function CancelTransactionItem({ id, disabled }: { id: string; disabled: 
         <DialogHeader>
           <DialogTitle>Confirm Cancellation</DialogTitle>
         </DialogHeader>
-        <p>Are you sure you want to cancel this transaction? This action cannot be undone.</p>
+        <p>Are you sure you want to cancel this transaction?</p>
         <DialogFooter className="space-x-2">
           <Button variant="outline" onClick={() => setOpen(false)}>Close</Button>
           <Button onClick={handleCancel} className="bg-red-600 hover:bg-red-700">Confirm</Button>

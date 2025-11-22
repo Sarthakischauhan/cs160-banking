@@ -147,10 +147,11 @@ model SupportTicket {
   transaction_id String?      @db.Uuid
   message        String
   ticket_status  TicketStatus @default(OPEN)
-  ticket_type    String?
+  ticket_type    TicketType
   created_at     DateTime     @default(now()) @db.Timestamptz(6)
   updated_at     DateTime     @default(now()) @db.Timestamptz(6)
   tags           String[]
+  subject        String?
   Account        Account?     @relation(fields: [account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
   Customer       Customer     @relation("SupportTicket_customer_idToCustomer", fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
   Handler        Customer?    @relation("SupportTicket_handler_idToCustomer", fields: [handler_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
@@ -192,4 +193,12 @@ enum TicketStatus {
   CLOSED
   OPEN
   PENDING
+}
+
+enum TicketType {
+  CANCEL
+  SUSPEND
+  DELETE
+  OTHER
+  BUG
 }
