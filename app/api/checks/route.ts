@@ -95,10 +95,10 @@ export async function POST(req: Request) {
                         {
                             text: `
             You are validating a bank check image for a deposit system.
-            Return ONLY 'true' if:
+            Return 'true' if:
             1. The image clearly shows a valid bank check (front or back).
             2. The deposit amount "$${amount}" (or numerically equivalent) is visible on the check.
-            Otherwise return 'false'.`,
+            Return 'false' only if it is unrelated, amount does not match or clearly not a check.`,
                         },
                         {
                             inlineData: {
@@ -127,7 +127,7 @@ export async function POST(req: Request) {
         }
         const [frontValid, backValid] = await Promise.all([
             checkValidator(front_image, amount),
-            checkValidator(back_image, 0),
+            checkValidator(back_image, 0|| amount),
         ]);
         if (!frontValid || !backValid) {
             console.log("❌ Check image failed validation — rejecting deposit.");
@@ -170,5 +170,4 @@ export async function POST(req: Request) {
         console.error("OCR failed:", error);
         return new Response("OCR failed", { status: 500 });
     }
-
 }

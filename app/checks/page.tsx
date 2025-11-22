@@ -147,6 +147,8 @@ export default function Page() {
             });
             const data = await res.json();
             setresult(data);
+            
+            alert("Check submitted successfully! We will review and approve it shortly.");
         } catch (error) {
             seterror("Error cannot process the image");
         }
