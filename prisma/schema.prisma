@@ -36,6 +36,8 @@ model CardInfo {
 model Checks {
   check_id       String      @id @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   created_at     DateTime?   @db.Timestamptz(6)
+  check_id       String      @id @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_at     DateTime?   @db.Timestamptz(6)
   front_image    String?
   back_image     String?
   updated_at     DateTime?   @db.Timestamptz(6)
@@ -43,8 +45,14 @@ model Checks {
   deposit_amount Decimal?    @db.Decimal
   transactionId  String      @unique @db.Uuid
   check_approved Boolean     @default(false)
+  updated_at     DateTime?   @db.Timestamptz(6)
+  deposit_date   DateTime?   @db.Timestamptz(6)
+  deposit_amount Decimal?    @db.Decimal
+  transactionId  String      @unique @db.Uuid
+  check_approved Boolean     @default(false)
   front_text     String?
   back_text      String?
+  DepositTest    Transaction @relation(fields: [transactionId], references: [transaction_id], onDelete: NoAction, onUpdate: NoAction)
   DepositTest    Transaction @relation(fields: [transactionId], references: [transaction_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
@@ -176,6 +184,7 @@ enum TransactionStatus {
   COMPLETED
   FAILED
   CANCELED
+  SCHEDULED
   SCHEDULED
 }
 
