@@ -2,10 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button"; 
-import { jsPDF } from "jspdf"; 
-import { ReportCard } from "@/app/dashboard/components/report-card";
-
+import { AdminReportCard } from "@/app/dashboard/components/admin-report-card";
 
 export default function BankManagerDashboard() {
   const [reportData, setReportData] = useState<any[]>([]);
@@ -26,25 +23,6 @@ export default function BankManagerDashboard() {
       setLoading(false);
     }
   }
-  async function generateReport() {
-  try {
-    const response = await fetch("/api/report");
-    if (!response.ok) throw new Error("Failed to fetch report data");
-
-    const data = await response.json();
-    const { customer, transactions } = data;
-
-    // make a simple PDF
-    const doc = new jsPDF();
-    doc.text(`Customer ID: ${customer.customer_id}`, 10, 10);
-    doc.text(`Transactions: ${transactions.length}`, 10, 20);
-    doc.save(`report-${customer.customer_id}.pdf`);
-  } catch (err) {
-    console.error("Error generating report:", err);
-  }
-}
-
-
   useEffect(() => {
     fetchAccounts();
   }, []);
@@ -52,11 +30,15 @@ export default function BankManagerDashboard() {
   // Summary metrics
   const totalAccounts = reportData.length;
   const totalBalance = reportData.reduce(
-  (sum, a) => sum + Number(a.balance ?? 0),
-  0
-);
+    (sum, a) => sum + Number(a.balance ?? 0),
+    0
+  );
 
-  const totalTransactions = reportData.reduce((sum, acc) => sum + (acc._count?.Transaction || 0), 0);
+  const totalTransactions = reportData.reduce(
+    (sum, acc) => sum + (acc.Transaction_Transaction_account_id2ToAccount?.length ?? 0),
+    0
+  );
+
 
   const filteredData = (reportData ?? [])
     // Filter by account type
@@ -64,7 +46,7 @@ export default function BankManagerDashboard() {
       const type = acc.account_type?.toLowerCase() ?? "";
       return filter === "all" || type === filter.toLowerCase();
     })
- 
+
 
   const getAccountTypeColor = (type: string) => {
     switch (type) {
@@ -87,7 +69,7 @@ export default function BankManagerDashboard() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-slate-200">
-            <div className="text-6xl mb-4">📊</div>
+            <div className="text-6xl mb-4"></div>
             <h3 className="text-xl font-semibold text-slate-700 mb-2">No Data Available</h3>
             <p className="text-slate-500">No customer accounts to display at this time.</p>
           </div>
@@ -170,17 +152,19 @@ export default function BankManagerDashboard() {
                     })}
                   </p>
                 </div>
-                <Button onClick={generateReport}>Download PDF</Button>
 
-
+                <AdminReportCard
+                  customer_id={account.Customer?.customer_id || ""}
+                  account_id={account.account_id}
+                />
                 <div className="space-y-2 py-3 border-t border-slate-100">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600">Customer ID</span>
-                    <span className="font-semibold text-slate-800 font-mono">{account.customer_id ?? "N/A"}</span>
+                    <span className="text-slate-600">Customer Name</span>
+                    <span className="font-semibold text-slate-800 font-mono">{`${account.Customer?.first_name ?? ""} ${account.Customer?.last_name ?? ""}`.trim() || "N/A"}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-600">Transactions</span>
-                    <span className="font-semibold text-slate-800">{account._count?.Transaction ?? 0}</span>
+                    <span className="font-semibold text-slate-800"> {account.Transaction_Transaction_account_id2ToAccount?.length ?? 0}</span>
                   </div>
                 </div>
 
