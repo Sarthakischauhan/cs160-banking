@@ -13,14 +13,9 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
         if (!customer) return NextResponse.json({ message: "Customer not found" }, { status: 400 });
 
         const body = await req.json();
-        const { account_id, account_id2, balance, amount, transaction_type, description } = body || {};
-        console.log(account_id, account_id2, balance, amount, transaction_type, description);   
-        if (!account_id || typeof amount !== "number" || !transaction_type) {
-            return NextResponse.json({ message: "account_id, amount (number), transaction_type required" }, { status: 400 });
-        }
-        if (!["immediate", "scheduled"].includes(String(transaction_type).toLowerCase())) {
-            return NextResponse.json({ message: "transaction_type must be immediate or scheduled" }, { status: 400 });
-        }
+        const { account_id, amount, description, transaction_type } = body || {};
+        
+
         if (amount <= 0) {
             return NextResponse.json({ message: "amount must be positive" }, { status: 400 });
         }
