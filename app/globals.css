@@ -188,3 +188,16 @@ html, body {
     background-color 1.0s ease,
     border-color 1.0s ease;
 }
+
+.map-infowindow {
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--foreground);
+  background: var(--background);
+}
+
+.dark .map-infowindow {
+  color: var(--foreground);
+  background: var(--background);
+}

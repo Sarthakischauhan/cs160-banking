@@ -6,6 +6,7 @@ import { OnboardSidebar } from "./components/onboard-sidebar";
 import { cookies } from "next/headers";
 import { ThemeScript } from "@/components/theme-script";
 import { HideBalanceProvider } from "./providers/hide-balance-provider";
+import ChatWidget from "./components/chat-widget";
 
 export default async function dashboardLayout({
   children,
@@ -31,12 +32,13 @@ export default async function dashboardLayout({
   const user = await getUserData({ userId: userSub })
   // const accountId = await handleCurrentId();
   return (
-    <html lang="en" className={theme}>
+    <html lang="en">
       <HideBalanceProvider initialHideBalance={hideBalance}>
         <SidebarProvider>
           {user?.isOnboarded ? <AppSidebar />  : <OnboardSidebar />}
           <SidebarInset>{children}</SidebarInset>
         </SidebarProvider>
+        <ChatWidget />
       </HideBalanceProvider>
     </html>
   );
