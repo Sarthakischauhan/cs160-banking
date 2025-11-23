@@ -1,7 +1,7 @@
 // components/ChatWidget.tsx
 "use client";
 import React, { useState, useRef } from "react";
-import Image from 'next/image';
+import { BotIcon } from 'lucide-react';
 
 type Message = { id: string; role: "user" | "assistant" | "system"; text: string };
 
@@ -56,19 +56,13 @@ export default function ChatWidget() {
       <button
         onClick={() => setOpen((o) => !o)}
         className="
-          fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg 
+          fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full shadow-lg 
           bg-blue-600 text-white flex items-center justify-center
           dark:bg-blue-500 hover:cursor-pointer
         "
         aria-label="Open assistant"
       >
-        <Image 
-          src="/assistant.png" 
-          alt="Assistant"
-          className="rounded-full border-2 border-blue-400 object-cover"
-          width={56} 
-          height={56} 
-        />
+        <BotIcon className="w-7 h-7" />
       </button>
 
       {/* Chat Panel */}
