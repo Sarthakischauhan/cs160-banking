@@ -5,19 +5,19 @@ import { TransferCard } from "./transfer-card";
 import { RecentTransfersCard } from "./recent-transfers-card";
 import { useState } from "react";
 import { AccountType } from "@prisma/client";
-import Decimal from "decimal.js";
+import type { RecentTransferUser } from "@/lib/transactions";
 
 type TransferPageProps = {
     account: {
         balance: number;
         account_type: AccountType
     },
-    activeId:string
+    activeId:string;
+    recentRecipients: RecentTransferUser[];
 }
 
-
-export function TransferPage({account, activeId} : TransferPageProps) {
-  const [selected, setSelected] = useState<string | null>(null);
+export function TransferPage({account, activeId, recentRecipients} : TransferPageProps) {
+  const [selected, setSelected] = useState<selectedRecipient | null>(null);
 
   return (
     <>
@@ -32,7 +32,10 @@ export function TransferPage({account, activeId} : TransferPageProps) {
             </div>
 
             <div className="flex-1">
-              <RecentTransfersCard onSelect={setSelected} />
+              <RecentTransfersCard
+                onSelect={({account_id, customer_name}: selectedRecipient) => setSelected({account_id, customer_name})}
+                recentRecipients={recentRecipients}
+              />
             </div>
           </div>
 

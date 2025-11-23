@@ -36,7 +36,7 @@ export function TransferCard({
   selectedRecipient,
   activeAccountId,
 }: {
-  selectedRecipient?: string | null;
+  selectedRecipient?: selectedRecipient | null;
   activeAccountId?: string;
 }) {
     
@@ -45,7 +45,7 @@ export function TransferCard({
   const form = useForm<Transfer>({
     defaultValues: {
       account_id: null,
-      account_id2: selectedRecipient ?? null,
+      account_id2: selectedRecipient?.account_id ?? null,
       amount: null,
       transaction_type: "immediate",
       description: null,
@@ -122,7 +122,7 @@ export function TransferCard({
                     <Input
                       placeholder="Recipient Account ID or Email"
                       {...field}
-                      value={field.value ?? ""}
+                      value={field.value ?? selectedRecipient?.account_id}
                     />
                   </FormControl>
                   <FormDescription>
