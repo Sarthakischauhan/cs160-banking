@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
 import { Camera } from "lucide-react";
 
+
 type Account = {  // Structure to hold customer info from the UI input
     account_id: string | null;
     balance: number | null;
@@ -289,5 +290,5 @@ export default function Page() {
                 </div>
             )}
         </main >
-    )
+    );
 }
