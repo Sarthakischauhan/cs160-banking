@@ -460,8 +460,6 @@ export function ReportCard() {
         </CardContent>
         <CardFooter className="h-full">
           <div className="w-full grid grid-cols-3">
-            <div />
-            <div />
             <div className="w-full">
                 <Button 
                   variant="outline" 
