@@ -14,10 +14,11 @@ const DEFAULT_AVATAR = "https://avatar.vercel.sh";
 type RecentTransfersCardProps = {
   onSelect: ({
     account_id,
-    customer_name,
+    name,
   }: {
     account_id: string;
-    customer_name: string;
+    name: string;
+    email?: string;
   }) => void;
   recentRecipients: RecentTransferUser[];
 };
@@ -45,7 +46,7 @@ export function RecentTransfersCard({
             {recentRecipients.map((recipient) => (
               <div
                 key={recipient.id}
-                onClick={() => onSelect({account_id: recipient.id, customer_name: recipient.name} )}
+                onClick={() => onSelect({account_id: recipient.id, name: recipient.name} )}
                 className="
                   w-full cursor-pointer rounded-xl border
                   p-3 transition-all

@@ -1,4 +1,6 @@
-type selectedRecipient = {
+type SearchRecipient = {
   account_id: string;
-  customer_name: string;
-}
+  account_type?: string;
+  name: string;
+  email?: string;
+};

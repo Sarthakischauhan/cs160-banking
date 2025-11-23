@@ -1,5 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,16 +22,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
 import { MoneyInput } from "../../deposit/components/money-input";
-import { useRouter } from "next/navigation";
-
+import { RecipientSearchResults } from "../components/recipient-search-result";
+import { RecipientPreview } from "../components/recipient-preview";
 
 type Transfer = {
   account_id: string | null;
   account_id2: string | null;
   amount: number | null;
-  balance: number | null;
   transaction_type: "immediate" | "scheduled";
   description: string | null;
 };
@@ -36,60 +38,89 @@ export function TransferCard({
   selectedRecipient,
   activeAccountId,
 }: {
-  selectedRecipient?: selectedRecipient | null;
+  selectedRecipient?: SearchRecipient | null;
   activeAccountId?: string;
 }) {
-    
   const router = useRouter();
+
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchRecipient[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const [recipient, setRecipient] = useState<SearchRecipient | null>(null);
 
   const form = useForm<Transfer>({
     defaultValues: {
       account_id: null,
-      account_id2: selectedRecipient?.account_id ?? null,
+      account_id2: null,
       amount: null,
       transaction_type: "immediate",
       description: null,
     },
   });
 
-  const handleClick = async (values: any) => {
-    const fromAccount = activeAccountId;
-    if (!fromAccount) return;
+  useEffect(() => {
+    if (selectedRecipient) {
+      console.log(selectedRecipient)
+      setRecipient(selectedRecipient);
+      form.setValue("account_id2", selectedRecipient.account_id);
+    }
+  }, [selectedRecipient, form]);
+
+  const searchRecipients = async (q: string) => {
+    if (!q || q.length < 2) {
+      setResults([]);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/recipients?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      setResults(data);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSelectRecipient = (user: SearchRecipient) => {
+    setRecipient(user);
+    form.setValue("account_id2", user.account_id);
+    setQuery(user.name);
+    setResults([]);
+  };
+
+  const handleSubmit = async (values: any) => {
+    if (!activeAccountId || !recipient) return;
 
     const payload = {
-      from_account_id: fromAccount,
-      to_account_id: selectedRecipient ?? values.account_id2,
+      from_account_id: activeAccountId,
+      to_account_id: recipient.account_id,
       amount: Number(values.amount),
       description: values.description,
     };
 
     const res = await fetch("/api/transfer", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
-    if (!res.ok) {
-      // minimal error handling: log and return
-      console.error("Transfer failed", await res.text());
-      return;
-    }
+    if (!res.ok) return;
 
-    router.push("/dashboard"); // Return to dashboard
+    router.push("/dashboard");
   };
 
   return (
     <Card className="h-fit w-full">
       <CardHeader>
         <CardTitle>Transfer</CardTitle>
-        <CardDescription>Transfer funds securely and quickly</CardDescription>
+        <CardDescription>Transfer funds securely</CardDescription>
       </CardHeader>
 
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleClick)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             {/* Amount */}
             <FormField
               control={form.control}
@@ -105,29 +136,44 @@ export function TransferCard({
                       <MoneyInput field={field} />
                     </div>
                   </FormControl>
-                  <FormDescription>Amount to Transfer</FormDescription>
+                  <FormDescription>Amount to transfer</FormDescription>
+                  <RecipientPreview user={recipient} />
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Recipient */}
+            {/* Recipient Search */}
             <FormField
               control={form.control}
               name="account_id2"
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
-                  <FormLabel>Recipient Account</FormLabel>
+                  <FormLabel>Recipient</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Recipient Account ID or Email"
-                      {...field}
-                      value={field.value ?? selectedRecipient?.account_id}
-                    />
+                    <div className="space-y-2 relative">
+                      <Input
+                        placeholder="Search by name or email"
+                        value={query}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setQuery(val);
+                          searchRecipients(val);
+                        }}
+                      />
+
+                      {loading && (
+                        <div className="text-sm text-gray-500">
+                          Searching...
+                        </div>
+                      )}
+                      <RecipientSearchResults
+                        results={results}
+                        onSelect={handleSelectRecipient}
+                      />
+                    </div>
                   </FormControl>
-                  <FormDescription>
-                    Enter the recipient’s account ID
-                  </FormDescription>
+                  <FormDescription>Search and select a recipient</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -141,10 +187,7 @@ export function TransferCard({
                 <FormItem>
                   <FormLabel>Transfer Type</FormLabel>
                   <FormControl>
-                    <select
-                      className="border rounded-md p-2 w-full"
-                      {...field}
-                    >
+                    <select className="border rounded-md p-2 w-full" {...field}>
                       <option value="immediate">Immediate</option>
                       <option value="scheduled">Scheduled</option>
                     </select>
@@ -164,7 +207,7 @@ export function TransferCard({
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="What's this transfer for?"
+                      placeholder="What's this for?"
                       {...field}
                       value={field.value ?? ""}
                     />
@@ -175,7 +218,6 @@ export function TransferCard({
               )}
             />
 
-            {/* Submit */}
             <Button type="submit" variant="success">
               Send
             </Button>
