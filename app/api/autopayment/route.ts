@@ -14,7 +14,6 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
 
         const body = await req.json();
         const { account_id, balance, amount, description, scheduled } = body || {};
-        console.log(account_id, balance, amount, description, scheduled); 
         
         let scheduledDate: Date | null = null;
         if (scheduled) {
@@ -73,7 +72,6 @@ export const GET = auth0.withApiAuthRequired(async () => {
 
     const customer = await prisma.customer.findUnique({ where: { auth0_user_id: auth0UserId } });
 
-    console.log("Customer:", customer);
 
     if (!customer) {
       return NextResponse.json({ message: "Customer not found" }, { status: 404 });
@@ -89,7 +87,6 @@ export const GET = auth0.withApiAuthRequired(async () => {
       return NextResponse.json([], { status: 200 }); // No accounts → no payments
     }
 
-    console.log("Accounts:", accounts); 
 
     const accountIds = accounts.map((a) => a.account_id);
 

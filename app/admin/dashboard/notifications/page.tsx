@@ -22,7 +22,6 @@ export default async function NotificationsPage({
   const maxDate = params.maxDate ?? "";
 
   const notifications = await getNotifications(params);
-  console.log(notifications);
 
   return (
     <div className="w-full h-full">

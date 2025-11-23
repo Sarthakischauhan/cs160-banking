@@ -14,7 +14,6 @@ export function TransactionDetailsButton({
 }: {
   transaction: any;
 }) {
-  console.log(transaction);
   return (
     <Dialog>
       <DialogTrigger asChild>

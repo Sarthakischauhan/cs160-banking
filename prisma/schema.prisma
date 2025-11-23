@@ -4,25 +4,24 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DIRECT_URL")
-  directUrl = env("DIRECT_URL")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model Account {
-  account_id                                   String        @id(map: "account_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  customer_id                                  String        @db.Uuid
-  balance                                      Decimal       @default(0.00) @db.Decimal(12, 2)
-  created_at                                   DateTime      @default(now()) @db.Timestamptz(6)
-  updated_at                                   DateTime      @default(now()) @db.Timestamptz(6)
-  limit_amount                                 Decimal?      @db.Decimal
-  account_status                               AccountStatus @default(ACTIVE)
-  account_type                                 AccountType   @default(CHECKING)
-  Customer                                     Customer      @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade, onUpdate: NoAction, map: "account_customer_id_fkey")
+  account_id                                   String          @id(map: "account_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  customer_id                                  String          @db.Uuid
+  balance                                      Decimal         @default(0.00) @db.Decimal(12, 2)
+  created_at                                   DateTime        @default(now()) @db.Timestamptz(6)
+  updated_at                                   DateTime        @default(now()) @db.Timestamptz(6)
+  limit_amount                                 Decimal?        @db.Decimal
+  account_status                               AccountStatus   @default(ACTIVE)
+  account_type                                 AccountType     @default(CHECKING)
+  Customer                                     Customer        @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade, onUpdate: NoAction, map: "account_customer_id_fkey")
   CardInfo                                     CardInfo?
   Statements                                   Statements[]
-  Transaction_Transaction_account_id2ToAccount Transaction[] @relation("Transaction_account_id2ToAccount")
-  Transaction_Transaction_account_idToAccount  Transaction[] @relation("Transaction_account_idToAccount")
+  SupportTicket                                SupportTicket[]
+  Transaction_Transaction_account_id2ToAccount Transaction[]   @relation("Transaction_account_id2ToAccount")
+  Transaction_Transaction_account_idToAccount  Transaction[]   @relation("Transaction_account_idToAccount")
 }
 
 model CardInfo {
@@ -49,20 +48,23 @@ model Checks {
 }
 
 model Customer {
-  customer_id   String          @id(map: "customer_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  auth0_user_id String          @unique
-  first_name    String?
-  last_name     String?
-  address       String?
-  phone         String?
-  created_at    DateTime?       @default(now()) @db.Timestamptz(6)
-  updated_at    DateTime?       @default(now()) @db.Timestamptz(6)
-  email         String?
-  account_type  String?
-  Account       Account[]
-  Login         Login[]
-  Notifications Notifications[]
-  Statements    Statements[]
+  customer_id                                       String          @id(map: "customer_pkey") @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  auth0_user_id                                     String          @unique
+  first_name                                        String?
+  last_name                                         String?
+  address                                           String?
+  phone                                             String?
+  created_at                                        DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at                                        DateTime?       @default(now()) @db.Timestamptz(6)
+  email                                             String?
+  account_type                                      String?
+  monthly_income                                    Float?
+  Account                                           Account[]
+  Login                                             Login[]
+  Notifications                                     Notifications[]
+  Statements                                        Statements[]
+  SupportTicket_SupportTicket_customer_idToCustomer SupportTicket[] @relation("SupportTicket_customer_idToCustomer")
+  SupportTicket_SupportTicket_handler_idToCustomer  SupportTicket[] @relation("SupportTicket_handler_idToCustomer")
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -128,8 +130,28 @@ model Transaction {
   amount_after_transaction                 Decimal?          @db.Decimal
   scheduled                                DateTime?         @db.Timestamptz(6)
   Checks                                   Checks?
+  SupportTicket                            SupportTicket[]
   Account_Transaction_account_id2ToAccount Account?          @relation("Transaction_account_id2ToAccount", fields: [account_id2], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
   Account                                  Account           @relation("Transaction_account_idToAccount", fields: [account_id], references: [account_id], onDelete: Cascade, onUpdate: NoAction, map: "transaction_account_id_fkey")
+}
+
+model SupportTicket {
+  sticket_id                                   BigInt       @id @default(autoincrement())
+  customer_id                                  String       @db.Uuid
+  handler_id                                   String?      @db.Uuid
+  account_id                                   String?      @db.Uuid
+  transaction_id                               String?      @db.Uuid
+  message                                      String
+  ticket_status                                TicketStatus @default(OPEN)
+  ticket_type                                  TicketType
+  created_at                                   DateTime     @default(now()) @db.Timestamptz(6)
+  updated_at                                   DateTime     @default(now()) @db.Timestamptz(6)
+  tags                                         String[]
+  subject                                      String?
+  Account                                      Account?     @relation(fields: [account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction)
+  Customer_SupportTicket_customer_idToCustomer Customer     @relation("SupportTicket_customer_idToCustomer", fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
+  Customer_SupportTicket_handler_idToCustomer  Customer?    @relation("SupportTicket_handler_idToCustomer", fields: [handler_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
+  Transaction                                  Transaction? @relation(fields: [transaction_id], references: [transaction_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 enum AccountStatus {
@@ -160,4 +182,20 @@ enum TransactionType {
   DEPOSIT
   WITHDRAWAL
   TRANSFER
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum TicketStatus {
+  CLOSED
+  OPEN
+  PENDING
+}
+
+enum TicketType {
+  CANCEL
+  SUSPEND
+  DELETE
+  OTHER
+  BUG
+  APPROVE
 }

@@ -48,8 +48,8 @@ export function RecentTransfersCard({
                 onClick={() => onSelect({account_id: recipient.id, customer_name: recipient.name} )}
                 className="
                   w-full cursor-pointer rounded-xl border
-                  bg-white p-3 transition-all
-                  hover:bg-gray-50 hover:shadow-md hover:ring-1 hover:ring-gray-200
+                  p-3 transition-all
+                  hover:bg-gray-100/20
                   active:scale-[0.98]
                 "
               >
@@ -66,7 +66,7 @@ export function RecentTransfersCard({
                 </div>
 
                 {/* Metadata */}
-                <div className="mt-3 space-y-1 text-xs text-gray-500">
+                <div className="mt-3 w-full space-y-1 text-xs text-gray-500">
                   <p>
                     Acct: ****{recipient.accountNumber.slice(-4)}
                   </p>

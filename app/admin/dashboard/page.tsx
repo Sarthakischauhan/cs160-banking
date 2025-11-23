@@ -59,7 +59,6 @@ export default async function AdminDashboardPage() {
     },
   ];
 
-  console.log(data);
   return (
     <div className="w-full h-fit">
       <div className="p-10 grid grid-cols-2">

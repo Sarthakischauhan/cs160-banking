@@ -29,18 +29,14 @@ export default async function dashboardLayout({
     throw new Error("User ID (sub) is missing from session.")
   }
   const user = await getUserData({ userId: userSub })
-  // const accountId = await handleCurrentId();
   return (
-    <html lang="en" className={theme}>
-      <head>
-        <ThemeScript />
-      </head>
+    <div>
       <HideBalanceProvider initialHideBalance={hideBalance}>
         <SidebarProvider>
           {user?.isOnboarded ? <AppSidebar />  : <OnboardSidebar />}
           <SidebarInset>{children}</SidebarInset>
         </SidebarProvider>
       </HideBalanceProvider>
-    </html>
+    </div>
   );
 }

@@ -68,8 +68,6 @@ export async function POST(req: Request) {
             },
         });
 
-        console.log("OCR Result:", newCheck);
-
         return new Response(
             JSON.stringify({ message: "Saved to DB", checks: newCheck }),
             { status: 200, headers: { "Content-Type": "application/json" } }
