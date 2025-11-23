@@ -82,7 +82,7 @@ export const ProfileCompletion = () => {
   }
 
   return (
-    <Card className="w-[50] max-w-2xl mx-auto my-10">
+    <Card className="w-full max-w-2xl mx-auto my-10">
       <CardHeader className="text-center">
         <div className="mx-auto mb-4 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
           <User className="w-6 h-6 text-primary" />
@@ -370,6 +370,14 @@ export const ProfileCompletion = () => {
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Saving Profile..." : "Complete Profile"}
           </Button>
+          <Button>
+              <a 
+                href="/auth/logout"
+                className="bg-black text-white rounded-lg w-1/2 mx-auto text-center py-2 hover:bg-opacity-80"
+              >
+                Logout
+              </a>
+            </Button>
         </form>
       </CardContent>
     </Card>

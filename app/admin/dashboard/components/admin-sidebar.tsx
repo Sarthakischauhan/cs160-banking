@@ -17,6 +17,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import Link from "next/link";
 
 // A collection of possible sidebar options users can use to route through the page.
 // UPDATE ME when another page is added for routing purposes
@@ -63,10 +64,10 @@ export function AdminSidebar() {
           {sidebarOptions.map((option) => (
             <SidebarMenuItem key={option.title}>
               <SidebarMenuButton asChild>
-                <a href={option.url}>
+                <Link href={option.url}>
                   <option.img />
                   <span className="text-lg">{option.title}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
@@ -75,9 +76,14 @@ export function AdminSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <h1 className="text-center">Username</h1>
-          </SidebarMenuItem>
+          <SidebarMenuButton>
+              <a 
+                href="/auth/logout"
+                className="bg-black text-white rounded-lg w-1/2 mx-auto text-center py-2 hover:bg-opacity-80"
+              >
+                Logout
+              </a>
+            </SidebarMenuButton>
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>

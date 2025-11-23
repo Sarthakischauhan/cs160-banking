@@ -1,6 +1,6 @@
 "use client";
 
-import { BalanceCard } from "../../components/balance-card";
+import { BalanceCardWrapper } from "../../components/balance-card-wrapper";
 import { TransferCard } from "./transfer-card";
 import { RecentTransfersCard } from "./recent-transfers-card";
 import { useState } from "react";
@@ -28,7 +28,7 @@ export function TransferPage({account, activeId, recentRecipients} : TransferPag
           {/* Left Column */}
           <div className="flex flex-col gap-6 w-fit">
             <div className="flex-1">
-              <BalanceCard userBalance={account.balance} account_type={account.account_type}/>
+              <BalanceCardWrapper userBalance={account.balance} account_type={account.account_type}/>
             </div>
 
             <div className="flex-1">

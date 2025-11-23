@@ -120,3 +120,15 @@
     @apply bg-background text-foreground;
   }
 }
+
+html, body {
+  transition:
+    background-color 1.0s ease,
+    color 1.0s ease;
+}
+
+* {
+  transition:
+    background-color 1.0s ease,
+    border-color 1.0s ease;
+}

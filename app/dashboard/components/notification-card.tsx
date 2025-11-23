@@ -8,7 +8,7 @@ import {
 import {
   Table, TableHeader, TableHead, TableRow, TableBody, TableCell,
 } from "@/components/ui/table";
-import { BadgeDollarSign, Key, Settings } from "lucide-react";
+import { BadgeDollarSign, Key, Settings as SettingsIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -38,7 +38,7 @@ export function NotificationCard({
   const typeIcon = (type: NotificationType) => {
     switch (type) {
       case "TRANSACTION": return <BadgeDollarSign className="w-5 h-5" />;
-      case "SYSTEM": return <Settings className="w-5 h-5" />;
+      case "SYSTEM": return <SettingsIcon className="w-5 h-5" />;
       case "SECURITY": return <Key className="w-5 h-5" />;
       default: return <span className="text-xl">🔔</span>;
     }

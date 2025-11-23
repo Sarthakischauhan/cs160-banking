@@ -21,6 +21,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { TransactionDetailsButton } from "./transaction-details";
+import { CancelTransactionItem } from "./cancel-transaction";
 
 export function TransactionsTable(transactions: {
   transactions: Record<string, any>;
@@ -30,7 +32,6 @@ export function TransactionsTable(transactions: {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Transaction ID</TableHead>
             <TableHead>From</TableHead>
             <TableHead>To</TableHead>
             <TableHead>Type</TableHead>
@@ -43,7 +44,7 @@ export function TransactionsTable(transactions: {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {transactions.transactions.map(
+          {transactions.transactions.data.map(
             (
               transaction: Transaction & {
                 Account: Account & { Customer: Customer };
@@ -54,9 +55,6 @@ export function TransactionsTable(transactions: {
               }
             ) => (
               <TableRow key={transaction.transaction_id}>
-                <TableCell>
-                  {censorString(transaction.transaction_id)}
-                </TableCell>
                 <TableCell>
                   {transaction.Account.Customer.first_name +
                     " " +
@@ -96,15 +94,15 @@ export function TransactionsTable(transactions: {
                     <DropdownMenuContent>
                       <DropdownMenuLabel>Manage Transaction</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem>View Details</DropdownMenuItem>
+                      <TransactionDetailsButton transaction={transaction} />
                       <DropdownMenuItem
-                        disabled={transaction.transaction_status != "PENDING"}
+                        disabled={["COMPLETED"].includes(transaction.transaction_status)}
                       >
                         Approve
                       </DropdownMenuItem>
                       <DropdownMenuItem>Flag</DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem>Cancel</DropdownMenuItem>
+                      <CancelTransactionItem id={transaction.transaction_id} />
                       <DropdownMenuItem variant="destructive">
                         Delete
                       </DropdownMenuItem>

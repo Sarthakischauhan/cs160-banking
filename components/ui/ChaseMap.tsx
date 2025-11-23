@@ -3,6 +3,135 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 
+// Map styles for light and dark themes
+const getLightMapStyles = () => [
+  {
+    featureType: 'poi',
+    elementType: 'labels',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.business',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.attraction',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.school',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.sports_complex',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.place_of_worship',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.park',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'transit',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'transit.station',
+    stylers: [{ visibility: 'off' }],
+  },
+];
+
+const getDarkMapStyles = () => [
+  { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
+  {
+    featureType: 'administrative.locality',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#d59563' }],
+  },
+  {
+    featureType: 'poi',
+    elementType: 'labels',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.business',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.park',
+    elementType: 'geometry',
+    stylers: [{ color: '#263c3f' }],
+  },
+  {
+    featureType: 'poi.park',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#6b9a76' }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'geometry',
+    stylers: [{ color: '#38414e' }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'geometry.stroke',
+    stylers: [{ color: '#212a37' }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#9ca5b3' }],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'geometry',
+    stylers: [{ color: '#746855' }],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'geometry.stroke',
+    stylers: [{ color: '#1f2835' }],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#f3d19c' }],
+  },
+  {
+    featureType: 'transit',
+    elementType: 'geometry',
+    stylers: [{ color: '#2f3948' }],
+  },
+  {
+    featureType: 'transit',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'transit.station',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'water',
+    elementType: 'geometry',
+    stylers: [{ color: '#17263c' }],
+  },
+  {
+    featureType: 'water',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#515c6d' }],
+  },
+  {
+    featureType: 'water',
+    elementType: 'labels.text.stroke',
+    stylers: [{ color: '#17263c' }],
+  },
+];
+
 interface Place {
   displayName?: { text: string };
   formattedAddress?: string;
@@ -29,6 +158,34 @@ export default function ChaseMap() {
   const [directionsRenderer, setDirectionsRenderer] = useState<google.maps.DirectionsRenderer | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [showingDirections, setShowingDirections] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Detect theme on mount and when it changes
+  useEffect(() => {
+    const checkTheme = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      setIsDarkMode(isDark);
+      
+      // Update map styles if map exists
+      if (map) {
+        map.setOptions({
+          styles: isDark ? getDarkMapStyles() : getLightMapStyles(),
+        });
+      }
+    };
+
+    // Check initial theme
+    checkTheme();
+
+    // Watch for theme changes
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
+  }, [map]);
 
   useEffect(() => {
     const loader = new Loader({
@@ -39,48 +196,13 @@ export default function ChaseMap() {
     loader.load().then(() => {
       if (!mapRef.current) return;
 
+      const initialIsDark = document.documentElement.classList.contains('dark');
+      setIsDarkMode(initialIsDark);
+
       const mapInstance = new google.maps.Map(mapRef.current, {
         center: { lat: 37.33537673950195, lng: -121.87994384765625 },
         zoom: 12,
-        styles: [
-          {
-            featureType: 'poi',
-            elementType: 'labels',
-            stylers: [{ visibility: 'off' }],
-          },
-          {
-            featureType: 'poi.business',
-            stylers: [{ visibility: 'off' }],
-          },
-          {
-            featureType: 'poi.attraction',
-            stylers: [{ visibility: 'off' }],
-          },
-          {
-            featureType: 'poi.school',
-            stylers: [{ visibility: 'off' }],
-          },
-          {
-            featureType: 'poi.sports_complex',
-            stylers: [{ visibility: 'off' }],
-          },
-          {
-            featureType: 'poi.place_of_worship',
-            stylers: [{ visibility: 'off' }],
-          },
-          {
-            featureType: 'poi.park',
-            stylers: [{ visibility: 'off' }],
-          },
-          {
-            featureType: 'transit',
-            stylers: [{ visibility: 'off' }],
-          },
-          {
-            featureType: 'transit.station',
-            stylers: [{ visibility: 'off' }],
-          },
-        ],
+        styles: initialIsDark ? getDarkMapStyles() : getLightMapStyles(),
       });
 
       const infoWin = new google.maps.InfoWindow();
@@ -268,26 +390,26 @@ export default function ChaseMap() {
     };
 
     return (
-    <div className="relative w-full h-screen flex bg-white text-gray-800">
+    <div className="relative w-full h-screen flex bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">
       {/* Sidebar */}
-      <div className="w-80 bg-white shadow-md border-r border-gray-200 overflow-y-auto z-20">
-        <div className="p-4 border-b border-gray-200">
+      <div className="w-80 bg-white dark:bg-gray-800 shadow-md border-r border-gray-200 dark:border-gray-700 overflow-y-auto z-20">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <form onSubmit={handleManualSearch} className="flex items-center space-x-2 mb-3">
             <input
               type="text"
               placeholder="Enter city or ZIP..."
               value={manualQuery}
               onChange={(e) => setManualQuery(e.target.value)}
-              className="flex-1 border border-gray-300 bg-gray-50 rounded-md px-2 py-1 outline-none text-gray-800 placeholder-gray-400"
+              className="flex-1 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded-md px-2 py-1 outline-none text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
             />
-            <button className="bg-gray-700 text-gray-100 px-3 py-1 rounded-md hover:bg-gray-800 cursor-pointer">
+            <button className="bg-gray-700 dark:bg-gray-600 text-gray-100 px-3 py-1 rounded-md hover:bg-gray-800 dark:hover:bg-gray-500 cursor-pointer">
               Search
             </button>
           </form>
 
           <button
             onClick={handleGeolocate}
-            className="w-full bg-blue-500 text-gray-100 px-3 py-2 hover:bg-blue-600 cursor-pointer"
+            className="w-full bg-blue-500 dark:bg-blue-600 text-gray-100 px-3 py-2 hover:bg-blue-600 dark:hover:bg-blue-700 cursor-pointer"
           >
             Search Locations Near You
           </button>
@@ -295,21 +417,23 @@ export default function ChaseMap() {
 
         <div className="p-3">
           {places.length === 0 ? (
-            <p className="text-gray-500 text-sm italic">No results yet. Search to get started!</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm italic">No results yet. Search to get started!</p>
           ) : (
             <ul className="space-y-3">
               {places.map((place, index) => (
                 <li
                   key={index}
                   className={`border rounded-lg p-3 transition ${
-                    selectedIndex === index ? 'bg-gray-100 border-gray-500' : 'border-gray-200'
+                    selectedIndex === index 
+                      ? 'bg-gray-100 dark:bg-gray-700 border-gray-500 dark:border-gray-400' 
+                      : 'border-gray-200 dark:border-gray-600'
                   }`}
                 >
                   <div className="cursor-pointer" onClick={() => handleSelectPlace(index)}>
                     <strong className="block text-sm font-semibold">
                       {place.displayName?.text || 'Chase ATM'}
                     </strong>
-                    <span className="text-xs text-gray-500 block mb-2">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 block mb-2">
                       {place.formattedAddress || 'No address'}
                     </span>
                     <button
@@ -319,7 +443,7 @@ export default function ChaseMap() {
                           lng: place.location!.longitude!,
                         })
                       }
-                      className="bg-gray-100 border border-gray-500 text-gray-700 text-xs px-3 py-1 rounded-md hover:bg-gray-200 cursor-pointer"
+                      className="bg-gray-100 dark:bg-gray-600 border border-gray-500 dark:border-gray-500 text-gray-700 dark:text-gray-100 text-xs px-3 py-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 cursor-pointer"
                     >
                       Get Directions
                     </button>

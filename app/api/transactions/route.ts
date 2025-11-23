@@ -31,6 +31,11 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
             return NextResponse.json({ message: "Account not found" }, { status: 404 });
         }
 
+        if (balance - amount < 0 ){
+            return NextResponse.json({ message: "not enough in balance to give this amount" }, { status: 400 });
+        }
+
+
         let temp = ""
         if (transaction_type === "immediate"){
             temp = "COMPLETED"
@@ -38,6 +43,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
             temp = "PENDING"
         }
 
+      
         const createdTransaction = await prisma.transaction.create({
             data: {
                 account_id,
@@ -46,7 +52,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
                 amount_after_transaction: balance - amount,
                 description,
                 created_at: new Date(),
-                transaction_status: temp,
+                transaction_status: "COMPLETED",
                 transaction_type: "DEPOSIT",
             },
         });
@@ -59,7 +65,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
                 amount_after_transaction: amount,
                 description,
                 created_at: new Date(),
-                transaction_status: temp,
+                transaction_status: "COMPLETED",
                 transaction_type: "WITHDRAWAL",
             },
         });
@@ -81,7 +87,6 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
         },
         },
         });
-        
         
         return NextResponse.json({ message: "Transaction successful" }, { status: 200 });
         } catch (error: any) {
