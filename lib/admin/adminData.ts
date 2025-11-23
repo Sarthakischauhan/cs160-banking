@@ -12,6 +12,7 @@ import {
   calculateBalanceHistory,
   calculateTransactionHistory,
 } from "./history";
+import { isValidUUID } from "../utils";
 
 const timeFrameOptions = {
   month: 30,
@@ -24,6 +25,10 @@ export async function getTransactions(
   pageSize: number = 20 // Number of items per page
 ) {
   const where: any = {};
+
+  if (searchParams.id && isValidUUID(searchParams.id)) {
+    where.transaction_id = searchParams.id
+  }
 
   if (searchParams.minAmount || searchParams.maxAmount) {
     where.amount = {};
@@ -281,6 +286,11 @@ export async function getAccounts(
 
   const accountData = await prisma.account.findMany({
     where: {
+      ...(searchParams.id && isValidUUID(searchParams.id)
+        ? {
+            account_id: searchParams.id,
+          }
+        : {}),
       ...(searchParams.accountType
         ? { account_type: searchParams.accountType as AccountType }
         : {}),
@@ -415,7 +425,7 @@ export async function getNotifications(
     take: limit,
     ...(cursor
       ? {
-          cursor: { id: Number(cursor)},
+          cursor: { id: Number(cursor) },
           skip: 1, // skip the cursor itself
         }
       : {}),

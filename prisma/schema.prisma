@@ -201,4 +201,5 @@ enum TicketType {
   DELETE
   OTHER
   BUG
+  APPROVE
 }

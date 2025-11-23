@@ -9,7 +9,9 @@ export const PUT = auth0.withApiAuthRequired(async (req: NextRequest) => {
     if (!session) {
       return NextResponse.json({ message: "Unauthenticated" }, { status: 401 });
     }
-    const roles = getRole(session).split(",").map(r => r.trim());
+    const roles = getRole(session)
+      .split(",")
+      .map((r) => r.trim());
 
     if (!roles.includes("Admin")) {
       return NextResponse.json(
@@ -18,8 +20,28 @@ export const PUT = auth0.withApiAuthRequired(async (req: NextRequest) => {
       );
     }
 
-    const { sticket_id, newStatus } = await req.json()
-    console.log(sticket_id)
+    const handlerId = session.user.sub;
+    if (!handlerId) {
+      return NextResponse.json(
+        { message: "Error: Missing auth0 ID" },
+        { status: 403 }
+      );
+    }
+    const handler = await prisma.customer.findUnique({
+      where: {
+        auth0_user_id: handlerId,
+      },
+    });
+
+    if (!handler) {
+      return NextResponse.json(
+        { message: "Error: Missing Handler Account" },
+        { status: 403 }
+      );
+    }
+
+    const { sticket_id, newStatus } = await req.json();
+    console.log(sticket_id);
 
     if (!(newStatus in TicketStatus)) {
       return NextResponse.json(
@@ -59,6 +81,10 @@ export const PUT = auth0.withApiAuthRequired(async (req: NextRequest) => {
       },
       data: {
         ticket_status: newStatus,
+        Handler: {
+          connect: { customer_id: handler.customer_id },
+        },
+        updated_at: new Date(),
       },
     });
 

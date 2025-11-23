@@ -29,7 +29,7 @@ function UpdateStatusItem({
       // OPTIONAL: trigger refresh
       setTimeout(() => {
         window.location.reload();
-      }, 2000);
+      }, 200);
     } catch (err: any) {
       toast.error(err.message || "Failed to approve transaction");
     }

@@ -26,7 +26,7 @@ async function AdminSupportTicketPage({
   return (
     <div className="w-full h-fit">
       <div className="p-10">
-        <h1 className="text-4xl font-bold mb-10">Transactions</h1>
+        <h1 className="text-4xl font-bold mb-10">Support Tickets</h1>
         <form method="GET" className="flex flex-col gap-4">
           <p className="font-bold w-full border-b-2">Filters</p>
           <div className="w-full grid lg:grid-cols-4 gap-4 md:grid-cols-2 sm:grid-cols-1 py-4">

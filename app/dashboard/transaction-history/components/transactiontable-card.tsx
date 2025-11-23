@@ -27,6 +27,8 @@ import { prisma } from "@/prisma/prisma";
 import { RequestCancelTransactionItem } from "./cancel-item";
 import { redirect } from "next/navigation";
 import { X } from "lucide-react"
+import { RequestApprovalTransactionItem } from "./approve-item";
+import TransactionManagementDropdown from "./dropdown";
 
 export async function TransactionTableCard({
   transactions = [],
@@ -101,25 +103,7 @@ export async function TransactionTableCard({
                       .toLocaleString()}
                   </TableCell>
                   <TableCell className="hover:cursor-pointer">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger>
-                        <EllipsisVertical className="hover:cursor-pointer" />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuLabel>
-                          Manage Transaction
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>View Details</DropdownMenuItem>
-                        <RequestCancelTransactionItem
-                          id={transaction.transaction_id}
-                          disabled={
-                            transaction.transaction_status === "CANCELED"
-                          }
-                          user={user}
-                        />
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <TransactionManagementDropdown transaction_id={transaction.transaction_id} transaction_status={transaction.transaction_status} user={user} />
                   </TableCell>
                 </TableRow>
               );

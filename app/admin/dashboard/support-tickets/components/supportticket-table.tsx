@@ -19,12 +19,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import UpdateStatusItem from "./updatestatus-item";
+import ViewTicketDetailItem from "./viewdetails-item";
 
-type TableData = SupportTicket & {
+export type SupportTableData = SupportTicket & {
   Customer: Customer;
   Handler: Customer | null;
 };
-function SupportTicketTable({ tickets }: { tickets: TableData[] }) {
+
+function SupportTicketTable({ tickets }: { tickets: SupportTableData[] }) {
   function statusIcon(status: TicketStatus) {
     switch (status) {
       case "CLOSED":
@@ -59,7 +61,7 @@ function SupportTicketTable({ tickets }: { tickets: TableData[] }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {tickets.map((ticket: TableData) => (
+          {tickets.map((ticket: SupportTableData) => (
             <TableRow key={ticket.sticket_id}>
               <TableCell className="max-w-[120px]">
                 {`SUP-${ticket.sticket_id.toString()}`}
@@ -81,7 +83,7 @@ function SupportTicketTable({ tickets }: { tickets: TableData[] }) {
                   <DropdownMenuContent>
                     <DropdownMenuLabel>Manage Ticket</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>View Details</DropdownMenuItem>
+                    <ViewTicketDetailItem ticket={ticket} />
                     <DropdownMenuSeparator />
                     <UpdateStatusItem
                       id={ticket.sticket_id.toString()}

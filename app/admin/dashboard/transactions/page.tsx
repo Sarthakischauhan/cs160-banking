@@ -14,8 +14,9 @@ export default async function TransactionsPage({
   searchParams: { [key: string]: string | undefined };
 }) {
   const params = await searchParams;
-  const pageSize = 20
+  const pageSize = 20;
   const {
+    id = "",
     firstName = "",
     lastName = "",
     minAmount = "",
@@ -29,9 +30,12 @@ export default async function TransactionsPage({
 
   const data = await getTransactions(params, cursor, pageSize);
 
-    // Determine the next cursor (last item's ID)
-  const transactions = data.data
-  const nextCursor = transactions.length >= pageSize ? transactions[transactions.length - 1].transaction_id : null;
+  // Determine the next cursor (last item's ID)
+  const transactions = data.data;
+  const nextCursor =
+    transactions.length >= pageSize
+      ? transactions[transactions.length - 1].transaction_id
+      : null;
 
   return (
     <div className="w-full h-fit">
@@ -40,12 +44,27 @@ export default async function TransactionsPage({
         <form method="GET" className="flex flex-col gap-4">
           <p className="font-bold w-full border-b-2">Filters</p>
           <div className="w-full h-20 grid grid-cols-4 gap-4 py-4">
+            <TextFilter label={"Transaction ID"} name="id" value={id} />
             <TextFilter
               label={"First Name"}
               name="firstName"
               value={firstName}
             />
             <TextFilter label={"Last Name"} name="lastName" value={lastName} />
+          </div>
+          <div className="grid grid-cols-4 gap-4 my-4">
+            <SelectFilter
+              label={"Status"}
+              options={Object.keys(TransactionStatus)}
+              name="transactionStatus"
+              value={transactionStatus}
+            />
+            <SelectFilter
+              label={"Type"}
+              options={Object.keys(TransactionType)}
+              name="transactionType"
+              value={transactionType}
+            />
             <RangeFilter
               label={"Amount"}
               minName="minAmount"
@@ -64,20 +83,6 @@ export default async function TransactionsPage({
               minValue={minDate}
               maxValue={maxDate}
               type="date"
-            />
-          </div>
-          <div className="grid grid-cols-4 gap-4 my-4">
-            <SelectFilter
-              label={"Status"}
-              options={Object.keys(TransactionStatus)}
-              name="transactionStatus"
-              value={transactionStatus}
-            />
-            <SelectFilter
-              label={"Type"}
-              options={Object.keys(TransactionType)}
-              name="transactionType"
-              value={transactionType}
             />
           </div>
         </form>

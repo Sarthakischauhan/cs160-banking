@@ -20,48 +20,73 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
       return NextResponse.json(
         { message: "Customer not found" },
         { status: 400 }
-    );
+      );
 
-    let { subject, message, account_id, transaction_id, ticketType, tags }: {subject?: string, message: string, account_id?: string, transaction_id?: string, ticketType: string, tags?: string[]} = await req.json();
+    let {
+      subject,
+      message,
+      account_id,
+      transaction_id,
+      ticketType,
+      tags,
+    }: {
+      subject?: string;
+      message: string;
+      account_id?: string;
+      transaction_id?: string;
+      ticketType: string;
+      tags?: string[];
+    } = await req.json();
 
     if (!message || message.length === 0) {
-        throw new Error("SupTix message should not be empty")
+      throw new Error("SupTix message should not be empty");
     }
 
     if (!ticketType || ticketType.length === 0) {
-        throw new Error("Ticket Type on support ticket should not be empty")
+      throw new Error("Ticket Type on support ticket should not be empty");
     }
-    
-    let messageFinal = message
+
+    let messageFinal = message;
 
     if (transaction_id) {
-        const exists = await checkCancelTransaction(transaction_id)
-        if (exists) {
-            throw new Error("This transaction is already under review for cancellation")
+      const exists = await checkTransaction(transaction_id);
+
+      if (exists) {
+        if (
+          exists.ticket_status === "OPEN" ||
+          exists.ticket_status === "PENDING"
+        ) {
+          throw new Error(
+            `Ticket for this transaction already exists and is still open`
+          );
         }
-        const tx = await prisma.transaction.findUnique({
-            where: {
-                transaction_id: transaction_id
-            }
-        })
-        if (!tx) {
-            throw new Error("Transaction doesn't exist")
-        }
-        account_id = tx.account_id
-        messageFinal = `${messageFinal}\nTransaction Amount: ${formatCurrency(tx.amount.toNumber())}`
+      }
+
+      const tx = await prisma.transaction.findUnique({
+        where: {
+          transaction_id: transaction_id,
+        },
+      });
+      if (!tx) {
+        throw new Error("Transaction doesn't exist");
+      }
+      account_id = tx.account_id;
+      messageFinal = `${messageFinal}\nTransaction Amount: ${formatCurrency(
+        tx.amount.toNumber()
+      )}`;
     }
 
     await prisma.supportTicket.create({
-        data: {
-            customer_id: customer.customer_id,
-            transaction_id: transaction_id ?? null,
-            account_id: account_id ?? null,
-            subject: subject ?? null,
-            message: messageFinal,
-            ticket_type: ticketType as TicketType,
-            tags: tags
-        }
-    })
+      data: {
+        customer_id: customer.customer_id,
+        transaction_id: transaction_id ?? null,
+        account_id: account_id ?? null,
+        subject: subject ?? null,
+        message: messageFinal,
+        ticket_type: ticketType as TicketType,
+        tags: tags,
+      },
+    });
 
     return NextResponse.json(
       { message: "Support Ticket Created" },
@@ -76,15 +101,12 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
   }
 });
 
-
-    
-async function checkCancelTransaction(id: string) {
+async function checkTransaction(id: string) {
   const tx = await prisma.supportTicket.findFirst({
     where: {
       transaction_id: id,
-      ticket_type: "CANCEL",
     },
-    select: { transaction_id: true }, // just need one field to minimize query
+    select: { transaction_id: true, ticket_type: true, ticket_status: true }, // just need one field to minimize query
   });
-  return !!tx; // true if exists, false otherwise
+  return tx; // true if exists, false otherwise
 }
