@@ -60,14 +60,7 @@ export function SettingsClient({
 								When enabled, account balances are blurred or hidden.
 							</p>
 						</div>
-
-						<button
-							type="button"
-							onClick={handleBalanceToggle}
-							disabled={isPendingBalance}
-						>
-							<Switch checked={hideBalance} />
-						</button>
+						<Switch checked={hideBalance} onClick={handleBalanceToggle} disabled={isPendingBalance} />
 					</div>
 				</CardContent>
 			</Card>
