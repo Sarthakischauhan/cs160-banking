@@ -43,7 +43,7 @@ export default function TeamSection() {
                         <h2 className="text-3xl font-bold sm:text-4xl">Meet the Team!</h2>
                     </div>
                     <div className="mt-6 sm:mt-0">
-                        <p>CS 160: Software Engineering Group 2</p>
+                        <p>CS 160: Software Engineering Group 1</p>
                     </div>
                 </div>
                 <div className="mt-12 md:mt-24">

@@ -12,7 +12,7 @@ export default function FooterSection() {
                     <Logo />
                 </Link>
 
-                <span className="text-muted-foreground block text-center text-sm mt-3"> © {new Date().getFullYear()} Group 2, All rights reserved</span>
+                <span className="text-muted-foreground block text-center text-sm mt-3"> © {new Date().getFullYear()} Group 1, All rights reserved</span>
             </div>
         </footer>
     )

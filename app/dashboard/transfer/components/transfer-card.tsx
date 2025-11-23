@@ -218,7 +218,7 @@ export function TransferCard({
               )}
             />
 
-            <Button type="submit" variant="success">
+            <Button type="submit" variant="default">
               Send
             </Button>
           </form>

@@ -14,5 +14,5 @@ const nextConfig = {
       '/api/**/*': ['./node_modules/**/*.wasm', './node_modules/**/*.proto']
     }
   }
-;
+};
 module.exports = nextConfig;

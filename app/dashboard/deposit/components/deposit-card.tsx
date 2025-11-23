@@ -111,7 +111,7 @@ export function DepositCard({account_id} : DepositCardProps) {
                 )}
               />
               <div className="">
-                <Button type="submit" variant="success">
+                <Button type="submit" variant="default">
                   Submit
                 </Button>
               </div>
