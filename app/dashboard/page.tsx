@@ -1,5 +1,5 @@
 import { WelcomeCard } from "./components/welcome-card";
-import { BalanceCard } from "./components/balance-card";
+import { BalanceCardWrapper } from "./components/balance-card-wrapper";
 import { NotificationCard } from "./components/notification-card";
 import { TransactionCard } from "./components/transaction-card";
 import { HistgraphCard } from "./components/histgraph-card";
@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { AccountType } from "@prisma/client";
+import { cookies } from "next/headers";
 
 interface DashboardParams {
   [key: string]: string | undefined;
@@ -26,6 +27,7 @@ type DashboardProps = {
 
 export default async function Page({ searchParams }: DashboardProps) {
   const session = await auth0.getSession();
+  
   if (!session) {
     redirect("/");
   }
@@ -92,7 +94,7 @@ export default async function Page({ searchParams }: DashboardProps) {
       <div className="grid grid-cols-4 h-fit">
         <div className="col-span-1 ml-4 mr-2">
           {currentAccount && (
-            <BalanceCard
+            <BalanceCardWrapper
               userBalance={currentAccount.balance}
               monthIncome={1400}
               monthExpense={1000}
@@ -125,7 +127,7 @@ export default async function Page({ searchParams }: DashboardProps) {
       {/* ROW 4 */}
       <div className="grid grid-cols-7 my-2 h-fit">
         <div className="ml-4 col-span-3 mr-2">
-          <UpcomingCard />
+          <UpcomingCard  />
         </div>
         <div className="mr-2 ml-2 col-span-2">
           <ATMCard />
