@@ -8,16 +8,27 @@ import {
   TransactionStatus,
   TransactionType,
 } from "@prisma/client";
+import {
+  calculateBalanceHistory,
+  calculateTransactionHistory,
+} from "./history";
+import { isValidUUID } from "../utils";
 
 const timeFrameOptions = {
   month: 30,
   year: 365,
 };
 
-export async function getTransactions(searchParams: {
-  [key: string]: string | undefined;
-}) {
+export async function getTransactions(
+  searchParams: { [key: string]: string | undefined },
+  cursor?: string, // The transactionId of the last item from the previous page
+  pageSize: number = 20 // Number of items per page
+) {
   const where: any = {};
+
+  if (searchParams.id && isValidUUID(searchParams.id)) {
+    where.transaction_id = searchParams.id
+  }
 
   if (searchParams.minAmount || searchParams.maxAmount) {
     where.amount = {};
@@ -65,20 +76,14 @@ export async function getTransactions(searchParams: {
       {
         Account: {
           Customer: {
-            last_name: {
-              contains: searchParams.lastName,
-              mode: "insensitive",
-            },
+            last_name: { contains: searchParams.lastName, mode: "insensitive" },
           },
         },
       },
       {
         Account_Transaction_account_id2ToAccount: {
           Customer: {
-            last_name: {
-              contains: searchParams.lastName,
-              mode: "insensitive",
-            },
+            last_name: { contains: searchParams.lastName, mode: "insensitive" },
           },
         },
       },
@@ -97,37 +102,35 @@ export async function getTransactions(searchParams: {
   const data = await prisma.transaction.findMany({
     where,
     include: {
-      Account: {
-        include: {
-          Customer: true,
-        },
-      },
-      Account_Transaction_account_id2ToAccount: {
-        include: {
-          Customer: true,
-        },
-      },
+      Account: { include: { Customer: true } },
+      Account_Transaction_account_id2ToAccount: { include: { Customer: true } },
     },
-    orderBy: {
-      created_at: "desc",
-    },
+    orderBy: { created_at: "desc" }, // cursor must use a unique field
+    take: pageSize + 1, // fetch one extra to check if there’s a next page
+    cursor: cursor ? { transaction_id: cursor } : undefined,
+    skip: cursor ? 1 : 0, // skip the cursor itself
   });
 
-  const result = data.map((t) => ({
+  // Determine if there is a next page
+  const hasNextPage = data.length > pageSize;
+  const items = hasNextPage ? data.slice(0, pageSize) : data;
+
+  const result = items.map((t) => ({
     ...t,
     amount: Number(t.amount),
     amount_after_transaction: Number(t.amount_after_transaction),
-    Account: {
-      ...t.Account,
-      balance: Number(t.Account.balance),
-    },
+    Account: { ...t.Account, balance: Number(t.Account.balance) },
     Account_Transaction_account_id2ToAccount: {
       ...t.Account_Transaction_account_id2ToAccount,
       balance: Number(t.Account_Transaction_account_id2ToAccount?.balance),
     },
   }));
 
-  return result;
+  return {
+    data: result,
+    nextCursor: hasNextPage ? items[items.length - 1].transaction_id : null,
+    hasNextPage,
+  };
 }
 
 export async function getAccountsSummary(timeFrame: "month" | "year") {
@@ -157,8 +160,41 @@ export async function getAccountsSummary(timeFrame: "month" | "year") {
     orderBy: { created_at: "asc" },
   });
 
+  const deposits2 = await prisma.transaction.findMany({
+    where: {
+      created_at: {
+        gte: start,
+        lte: end,
+      },
+      transaction_type: "DEPOSIT",
+    },
+    orderBy: {
+      created_at: "asc",
+    },
+    select: {
+      account_id: true,
+      created_at: true,
+      amount: true,
+      description: true,
+      transaction_id: true,
+    },
+  });
+
+  const depositsRenamed = deposits2.map((d) => ({
+    account_id: d.account_id,
+    created_at: d.created_at,
+    amount: d.amount,
+    description: d.description,
+    transactionId: d.transaction_id,
+  }));
+
+  const merged = [...deposits, ...depositsRenamed].sort(
+    (a, b) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  );
+
   const balances = calculateBalanceHistory(
-    deposits,
+    merged,
     Number(overall._sum.balance),
     timeFrameOptions["month"]
   );
@@ -183,18 +219,33 @@ export async function getTransactionSummary(timeFrame: "month" | "year") {
   const end = new Date();
   start.setDate(end.getDate() - timeFrameOptions[timeFrame]);
 
-  const count = await prisma.transaction.count();
+  // --- Total count of all transactions in the timeframe ---
+  const count = await prisma.transaction.count({
+    where: {
+      created_at: {
+        gte: start,
+        lte: end,
+      },
+    },
+  });
 
+  // --- Sum of amounts by transaction type ---
   const types = await prisma.transaction.groupBy({
     by: ["transaction_type"],
     _sum: {
       amount: true,
     },
+    where: {
+      created_at: {
+        gte: start,
+        lte: end,
+      },
+    },
   });
 
-  const transactions = await prisma.transaction.findMany({
+  // --- All deposits for history chart ---
+  const deposits = await prisma.transaction.findMany({
     where: {
-      transaction_type: "DEPOSIT",
       created_at: {
         gte: start,
         lte: end,
@@ -203,77 +254,43 @@ export async function getTransactionSummary(timeFrame: "month" | "year") {
     orderBy: { created_at: "asc" },
   });
 
-  const history = calculateTransactionHistory(transactions, start, end);
+  const history = calculateTransactionHistory(deposits, start, end);
+
+  // --- Pending transactions themselves ---
+  const pendingTransactions = await prisma.transaction.findMany({
+    where: {
+      transaction_status: "PENDING",
+      created_at: {
+        gte: start,
+        lte: end,
+      },
+    },
+    orderBy: { created_at: "desc" },
+    take: 4,
+  });
+
   return {
     count: count,
     transactionTotal: types,
     transactionHistory: history,
+    pendingTransactions: pendingTransactions,
   };
 }
 
-function calculateTransactionHistory(
-  transactions: Transaction[],
-  start: Date,
-  end: Date
+export async function getAccounts(
+  searchParams: { [key: string]: string | undefined },
+  cursor?: string, // The transactionId of the last item from the previous page
+  pageSize: number = 20 // Number of items per page
 ) {
-  // Pre-fill the map with all dates in the range
-  const dateMap = new Map<string, number>();
-  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-    const dateStr = d.toISOString().split("T")[0];
-    dateMap.set(dateStr, 0);
-  }
+  const limit = pageSize;
 
-  // Sum transaction amounts
-  for (const t of transactions) {
-    const dateStr = t.created_at.toISOString().split("T")[0];
-    if (dateMap.has(dateStr)) {
-      dateMap.set(dateStr, dateMap.get(dateStr)! + Number(t.amount));
-    }
-  }
-
-  // Convert map to sorted array
-  const arr: { date: string; amount: number }[] = [];
-  for (const [date, amount] of dateMap) {
-    arr.push({ date, amount });
-  }
-
-  return arr;
-}
-
-function calculateBalanceHistory(
-  deposits: DepositTest[],
-  currentBalance: number,
-  timeFrame: number
-) {
-  // 1. Aggregate amounts per day
-  const dailyTotals = new Map<string, number>();
-  for (const t of deposits) {
-    const date = t.created_at.toISOString().split("T")[0]; // YYYY-MM-DD
-    dailyTotals.set(date, (dailyTotals.get(date) || 0) + Number(t.amount));
-  }
-
-  // 2. Generate all dates in the timeframe
-  const history: { date: string; amount: number }[] = [];
-  let amount = currentBalance;
-
-  const end = new Date(); // today
-  const start = new Date();
-  start.setDate(end.getDate() - timeFrame + 1); // include today as last day
-
-  for (let d = new Date(end); d >= start; d.setDate(d.getDate() - 1)) {
-    const dateStr = d.toISOString().split("T")[0];
-    history.push({ date: dateStr, amount });
-    amount -= dailyTotals.get(dateStr) || 0; // subtract if there was a transaction
-  }
-
-  return history.reverse(); // oldest date first
-}
-
-export async function fetchAccounts(searchParams: {
-  [key: string]: string | undefined;
-}) {
   const accountData = await prisma.account.findMany({
     where: {
+      ...(searchParams.id && isValidUUID(searchParams.id)
+        ? {
+            account_id: searchParams.id,
+          }
+        : {}),
       ...(searchParams.accountType
         ? { account_type: searchParams.accountType as AccountType }
         : {}),
@@ -331,14 +348,33 @@ export async function fetchAccounts(searchParams: {
     orderBy: {
       created_at: "desc",
     },
+    take: limit,
+    ...(cursor
+      ? {
+          cursor: { account_id: cursor },
+          skip: 1, // skip the cursor itself
+        }
+      : {}),
   });
-  return accountData;
+
+  // Determine the next cursor
+  const nextCursor =
+    accountData.length > 0
+      ? accountData[accountData.length - 1].account_id
+      : null;
+
+  return { accounts: accountData, nextCursor };
 }
 
-export async function getNotifications(params: {
-  [key: string]: string | undefined;
-}) {
+export async function getNotifications(
+  params: {
+    [key: string]: string | undefined;
+  },
+  cursor?: string,
+  pageSize: number = 20
+) {
   const where: any = {};
+  const limit = pageSize;
 
   if (params.firstName) {
     where.Customer = {
@@ -386,6 +422,13 @@ export async function getNotifications(params: {
     include: {
       Customer: true,
     },
+    take: limit,
+    ...(cursor
+      ? {
+          cursor: { id: Number(cursor) },
+          skip: 1, // skip the cursor itself
+        }
+      : {}),
   });
   return notifications;
 }

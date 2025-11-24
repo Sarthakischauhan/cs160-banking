@@ -7,6 +7,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import {
   Select,
   SelectItem,
@@ -21,6 +22,7 @@ import {
   useRouter,
   ReadonlyURLSearchParams,
 } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 import { useDebouncedCallback } from "use-debounce";
 
@@ -38,6 +40,7 @@ function useURLFilter(delay = 300) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
+  const { reset } = usePagination();
 
   const updateFilter = useDebouncedCallback((name: string, value: string) => {
     const params = new URLSearchParams(searchParams);
@@ -47,6 +50,10 @@ function useURLFilter(delay = 300) {
     } else {
       params.delete(name);
     }
+
+    // ⚡ Clear the cursor whenever a filter changes
+    reset();
+    params.delete("cursor");
 
     const queryString = params.toString();
     replace(queryString ? `${pathname}?${queryString}` : pathname);
@@ -96,6 +103,7 @@ interface RangeFilterProps {
   maxValue: string;
   minPlaceholder?: string;
   maxPlaceholder?: string;
+  className?: string;
   type?: string;
   prefix?: string;
 }
@@ -113,12 +121,13 @@ export function RangeFilter({
   maxPlaceholder,
   prefix,
   type = "text",
+  className,
   ...props
 }: RangeFilterProps) {
   const { updateFilter, searchParams } = useURLFilter();
 
   return (
-    <div {...props}>
+    <div className={className}>
       <Label className="mb-2">{label}</Label>
       <div className="flex gap-2 items-center">
         <InputGroup className="w-1/2">
@@ -199,3 +208,102 @@ export function SelectFilter({
     </div>
   );
 }
+
+export function usePagination() {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+  
+  const initialCursor = searchParams.get("cursor"); 
+  const historyRef = useRef<(string | null)[]>([initialCursor]);
+
+  const ignoreNextPush = useRef(false); // 🔑 new
+
+  useEffect(() => {
+    if (ignoreNextPush.current) {
+      ignoreNextPush.current = false;
+      return; // skip adding current cursor
+    }
+    const cursor = searchParams.get("cursor") ?? null;
+    const last = historyRef.current[historyRef.current.length - 1];
+    if (cursor !== last) {
+      historyRef.current.push(cursor);
+    }
+  }, [searchParams]);
+
+  const goNext = (cursor: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("cursor", cursor);
+    router.replace(`${pathname}?${params.toString()}`);
+    historyRef.current.push(cursor);
+  };
+
+  const goPrevious = () => {
+    if (historyRef.current.length < 2) return;
+    historyRef.current.pop();
+    const previousCursor = historyRef.current[historyRef.current.length - 1];
+    const params = new URLSearchParams(searchParams.toString());
+    if (previousCursor) params.set("cursor", previousCursor);
+    else params.delete("cursor");
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+
+  const reset = () => {
+    historyRef.current = [null];
+    ignoreNextPush.current = true; // 🔑 ignore next effect push
+  };
+
+  return {
+    goNext,
+    goPrevious,
+    reset,
+    hasPrevious: historyRef.current.length > 1,
+  };
+}
+
+
+interface PaginationControlsProps {
+  nextCursor: string | null;
+}
+
+export function PaginationControls({ nextCursor }: PaginationControlsProps) {
+  const { goNext, goPrevious, hasPrevious } = usePagination();
+
+  const searchParams = useSearchParams();
+
+  // get cursor from URL
+  const cursor = searchParams.get("cursor");
+
+  return (
+    <Pagination>
+      <PaginationContent>
+        <PaginationItem>
+          <PaginationPrevious
+            href="#"
+            className={!hasPrevious || !cursor ? "pointer-events-none opacity-50" : ""}
+            onClick={(e) => {
+              e.preventDefault();
+              goPrevious();
+            }}
+          >
+            Previous
+          </PaginationPrevious>
+        </PaginationItem>
+
+        <PaginationItem>
+          <PaginationNext
+            href="#"
+            className={!nextCursor ? "pointer-events-none opacity-50" : ""}
+            onClick={(e) => {
+              e.preventDefault();
+              if (nextCursor) goNext(nextCursor);
+            }}
+          >
+            Next
+          </PaginationNext>
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
+  );
+}
+

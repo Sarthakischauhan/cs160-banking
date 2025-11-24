@@ -1,66 +1,61 @@
+"use client";
+
 import {
   Card,
-  CardAction,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
-const upcomingPayments = [
-  {
-    id: "pay001",
-    date: "2025-10-02",
-    description: "Rent - Apartment",
-    category: "Housing",
-    amount: 1200.0,
-    status: "scheduled",
-    account: "Checking ••••1234",
-  },
-  {
-    id: "pay002",
-    date: "2025-10-05",
-    description: "Car Loan Payment",
-    category: "Loans",
-    amount: 325.5,
-    status: "scheduled",
-    account: "Checking ••••1234",
-  },
-  {
-    id: "pay003",
-    date: "2025-10-07",
-    description: "Netflix Subscription",
-    category: "Entertainment",
-    amount: 15.99,
-    status: "scheduled",
-    account: "Credit ••••5678",
-  },
-];
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export function UpcomingCard() {
+  const [payments, setPayments] = useState([]);
+
+  useEffect(() => {
+    async function fetchPayments() {
+      try {
+        const res = await fetch("/api/autopayment");
+        const data = await res.json();
+        setPayments(data);
+      } catch (err) {
+        console.error("Error loading scheduled payments:", err);
+      }
+    }
+    fetchPayments();
+  }, []);
+
   return (
-    <>
-      <Card className="h-full">
-        <CardHeader>
-          <CardTitle>Upcoming Payments</CardTitle>
-          <CardAction>Manage Automated Payments</CardAction>
-        </CardHeader>
-        <CardContent>
-            <div className="grid grid-cols-4 my-2">
-                <span className="col-span-2">Description</span>
-                <span>Amount</span>
-                <span>Date</span>
-            </div>
-          {upcomingPayments.map((payment) => (
-            <div className="grid grid-cols-4 my-2" key={payment.id}>
-                <span className="col-span-2">{payment.description}</span>
-                <span>${payment.amount.toFixed(2).toLocaleString()}</span>
-                <span>{new Date(payment.date).toLocaleDateString()}</span>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    </>
+    <Card className="h-full">
+      <CardHeader className="flex justify-between items-center">
+        <CardTitle>Upcoming Payments</CardTitle>
+        <Link href="/dashboard/automated-payments" passHref>
+          <Button variant="secondary" size="sm">
+            Manage Automated Payments
+          </Button>
+        </Link>
+      </CardHeader>
+
+      <CardContent>
+        <div className="grid grid-cols-4 my-2 font-semibold">
+          <span className="col-span-2">Description</span>
+          <span>Amount</span>
+          <span>Date</span>
+        </div>
+
+        {payments.length === 0 && (
+          <p className="text-sm text-muted-foreground">No upcoming payments</p>
+        )}
+
+        {payments.map((payment: any) => (
+          <div className="grid grid-cols-4 my-2" key={payment.transaction_id}>
+            <span className="col-span-2">{payment.description}</span>
+            <span>${Number(payment.amount).toFixed(2)}</span>
+            <span>{new Date(payment.scheduled).toLocaleDateString()}</span>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
   );
 }

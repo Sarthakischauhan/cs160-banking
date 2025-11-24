@@ -13,8 +13,11 @@ import {
   getAccountsSummary,
   getCustomerSummary,
   getTransactionSummary,
-} from "@/lib/adminData";
+} from "@/lib/admin/adminData";
 import { formatCurrency } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { getSupportTickets } from "@/lib/admin/supportTickets";
 
 export default async function AdminDashboardPage() {
   const start = new Date();
@@ -23,15 +26,17 @@ export default async function AdminDashboardPage() {
 
   start.setDate(end.getDate() - timePeriod);
 
-  const [account, customer, transaction] = await Promise.all([
+  const [account, customer, transaction, tickets] = await Promise.all([
     getAccountsSummary("month"),
     getCustomerSummary(),
     getTransactionSummary("month"),
+    getSupportTickets({'ticketStatus': ['OPEN', 'PENDING']}, undefined, 5)
   ]);
   const data = {
     account: account,
     customer: customer,
     transaction: transaction,
+    tickets: tickets,
   };
 
   const metricsList: MetricCardProps[] = [
@@ -57,11 +62,20 @@ export default async function AdminDashboardPage() {
     },
   ];
 
-  console.log(data);
   return (
     <div className="w-full h-fit">
-      <div className="p-10">
+      <div className="p-10 grid grid-cols-2">
         <h1 className="text-4xl font-bold">Welcome, Administrator!</h1>
+        <div className="w-full flex justify-end">
+          <Button className="w-[200] hover:cursor-pointer">
+            <a
+              href="/dashboard"
+              className="bg-black text-white rounded-lg text-center py-2 hover:bg-opacity-80"
+            >
+              View User Dashboard
+            </a>
+          </Button>
+        </div>
       </div>
       <div className="px-10 py-5 w-full">
         <h1 className="text-4xl font-bold">Metrics</h1>
@@ -94,19 +108,30 @@ export default async function AdminDashboardPage() {
       <div className="px-10 py-5 w-full">
         <h1 className="text-4xl font-bold">Pending</h1>
       </div>
-      <div className="grid grid-cols-2 w-full h-fit p-2 justify-center items-center gap-4">
+      <div className="flex flex-col w-full h-fit p-2 gap-5">
         <TableCard
           title="Pending Support Tickets"
           description="See recent support tickets from users"
-          data={supportTickets}
-          disable={["ticketId"]}
+          data={tickets}
+          disable={['account_id', 'sticket_id', 'customer_id', 'handler_id', 'transaction_id', 'message', 'updated_at', 'tags', 'Handler']}
         />
-        <TableCard
-          title="Pending Transfers"
-          description="See pending transfers requiring your attention"
-          data={pendingTransfers}
-          disable={["id"]}
-        />
+        {transaction.pendingTransactions.length > 0 ? (
+          <TableCard
+            title="Pending Transfers"
+            description="See pending transfers requiring your attention"
+            data={transaction.pendingTransactions}
+            disable={["transaction_id", "account_id", "account_id2"]}
+          />
+        ) : (
+          <Card className="flex h-full">
+            <CardHeader>
+              <CardTitle>Pending Transactions</CardTitle>
+            </CardHeader>
+            <CardContent className="flex justify-center items-center h-full">
+              No Pending Transactions
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

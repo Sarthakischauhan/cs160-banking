@@ -93,8 +93,8 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    console.log(`Found account: ${ACCOUNT_ID}`);
-    console.log(`Current balance: ${account.balance}`);
+    (`Found account: ${ACCOUNT_ID}`);
+    (`Current balance: ${account.balance}`);
 
     // Get all existing transactions for this account to calculate starting balance
     const existingTransactions = await prisma.transaction.findMany({
@@ -113,7 +113,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    console.log(`Starting balance for transactions: ${currentBalance}`);
+    (`Starting balance for transactions: ${currentBalance}`);
 
     // Get other accounts for transfers (we'll need to find another account or create a dummy one)
     const otherAccounts = await prisma.account.findMany({
@@ -139,7 +139,7 @@ export async function GET(req: NextRequest) {
       const adjustedMonth = month < 0 ? month + 12 : month;
       const adjustedYear = month < 0 ? year - 1 : year;
 
-      console.log(`\nGenerating transactions for ${new Date(adjustedYear, adjustedMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`);
+      (`\nGenerating transactions for ${new Date(adjustedYear, adjustedMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`);
 
       // Generate 2-5 deposits per month
       const numDeposits = Math.floor(Math.random() * 4) + 2;
@@ -233,8 +233,8 @@ export async function GET(req: NextRequest) {
       transaction.amount_after_transaction = Math.round(recalculatedBalance * 100) / 100;
     });
 
-    console.log(`\nGenerated ${transactions.length} transactions`);
-    console.log(`Final balance: ${recalculatedBalance}`);
+    (`\nGenerated ${transactions.length} transactions`);
+    (`Final balance: ${recalculatedBalance}`);
     runningBalance = recalculatedBalance;
 
     // Insert transactions in batches
@@ -247,7 +247,7 @@ export async function GET(req: NextRequest) {
         skipDuplicates: true,
       });
       insertedCount += result.count;
-      console.log(`Inserted batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(transactions.length / batchSize)}`);
+      (`Inserted batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(transactions.length / batchSize)}`);
     }
 
     // Update account balance

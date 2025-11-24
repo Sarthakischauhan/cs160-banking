@@ -1,18 +1,12 @@
-import { Button } from "@/components/ui/button";
-import { TextFilter, RangeFilter, SelectFilter } from "../components/filters";
-import { TransactionsTable } from "./components/transactions-table";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { prisma } from "@/prisma/prisma";
+  TextFilter,
+  RangeFilter,
+  SelectFilter,
+  PaginationControls,
+} from "../components/filters";
+import { TransactionsTable } from "./components/transactions-table";
 import { TransactionStatus, TransactionType } from "@prisma/client";
-import { getTransactions } from "@/lib/adminData";
-import { Suspense } from "react";
+import { getTransactions } from "@/lib/admin/adminData";
 
 export default async function TransactionsPage({
   searchParams,
@@ -20,17 +14,28 @@ export default async function TransactionsPage({
   searchParams: { [key: string]: string | undefined };
 }) {
   const params = await searchParams;
-  const firstName = params.firstName ?? "";
-  const lastName = params.lastName ?? "";
-  const minAmount = params.minAmount ?? "";
-  const maxAmount = params.maxAmount ?? "";
-  const minDate = params.minDate ?? "";
-  const maxDate = params.maxDate ?? "";
-  const transactionStatus = params.transactionStatus ?? "";
-  const transactionType = params.transactionType ?? "";
+  const pageSize = 20;
+  const {
+    id = "",
+    firstName = "",
+    lastName = "",
+    minAmount = "",
+    maxAmount = "",
+    minDate = "",
+    maxDate = "",
+    transactionStatus = "",
+    transactionType = "",
+    cursor = undefined,
+  } = params;
 
-  const data = await getTransactions(params);
-  console.log(data);
+  const data = await getTransactions(params, cursor, pageSize);
+
+  // Determine the next cursor (last item's ID)
+  const transactions = data.data;
+  const nextCursor =
+    transactions.length >= pageSize
+      ? transactions[transactions.length - 1].transaction_id
+      : null;
 
   return (
     <div className="w-full h-fit">
@@ -39,12 +44,27 @@ export default async function TransactionsPage({
         <form method="GET" className="flex flex-col gap-4">
           <p className="font-bold w-full border-b-2">Filters</p>
           <div className="w-full h-20 grid grid-cols-4 gap-4 py-4">
+            <TextFilter label={"Transaction ID"} name="id" value={id} />
             <TextFilter
               label={"First Name"}
               name="firstName"
               value={firstName}
             />
             <TextFilter label={"Last Name"} name="lastName" value={lastName} />
+          </div>
+          <div className="grid grid-cols-4 gap-4 my-4">
+            <SelectFilter
+              label={"Status"}
+              options={Object.keys(TransactionStatus)}
+              name="transactionStatus"
+              value={transactionStatus}
+            />
+            <SelectFilter
+              label={"Type"}
+              options={Object.keys(TransactionType)}
+              name="transactionType"
+              value={transactionType}
+            />
             <RangeFilter
               label={"Amount"}
               minName="minAmount"
@@ -65,24 +85,13 @@ export default async function TransactionsPage({
               type="date"
             />
           </div>
-          <div className="grid grid-cols-4 gap-4 my-4">
-            <SelectFilter
-              label={"Status"}
-              options={Object.keys(TransactionStatus)}
-              name="transactionStatus"
-              value={transactionStatus}
-            />
-            <SelectFilter
-              label={"Type"}
-              options={Object.keys(TransactionType)}
-              name="transactionType"
-              value={transactionType}
-            />
-          </div>
         </form>
         <p className="font-bold w-full border-b-2">Transactions</p>
         <div className="w-full h-[calc(100%-100px)] flex justify-center items-center py-6">
           <TransactionsTable transactions={data} />
+        </div>
+        <div className="w-full flex justify-center items-center">
+          <PaginationControls nextCursor={nextCursor} />
         </div>
       </div>
     </div>
