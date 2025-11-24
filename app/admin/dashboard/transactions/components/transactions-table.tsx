@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TransactionDetailsButton } from "./transaction-details";
 import { CancelTransactionItem } from "./cancel-transaction";
+import { ApproveTransactionItem } from "./approve-transaction";
 
 export function TransactionsTable(transactions: {
   transactions: Record<string, any>;
@@ -95,14 +96,10 @@ export function TransactionsTable(transactions: {
                       <DropdownMenuLabel>Manage Transaction</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <TransactionDetailsButton transaction={transaction} />
-                      <DropdownMenuItem
-                        disabled={["COMPLETED"].includes(transaction.transaction_status)}
-                      >
-                        Approve
-                      </DropdownMenuItem>
+                      <ApproveTransactionItem disabled={["COMPLETED"].includes(transaction.transaction_status)}id={transaction.transaction_id} />
                       <DropdownMenuItem>Flag</DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <CancelTransactionItem id={transaction.transaction_id} />
+                      <CancelTransactionItem disabled={["CANCELED"].includes(transaction.transaction_status)} id={transaction.transaction_id} />
                       <DropdownMenuItem variant="destructive">
                         Delete
                       </DropdownMenuItem>

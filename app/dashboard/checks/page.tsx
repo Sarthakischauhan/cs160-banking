@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
 import { Camera, Upload, X } from "lucide-react";
 
-type Account = {
-  account_id: string | null;
-  balance: number | null;
+type Account = { 
+    account_id: string | null;
+    balance: number | null;
+    customer_id: string | null;
 };
 let test = "";
 
@@ -135,6 +136,9 @@ export default function Page() {
       formData.append("amount", amount.toString());
     }
     formData.append("transactionId", transactionId);
+    formData.append("customerId", account.customer_id!);
+
+
     try {
       const res = await fetch("/api/checks", {
         method: "POST",
@@ -181,7 +185,7 @@ export default function Page() {
             <button
               type="button"
               onClick={() => setImage(null)}
-              className="absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
+              className="absolute top-2 right-2 p-/ bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
               aria-label={`Remove ${title} image`}
             >
               <X className="h-4 w-4" />

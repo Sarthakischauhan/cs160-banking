@@ -63,11 +63,6 @@ const sidebarOptions = [
     url: "/dashboard/maps",
     img: MapPin,
   },
-  {
-    title: "Account Settings",
-    url: "/dashboard/account-settings",
-    img: SettingsIcon,
-  }
 ];
 
 export function AppSidebar({currentAccountId}: {currentAccountId?: string}) {

@@ -5,6 +5,7 @@ import {
   FileText,
   UserCog,
   ArrowLeftRight,
+  Ticket,
 } from "lucide-react";
 
 import {
@@ -46,6 +47,11 @@ const sidebarOptions = [
     title: "Transactions",
     url: "/admin/dashboard/transactions",
     img: ArrowLeftRight,
+  },
+  {
+    title: "Support Tickets",
+    url: "/admin/dashboard/support-tickets",
+    img: Ticket
   }
 ];
 

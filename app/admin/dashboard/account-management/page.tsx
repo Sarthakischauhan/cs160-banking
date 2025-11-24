@@ -8,7 +8,7 @@ import {
   TextFilter,
 } from "../components/filters";
 import { AccountType } from "@prisma/client";
-import { getAccounts } from "@/lib/adminData";
+import { getAccounts } from "@/lib/admin/adminData";
 import { get } from "http";
 
 export default async function AccountManagementPage({
@@ -20,6 +20,7 @@ export default async function AccountManagementPage({
 
   const pageSize = 20;
   const {
+    id="",
     firstName = "",
     lastName = "",
     minBalance = "",
@@ -31,9 +32,10 @@ export default async function AccountManagementPage({
   } = params;
 
   const accountData = await getAccounts(params, cursor, pageSize);
-  const nextCursor = accountData.accounts.length
-    ? accountData.accounts[accountData.accounts.length - 1].account_id
-    : null;
+  const nextCursor =
+    accountData.accounts.length >= pageSize
+      ? accountData.accounts[accountData.accounts.length - 1].account_id
+      : null;
 
   return (
     <>
@@ -43,6 +45,12 @@ export default async function AccountManagementPage({
           <form method="GET" className="flex flex-col gap-4">
             <p className="font-bold w-full border-b-2">Filters</p>
             <div className="grid grid-cols-4 w-full gap-4">
+              <TextFilter
+                label={"ID"}
+                name="id"
+                value={id}
+                placeholder="Enter Account ID"
+              />
               <TextFilter
                 label={"First Name"}
                 name="firstName"
@@ -55,35 +63,33 @@ export default async function AccountManagementPage({
                 value={lastName}
                 placeholder="Last Name"
               />
-              <RangeFilter
-                label={"Balance"}
-                minName="minBalance"
-                maxName="maxBalance"
-                minValue={minBalance}
-                maxValue={maxBalance}
-                minPlaceholder="Minimum Balance"
-                maxPlaceholder="Maximum Balance"
-                type="number"
-                prefix="$"
-              />
-              <RangeFilter
-                label={"Date"}
-                minName="minDate"
-                maxName="maxDate"
-                minValue={minDate}
-                maxValue={maxDate}
-                type="date"
-              />
             </div>
             <div className="grid grid-cols-3 w-full gap-4">
-              <div>
-                <SelectFilter
+              <SelectFilter
                   label="Account Type"
                   name="accountType"
                   options={Object.keys(AccountType)}
                   value={accountType}
                 />
-              </div>
+                <RangeFilter
+                  label={"Balance"}
+                  minName="minBalance"
+                  maxName="maxBalance"
+                  minValue={minBalance}
+                  maxValue={maxBalance}
+                  minPlaceholder="Minimum Balance"
+                  maxPlaceholder="Maximum Balance"
+                  type="number"
+                  prefix="$"
+                />
+                <RangeFilter
+                  label={"Date"}
+                  minName="minDate"
+                  maxName="maxDate"
+                  minValue={minDate}
+                  maxValue={maxDate}
+                  type="date"
+                />
             </div>
           </form>
 

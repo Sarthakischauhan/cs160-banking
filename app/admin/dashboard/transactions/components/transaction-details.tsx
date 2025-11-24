@@ -66,10 +66,20 @@ export function TransactionDetailsButton({
             <strong>Amount:</strong> {formatCurrency(transaction.amount)}
           </p>
           <p>
-            <strong>Balance Before:</strong> {["DEPOSIT", "TRANSFER"].includes(transaction.transaction_type) ? (formatCurrency(transaction.amount_after_transaction - transaction.amount)) : (formatCurrency(transaction.amount_after_transaction + transaction.amount))}
+            <strong>Balance Before:</strong>
+            {!["CANCELED"].includes(transaction.transaction_status)
+              ? ["DEPOSIT", "TRANSFER"].includes(transaction.transaction_type)
+                ? formatCurrency(
+                    transaction.amount_after_transaction - transaction.amount
+                  )
+                : formatCurrency(
+                    transaction.amount_after_transaction + transaction.amount
+                  )
+              : formatCurrency(transaction.amount_after_transaction)}
           </p>
           <p>
-            <strong>Balance After:</strong> {formatCurrency(transaction.amount_after_transaction)}
+            <strong>Balance After:</strong>{" "}
+            {formatCurrency(transaction.amount_after_transaction)}
           </p>
           <p></p>
           <p>
