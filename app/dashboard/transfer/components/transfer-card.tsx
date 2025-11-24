@@ -32,6 +32,7 @@ type Transfer = {
   amount: number | null;
   transaction_type: "immediate" | "scheduled";
   description: string | null;
+  schedule_date?: string | null;
 };
 
 export function TransferCard({
@@ -46,7 +47,6 @@ export function TransferCard({
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchRecipient[]>([]);
   const [loading, setLoading] = useState(false);
-
   const [recipient, setRecipient] = useState<SearchRecipient | null>(null);
 
   const form = useForm<Transfer>({
@@ -56,12 +56,12 @@ export function TransferCard({
       amount: null,
       transaction_type: "immediate",
       description: null,
+      schedule_date: null,
     },
   });
 
   useEffect(() => {
     if (selectedRecipient) {
-      console.log(selectedRecipient)
       setRecipient(selectedRecipient);
       form.setValue("account_id2", selectedRecipient.account_id);
     }
@@ -90,7 +90,7 @@ export function TransferCard({
     setResults([]);
   };
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: Transfer) => {
     if (!activeAccountId || !recipient) return;
 
     const payload = {
@@ -98,6 +98,8 @@ export function TransferCard({
       to_account_id: recipient.account_id,
       amount: Number(values.amount),
       description: values.description,
+      transaction_type: values.transaction_type,
+      schedule_date: values.schedule_date,
     };
 
     const res = await fetch("/api/transfer", {
@@ -161,11 +163,8 @@ export function TransferCard({
                           searchRecipients(val);
                         }}
                       />
-
                       {loading && (
-                        <div className="text-sm text-gray-500">
-                          Searching...
-                        </div>
+                        <div className="text-sm text-gray-500">Searching...</div>
                       )}
                       <RecipientSearchResults
                         results={results}
@@ -197,6 +196,24 @@ export function TransferCard({
                 </FormItem>
               )}
             />
+
+            {/* Schedule Date - only show if scheduled */}
+            {form.watch("transaction_type") === "scheduled" && (
+              <FormField
+                control={form.control}
+                name="schedule_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Schedule Date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} value={field.value ?? ""} />
+                    </FormControl>
+                    <FormDescription>Select the date to execute this payment</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             {/* Description */}
             <FormField
