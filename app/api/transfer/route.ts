@@ -36,7 +36,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
       );
     }
 
-    const { from_account_id, to_account_id, amount, description } = await req.json();
+    const { from_account_id, to_account_id, amount, description, schedule_date  } = await req.json();
 
     if (!from_account_id || !to_account_id || !amount || !description) {
       return NextResponse.json(
@@ -94,6 +94,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
     // MAIN TRANSFER TRANSACTION BLOCK
     const result = await prisma.$transaction(async (tx) => {
 
+      const scheduled2 = schedule_date ? new Date(schedule_date) : null;
       const txn = await tx.transaction.create({
         data: {
           account_id: fromAccount.account_id,
@@ -102,6 +103,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
           transaction_status: "PENDING",
           transaction_type: "TRANSFER",
           amount: amount,
+          scheduled: scheduled2
         },
       });
 

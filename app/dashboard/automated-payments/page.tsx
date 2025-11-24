@@ -12,7 +12,7 @@ export default async function DepositPage() {
   return (
     <>
       <div className="p-10">
-        <h1 className="text-4xl font-bold">Deposit</h1>
+        <h1 className="text-4xl font-bold">Auto Payments</h1>
       </div>
       <div className="px-10">
       <div className="flex h-60 p-2">
