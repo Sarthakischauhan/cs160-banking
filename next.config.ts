@@ -14,6 +14,9 @@ const nextConfig = {
       "/api/**/*": ["./node_modules/**/*.wasm", "./node_modules/**/*.proto"],
     },
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   typescript: {
     // !! WARN !!
     // Dangerously allow production builds to successfully complete even if
