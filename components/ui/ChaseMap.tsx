@@ -150,15 +150,19 @@ export default function ChaseMap() {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [infoWindow, setInfoWindow] = useState<google.maps.InfoWindow | null>(null);
-  const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
+  const markersRef = useRef<google.maps.Marker[]>([]);
   const [places, setPlaces] = useState<Place[]>([]);
-  const [manualQuery, setManualQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [directionsService, setDirectionsService] = useState<google.maps.DirectionsService | null>(null);
   const [directionsRenderer, setDirectionsRenderer] = useState<google.maps.DirectionsRenderer | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [showingDirections, setShowingDirections] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [manualLat, setManualLat] = useState('');
+  const [manualLng, setManualLng] = useState('');
+  const [manualLocationText, setManualLocationText] = useState('');
+  const [userMarker, setUserMarker] = useState<google.maps.Marker | null>(null);
+
 
   // Detect theme on mount and when it changes
   useEffect(() => {
@@ -239,18 +243,18 @@ export default function ChaseMap() {
         typeof location === 'string'
           ? `Chase ATMs near ${location}`
           : `Chase ATMs near ${location.lat},${location.lng}`;
-
+  
       const res = await fetch(`${baseUrl}/api/maps?q=${encodeURIComponent(query)}`);
       const data = await res.json();
       const fetchedPlaces = data.places || [];
-
-      markers.forEach((m) => m.setMap(null));
-      const newMarkers: google.maps.Marker[] = [];
-
+  
+      markersRef.current.forEach(marker => marker.setMap(null));
+      markersRef.current = [];
+  
       fetchedPlaces.forEach((place: Place, index: number) => {
         const lat = place.location?.latitude;
         const lng = place.location?.longitude;
-
+  
         if (lat && lng) {
           const marker = new google.maps.Marker({
             position: { lat, lng },
@@ -258,44 +262,33 @@ export default function ChaseMap() {
             title: place.displayName?.text || 'Chase ATM',
             icon: createBankIcon(),
           });
-
+  
           marker.addListener('click', () => {
             setSelectedIndex(index);
             infoWin.setContent(`
-              <div style="font-family: Arial; max-width: 200px;">
+              <div class="map-infowindow">
                 <strong>${place.displayName?.text || 'Chase ATM'}</strong><br />
                 ${place.formattedAddress || ''}
               </div>
             `);
             infoWin.open(mapInstance, marker);
           });
-
-          newMarkers.push(marker);
+  
+          markersRef.current.push(marker);
         }
       });
-
-      setMarkers(newMarkers);
+  
       setPlaces(fetchedPlaces);
-
-      if (fetchedPlaces.length > 0 && fetchedPlaces[0].location) {
-        mapInstance.setCenter({
-          lat: fetchedPlaces[0].location.latitude,
-          lng: fetchedPlaces[0].location.longitude,
-        });
-      }
     } catch (err) {
       console.error('Error fetching Chase locations:', err);
     }
   }
-
-  const handleManualSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!map || !infoWindow || manualQuery.trim() === '') return;
-    await fetchNearbyChase(map, infoWindow, manualQuery);
-  };
+  
 
   const handleGeolocate = () => {
     if (!map || !infoWindow) return;
+
+    resetDirections();
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -307,24 +300,28 @@ export default function ChaseMap() {
 
           setUserLocation(pos);
 
-          new google.maps.Marker({
+          // Remove old user marker
+          if (userMarker) userMarker.setMap(null);
+
+          // Create new one
+          const marker = new google.maps.Marker({
             position: pos,
             map: map,
             title: 'Your Location',
             icon: {
               path: google.maps.SymbolPath.CIRCLE,
               scale: 8,
-              fillColor: '#4285F4',
+              fillColor: '#0096FF',
               fillOpacity: 1,
               strokeColor: '#fff',
               strokeWeight: 2,
             },
           });
 
+          // Save reference
+          setUserMarker(marker);
+
           map.setCenter(pos);
-          infoWindow.setPosition(pos);
-          infoWindow.setContent(`Your location:<br>Latitude: ${pos.lat}<br>Longitude: ${pos.lng}`);
-          infoWindow.open(map);
 
           await fetchNearbyChase(map, infoWindow, pos);
         },
@@ -335,6 +332,95 @@ export default function ChaseMap() {
     }
   };
 
+  const handleManualLocationSearch = async () => {
+    if (!map || !infoWindow || !manualLocationText.trim()) return;
+
+    resetDirections();
+  
+    const geocoder = new google.maps.Geocoder();
+  
+    geocoder.geocode({ address: manualLocationText }, async (results, status) => {
+      if (status === 'OK' && results && results[0]) {
+        const location = results[0].geometry.location;
+        const pos = { lat: location.lat(), lng: location.lng() };
+  
+        setUserLocation(pos);
+  
+        // Remove old user marker
+        if (userMarker) userMarker.setMap(null);
+
+        // Create new one
+        const marker = new google.maps.Marker({
+          position: pos,
+          map: map,
+          title: 'Your Location',
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 8,
+            fillColor: '#0096FF',
+            fillOpacity: 1,
+            strokeColor: '#fff',
+            strokeWeight: 2,
+          },
+        });
+
+        // Save reference
+        setUserMarker(marker);
+  
+        map.setCenter(pos);
+        map.setZoom(14);
+  
+        // Now fetch Chase ATMs near this location
+        await fetchNearbyChase(map, infoWindow, pos);
+      } else {
+        alert('Could not find that location. Try another search.');
+      }
+    });
+  };
+
+  const handleManualLocationSubmit = async () => {
+    if (!map || !infoWindow) return;
+
+    resetDirections();
+  
+    const lat = parseFloat(manualLat);
+    const lng = parseFloat(manualLng);
+  
+    if (isNaN(lat) || isNaN(lng)) {
+      alert('Please enter valid latitude and longitude numbers.');
+      return;
+    }
+  
+    const pos = { lat, lng };
+    setUserLocation(pos);
+  
+    // Remove old user marker
+    if (userMarker) userMarker.setMap(null);
+
+    // Create new one
+    const marker = new google.maps.Marker({
+      position: pos,
+      map: map,
+      title: 'Your Location',
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 8,
+        fillColor: '#0096FF',
+        fillOpacity: 1,
+        strokeColor: '#fff',
+        strokeWeight: 2,
+      },
+    });
+
+    // Save reference
+    setUserMarker(marker);
+  
+    map.setCenter(pos);
+  
+    await fetchNearbyChase(map, infoWindow, pos);
+  };
+  
+
   const handleSelectPlace = (index: number) => {
     if (!map || !infoWindow) return;
     const place = places[index];
@@ -342,14 +428,14 @@ export default function ChaseMap() {
     const lng = place.location?.longitude;
     if (!lat || !lng) return;
 
-    const marker = markers[index];
+    const marker = markersRef.current[index];
     setSelectedIndex(index);
 
     map.setCenter({ lat, lng });
     map.setZoom(15);
 
     infoWindow.setContent(`
-      <div style="font-family: Arial; max-width: 200px;">
+      <div class="map-infowindow">
         <strong>${place.displayName?.text || 'Chase ATM'}</strong><br />
         ${place.formattedAddress || ''}
       </div>
@@ -380,70 +466,144 @@ export default function ChaseMap() {
     });
   }
 
-    const clearDirections = () => {
-      if (directionsRenderer) {
-        directionsRenderer.setDirections({ routes: [] } as any);
-        setShowingDirections(false);
-      }
+  function resetDirections() {
+    if (directionsRenderer) {
+      directionsRenderer.setDirections({ routes: [] } as any);
+    }
+    setShowingDirections(false);
+    setSelectedIndex(null);
+  }
 
-      setSelectedIndex(null);
-    };
+  const clearDirections = () => {
+    if (directionsRenderer) {
+      directionsRenderer.setDirections({ routes: [] } as any);
+      setShowingDirections(false);
+    }
+
+    setSelectedIndex(null);
+  };
+
+    const autocompleteRef = useRef<HTMLInputElement | null>(null);
+
+    useEffect(() => {
+      if (!window.google || !window.google.maps || !autocompleteRef.current) return;
+    
+      const autocomplete = new google.maps.places.Autocomplete(
+        autocompleteRef.current,
+        {
+          types: ["address"], // enables FULL street address autocomplete
+          fields: ["formatted_address", "geometry", "address_components"],
+        }
+      );
+    
+      autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace() as google.maps.places.PlaceResult;
+    
+        if (!place.geometry || !place.geometry.location) return;
+    
+        const loc = place.geometry.location;
+    
+        setManualLocationText(place.formatted_address || "");
+        setManualLat(loc.lat().toString());
+        setManualLng(loc.lng().toString());
+      });
+    }, []);
+    
 
     return (
     <div className="relative w-full h-screen flex bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">
       {/* Sidebar */}
-      <div className="w-80 bg-white dark:bg-gray-800 shadow-md border-r border-gray-200 dark:border-gray-700 overflow-y-auto z-20">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <form onSubmit={handleManualSearch} className="flex items-center space-x-2 mb-3">
+      <div className="w-80 bg-sidebar text-sidebar-foreground border-r border-sidebar-border shadow-sm overflow-y-auto overflow-x-hidden z-20">
+        <div className="p-4 border-b border-sidebar-border">
+          <div className="flex items-center gap-2 mb-3 w-full">
             <input
               type="text"
-              placeholder="Enter city or ZIP..."
-              value={manualQuery}
-              onChange={(e) => setManualQuery(e.target.value)}
-              className="flex-1 border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 rounded-md px-2 py-1 outline-none text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+              ref={autocompleteRef}
+              placeholder="City, ZIP, or full address..."
+              value={manualLocationText}
+              onChange={(e) => setManualLocationText(e.target.value)}
+              className="
+                flex-1 min-w-0 
+                bg-input 
+                text-sidebar-foreground
+                placeholder-muted-foreground
+                border border-sidebar-border 
+                px-2 py-1 rounded-md
+              "
             />
-            <button className="bg-gray-700 dark:bg-gray-600 text-gray-100 px-3 py-1 rounded-md hover:bg-gray-800 dark:hover:bg-gray-500 cursor-pointer">
-              Search
+            <button
+              onClick={handleManualLocationSearch}
+              className="
+                bg-sidebar-primary 
+                text-sidebar-primary-foreground 
+                px-3 py-1 rounded-md 
+                hover:opacity-90 
+                transition
+              "
+            >
+              Set
             </button>
-          </form>
+          </div>
 
           <button
             onClick={handleGeolocate}
-            className="w-full bg-blue-500 dark:bg-blue-600 text-gray-100 px-3 py-2 hover:bg-blue-600 dark:hover:bg-blue-700 cursor-pointer"
+            className="
+              w-full 
+              bg-primary 
+              text-primary-foreground 
+              px-3 py-2 rounded-md 
+              hover:opacity-90 
+              transition
+            "
           >
             Search Locations Near You
           </button>
         </div>
 
+        {/* Results section */}
         <div className="p-3">
           {places.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400 text-sm italic">No results yet. Search to get started!</p>
+            <p className="text-muted-foreground text-sm italic">
+              No results yet. Search to get started!
+            </p>
           ) : (
             <ul className="space-y-3">
               {places.map((place, index) => (
                 <li
                   key={index}
-                  className={`border rounded-lg p-3 transition ${
-                    selectedIndex === index 
-                      ? 'bg-gray-100 dark:bg-gray-700 border-gray-500 dark:border-gray-400' 
-                      : 'border-gray-200 dark:border-gray-600'
-                  }`}
+                  className={`
+                    rounded-lg p-3 border transition cursor-pointer
+                    ${
+                      selectedIndex === index
+                        ? "bg-sidebar-accent border-sidebar-border"
+                        : "border-sidebar-border bg-sidebar"
+                    }
+                  `}
                 >
-                  <div className="cursor-pointer" onClick={() => handleSelectPlace(index)}>
+                  <div onClick={() => handleSelectPlace(index)}>
                     <strong className="block text-sm font-semibold">
-                      {place.displayName?.text || 'Chase ATM'}
+                      {place.displayName?.text || "Chase ATM"}
                     </strong>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 block mb-2">
-                      {place.formattedAddress || 'No address'}
+
+                    <span className="text-xs text-muted-foreground block mb-2">
+                      {place.formattedAddress || "No address"}
                     </span>
+
                     <button
-                      onClick={() =>
+                      onClick={(e) => {
+                        e.stopPropagation();
                         showDirections({
                           lat: place.location!.latitude!,
                           lng: place.location!.longitude!,
-                        })
-                      }
-                      className="bg-gray-100 dark:bg-gray-600 border border-gray-500 dark:border-gray-500 text-gray-700 dark:text-gray-100 text-xs px-3 py-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 cursor-pointer"
+                        });
+                      }}
+                      className="
+                        bg-secondary px-3 py-1 text-xs rounded-md
+                        text-secondary-foreground
+                        hover:opacity-90
+                        border border-sidebar-border
+                        transition
+                      "
                     >
                       Get Directions
                     </button>
@@ -454,6 +614,7 @@ export default function ChaseMap() {
           )}
         </div>
       </div>
+
 
       {/* Map */}
       <div className="flex-1 h-full relative">

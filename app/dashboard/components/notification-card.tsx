@@ -19,12 +19,13 @@ type NotificationType = "TRANSACTION" | "SYSTEM" | "SECURITY" | "GENERAL" | null
 
 export function NotificationCard({
   notifications = [],
+  render_type
 }: {
-  notifications?: Notifications[];
+  notifications?: Notifications[]
+  render_type: "COMPONENT" | "PAGE",
 }) {
   const [checkedSet, setCheckedSet] = useState<Set<bigint>>(new Set());
   const [loading, setLoading] = useState(false);
-
   const toggleCheck = (id: bigint, checked: boolean | "indeterminate") => {
     setCheckedSet(prev => {
       const next = new Set(prev);
@@ -64,7 +65,7 @@ export function NotificationCard({
     <Card className="w-full h-full relative">
       <CardHeader>
         <div>
-          <CardTitle>Notifications</CardTitle>
+          {render_type === "COMPONENT" && <CardTitle>Notifications</CardTitle>}
           <CardAction>
             <Link href="/dashboard/notifications">View All</Link>
           </CardAction>
