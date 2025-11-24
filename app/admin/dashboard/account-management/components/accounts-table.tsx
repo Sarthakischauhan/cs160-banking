@@ -39,13 +39,13 @@ export function AccountsTable(props: AccountsTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead>Status</TableHead>
+            <TableHead>Date Created</TableHead>
             <TableHead>First Name</TableHead>
             <TableHead>Last Name</TableHead>
             <TableHead>Account ID</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Balance</TableHead>
             <TableHead>Transactions</TableHead>
-            <TableHead>Date Created</TableHead>
             <TableHead />
           </TableRow>
         </TableHeader>
@@ -63,6 +63,7 @@ export function AccountsTable(props: AccountsTableProps) {
                   </span>
                 )}
               </TableCell>
+              <TableCell>{account.created_at.toLocaleDateString()}</TableCell>
               <TableCell className="max-w-[120px]">
                 {account.Customer.first_name?.toLocaleUpperCase()}
               </TableCell>
@@ -75,7 +76,6 @@ export function AccountsTable(props: AccountsTableProps) {
               <TableCell>
                 {account._count.Transaction_Transaction_account_idToAccount}
               </TableCell>
-              <TableCell>{account.created_at.toLocaleDateString()}</TableCell>
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger className="hover:cursor-pointer">

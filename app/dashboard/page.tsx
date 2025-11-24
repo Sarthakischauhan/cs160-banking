@@ -49,7 +49,8 @@ export default async function Page({ searchParams }: DashboardProps) {
     <>
       <div className="flex flex-col md:grid md:grid-cols-3 m-4 gap-4 md:gap-0">
         {accountNames ? (
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <AccountSettingsDropdown accountId={accountId} user={user} />
             <AccountSelect
               accounts={accountNames}
               currentAccountId={accountId}
@@ -69,7 +70,6 @@ export default async function Page({ searchParams }: DashboardProps) {
         )}
         <div className="hidden md:block" />
         <div className="flex items-center md:justify-end gap-5">
-          <AccountSettingsDropdown accountId={accountId} user={user} />
           {getRole(session).includes("Admin") ? (
             <Button className="w-full md:w-[200] hover:cursor-pointer">
               <a

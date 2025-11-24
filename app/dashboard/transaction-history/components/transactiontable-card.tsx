@@ -6,14 +6,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   TableBody,
   TableCell,
   TableHead,
@@ -26,9 +18,11 @@ import { Check, CircleDashed, EllipsisVertical } from "lucide-react";
 import { prisma } from "@/prisma/prisma";
 import { RequestCancelTransactionItem } from "./cancel-item";
 import { redirect } from "next/navigation";
-import { X } from "lucide-react"
+import { X } from "lucide-react";
 import { RequestApprovalTransactionItem } from "./approve-item";
 import TransactionManagementDropdown from "./dropdown";
+import { formatCurrency } from "@/lib/utils";
+import { getRole, auth0 } from "@/lib/auth0";
 
 export async function TransactionTableCard({
   transactions = [],
@@ -49,14 +43,35 @@ export async function TransactionTableCard({
     redirect("/");
   }
 
+
+  function formatDate(date: Date) {
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(date);
+  }
+
   function renderStatus(status: string) {
     switch (status) {
       case "PENDING":
-        return <span className="text-yellow-500"><CircleDashed /></span>;
+        return (
+          <span className="text-yellow-500">
+            <CircleDashed />
+          </span>
+        );
       case "COMPLETED":
-        return <span className="text-green-500"><Check /></span>;
+        return (
+          <span className="text-green-500">
+            <Check />
+          </span>
+        );
       case "CANCELED":
-        return <span className="text-red-500"><X /></span>;
+        return (
+          <span className="text-red-500">
+            <X />
+          </span>
+        );
       default:
         return <span className="text-gray-500">Unknown</span>;
     }
@@ -93,17 +108,20 @@ export async function TransactionTableCard({
                   <TableCell>{transaction.transaction_type}</TableCell>
                   <TableCell>{transaction.description || "-"}</TableCell>
                   <TableCell>
-                    {new Date(transaction.created_at).toLocaleDateString()}
+                    {formatDate(new Date(transaction.created_at))}
                   </TableCell>
-                  <TableCell>{renderStatus(transaction.transaction_status)}</TableCell>
                   <TableCell>
-                    $
-                    {Math.abs(Number(transaction.amount))
-                      .toFixed(2)
-                      .toLocaleString()}
+                    {renderStatus(transaction.transaction_status)}
+                  </TableCell>
+                  <TableCell>
+                    {formatCurrency(transaction.amount.toNumber())}
                   </TableCell>
                   <TableCell className="hover:cursor-pointer">
-                    <TransactionManagementDropdown transaction_id={transaction.transaction_id} transaction_status={transaction.transaction_status} user={user} />
+                    <TransactionManagementDropdown
+                      transaction_id={transaction.transaction_id}
+                      transaction_status={transaction.transaction_status}
+                      user={userId}
+                    />
                   </TableCell>
                 </TableRow>
               );
