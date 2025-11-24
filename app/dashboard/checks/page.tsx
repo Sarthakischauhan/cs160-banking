@@ -6,10 +6,10 @@ import { useEffect, useRef, useState } from "react";
 import { Camera } from "lucide-react";
 import { TransactionType } from "@prisma/client";
 
-type Account = {
-  // Structure to hold customer info from the UI input
-  account_id: string | null;
-  balance: number | null;
+type Account = {  // Structure to hold customer info from the UI input
+    account_id: string | null;
+    balance: number | null;
+    customer_id: string | null;
 };
 let test = "";
 
@@ -139,46 +139,45 @@ export default function Page() {
       throw new Error("Deposit response missing transactionId");
     }
 
-    const formData = new FormData();
-    if (front_image) {
-      formData.append("image", front_image);
+        const formData = new FormData();
+        if (front_image) {
+            formData.append("image", front_image);
+        }
+        if (back_image) {
+            formData.append("image2", back_image);
+        }
+        if (amount !== null && amount > 0) {
+            formData.append("amount", amount.toString());
+        }
+        formData.append("transactionId", transactionId);
+      formData.append("customerId", account.customer_id!);
+
+
+        try {
+            const res = await fetch("/api/checks", {
+                method: "POST",
+                body: formData
+            });
+            const data = await res.json();
+            setresult(data);
+            ~
+                alert("Check submitted successfully! We will review and approve it shortly.");
+        } catch (error) {
+            seterror("Error cannot process the image");
+        }
     }
-    if (back_image) {
-      formData.append("image2", back_image);
-    }
-    if (amount !== null && amount > 0) {
-      formData.append("amount", amount.toString());
-    }
-    formData.append("transactionId", transactionId);
-    try {
-      const res = await fetch("/api/checks", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      setresult(data);
-      ~alert(
-        "Check submitted successfully! We will review and approve it shortly."
-      );
-    } catch (error) {
-      seterror("Error cannot process the image");
-    }
-  }
-  return (
-    <main className="min-h-screen flex flex-col items-center bg-gradient-to-b from-background to-muted/50 py-12 px-4">
-      <h1 className="text-3xl font-bold text-blue-600 mb-2">Deposit a Check</h1>
-      <p className="text-muted-foreground text-sm mb-8">
-        Upload both sides of your check to deposit
-      </p>
-      <form
-        onSubmit={handleUpload}
-        className="flex flex-col items-center gap-4 justify-start"
-      >
-        <div className="flex flex-col justify-center items-center gap-10 w-full">
-          <Card className="w-65 h-55 flex flex-col items-center justify-between bg-background border border-border shadow-sm hover:bg-accent/10 rounded-none hover:shadow-md hover:border-accent hover:scale-[1.02] relative p-3">
-            <CardHeader>
-              <CardTitle className="text-blue-600">Front</CardTitle>
-            </CardHeader>
+    return (
+        <main className="min-h-screen flex flex-col items-center bg-gradient-to-b from-background to-muted/50 py-12 px-4">
+            <h1 className="text-3xl font-bold text-blue-600 mb-2">Deposit a Check</h1>
+            <p className="text-muted-foreground text-sm mb-8">
+                Upload both sides of your check to deposit
+            </p>
+            <form onSubmit={handleUpload} className="flex flex-col items-center gap-4 justify-start">
+                <div className="flex flex-col justify-center items-center gap-10 w-full">
+                    <Card className="w-65 h-55 flex flex-col items-center justify-between bg-background border border-border shadow-sm hover:bg-accent/10 rounded-none hover:shadow-md hover:border-accent hover:scale-[1.02] relative p-3">
+                        <CardHeader>
+                            <CardTitle className="text-blue-600">Front</CardTitle>
+                        </CardHeader>
 
             <div className="flex items-center justify-center w-full h-full overflow-hidden border border-dashed rounded-md mb-2">
               {front_image ? (
@@ -273,55 +272,46 @@ export default function Page() {
               </Button>
             </div>
 
-            <input
-              id="backUpload"
-              type="file"
-              accept="image/*"
-              onChange={(e) => setimage2(e.target.files?.[0] ?? null)}
-              className="hidden"
-            />
-          </Card>
-        </div>
-        <div>
-          <Input
-            id="deposit"
-            required
-            placeholder="Enter deposit amount"
-            type="number"
-            min="1"
-            max="10000"
-            value={amount ?? ""}
-            onChange={(e) =>
-              setAmount(e.target.value === "" ? null : Number(e.target.value))
-            }
-            step="0.01"
-          />
-        </div>
-        <Button
-          type="submit"
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded-none"
-        >
-          Upload
-        </Button>
-      </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {showCamera && (
-        <div className="fixed inset-0 bg-black/80 flex flex-col items-center justify-center z-50">
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            className="w-80 rounded-lg shadow-lg"
-          />
-          <canvas ref={canvasRef} className="hidden" />
-          <div className="mt-4 flex gap-4">
-            <Button onClick={capturePhoto}>Capture</Button>
-            <Button variant="secondary" onClick={() => setShowCamera(null)}>
-              Cancel
-            </Button>
-          </div>
-        </div>
-      )}
-    </main>
-  );
+                        <input
+                            id="backUpload"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => setimage2(e.target.files?.[0] ?? null)}
+                            className="hidden"
+                        />
+                    </Card>
+
+                </div>
+                <div>
+                    <Input
+                        id="deposit"
+                        required
+                        placeholder="Enter deposit amount"
+                        type="number"
+                        min="1"
+                        max="10000"
+                        value={amount ?? ""}
+                        onChange={(e) => setAmount(e.target.value === "" ? null : Number(e.target.value))}
+                        step="0.01"
+                    />
+                </div>
+                <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white rounded-none"
+                >Upload
+                </Button>
+            </form>
+            {error && <p style={{ color: "red" }}>{error}</p>}
+            {showCamera && (
+                <div className="fixed inset-0 bg-black/80 flex flex-col items-center justify-center z-50">
+                    <video ref={videoRef} autoPlay playsInline className="w-80 rounded-lg shadow-lg" />
+                    <canvas ref={canvasRef} className="hidden" />
+                    <div className="mt-4 flex gap-4">
+                        <Button onClick={capturePhoto}>Capture</Button>
+                        <Button variant="secondary" onClick={() => setShowCamera(null)}>
+                            Cancel
+                        </Button>
+                    </div>
+                </div>
+            )}
+        </main >
+    );
 }

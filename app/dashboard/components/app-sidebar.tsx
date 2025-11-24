@@ -61,9 +61,9 @@ const sidebarOptions = [
     img: MapPin,
   },
   {
-    title: "Account Settings",
-    url: "/dashboard/account-settings",
-    img: SettingsIcon,
+    title: "Deposit Checks",
+    url: "/dashboard/checks",
+    img: Banknote,
   }
 ];
 

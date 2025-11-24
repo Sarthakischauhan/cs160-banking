@@ -32,7 +32,10 @@ export const GET = auth0.withApiAuthRequired(async (req: NextRequest) => {
             return NextResponse.json([], { status: 200 });
         }
 
-        const accounts = await prisma.account.findMany({ where: { customer_id: customer.customer_id } });
+        const accounts = await prisma.account.findMany({
+            where: { customer_id: customer.customer_id },
+            include: { Customer: true }
+        });
         return NextResponse.json(accounts, { status: 200 });
     } catch (error) {
         return NextResponse.json({ message: "Failed to fetch accounts" }, { status: 500 });
