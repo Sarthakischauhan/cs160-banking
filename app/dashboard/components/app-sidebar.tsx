@@ -60,11 +60,6 @@ const sidebarOptions = [
     url: "/dashboard/maps",
     img: MapPin,
   },
-  {
-    title: "Deposit Checks",
-    url: "/dashboard/checks",
-    img: Banknote,
-  }
 ];
 
 export function AppSidebar({currentAccountId}: {currentAccountId?: string}) {
