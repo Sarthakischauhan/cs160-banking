@@ -8,6 +8,7 @@ import { Camera } from "lucide-react";
 type Account = {  // Structure to hold customer info from the UI input
     account_id: string | null;
     balance: number | null;
+    customer_id: string | null;
 };
 let test = "";
 
@@ -140,6 +141,9 @@ export default function Page() {
             formData.append("amount", amount.toString());
         }
         formData.append("transactionId", transactionId);
+      formData.append("customerId", account.customer_id!);
+
+
         try {
             const res = await fetch("/api/checks", {
                 method: "POST",
@@ -289,5 +293,5 @@ export default function Page() {
                 </div>
             )}
         </main >
-    )
+    );
 }
