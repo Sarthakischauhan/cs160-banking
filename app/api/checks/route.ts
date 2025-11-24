@@ -1,7 +1,7 @@
 import { prisma } from "@/prisma/prisma";
 import { createClient } from "@supabase/supabase-js";
 import { GoogleGenerativeAI, type Content } from "@google/generative-ai";
-import { TicketType } from "@prisma/client";
+import { auth0 } from "@/lib/auth0";
 
 const supabase = createClient(
     process.env.SUPABASE_URL!,
@@ -101,7 +101,8 @@ export async function POST(req: Request) {
             Return 'true' if:
             1. The image clearly shows a valid bank check (front or back).
             2. The deposit amount "$${amount}" (or numerically equivalent) is visible on the check.
-            Return 'false' only if it is unrelated, amount does not match or clearly not a check.`,
+            3. The check can be a photograph of a physical check shown on a smartphone.
+            Return 'false' only if it is unrelated, amount does not match.`,
                         },
                         {
                             inlineData: {
