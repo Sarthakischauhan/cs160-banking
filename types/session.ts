@@ -1,5 +1,5 @@
-import { SessionData } from "@auth0/nextjs-auth0/types"
+import type { SessionData } from "@auth0/nextjs-auth0/types";
 
 export interface Session extends SessionData {
-    // keep adding
+  // keep adding
 }

@@ -25,7 +25,7 @@ interface TableCardProps {
 
 /**
  * A Card for displaying data in a table
- * 
+ *
  * @param title Title of the card
  * @param description Description put under the title of the card
  * @param data Tabular data which populates the table

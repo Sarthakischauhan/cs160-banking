@@ -1,18 +1,7 @@
 "use client";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import type { Account, Customer, Transaction } from "@prisma/client";
 import { EllipsisVertical } from "lucide-react";
-
-import { Account, Customer, Transaction } from "@prisma/client";
-import { prisma } from "@/prisma/prisma";
-import { censorString, formatCurrency } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,8 +10,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { TransactionDetailsButton } from "./transaction-details";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { censorString, formatCurrency } from "@/lib/utils";
+import { prisma } from "@/prisma/prisma";
 import { CancelTransactionItem } from "./cancel-transaction";
+import { TransactionDetailsButton } from "./transaction-details";
 
 export function TransactionsTable(transactions: {
   transactions: Record<string, any>;
@@ -52,7 +51,7 @@ export function TransactionsTable(transactions: {
                 Account_Transaction_account_id2ToAccount: Account & {
                   Customer: Customer;
                 };
-              }
+              },
             ) => (
               <TableRow key={transaction.transaction_id}>
                 <TableCell>
@@ -77,7 +76,7 @@ export function TransactionsTable(transactions: {
                 <TableCell>
                   {transaction.amount_after_transaction &&
                     formatCurrency(
-                      Number(transaction.amount_after_transaction)
+                      Number(transaction.amount_after_transaction),
                     )}
                 </TableCell>
                 <TableCell>
@@ -96,7 +95,9 @@ export function TransactionsTable(transactions: {
                       <DropdownMenuSeparator />
                       <TransactionDetailsButton transaction={transaction} />
                       <DropdownMenuItem
-                        disabled={["COMPLETED"].includes(transaction.transaction_status)}
+                        disabled={["COMPLETED"].includes(
+                          transaction.transaction_status,
+                        )}
                       >
                         Approve
                       </DropdownMenuItem>
@@ -110,7 +111,7 @@ export function TransactionsTable(transactions: {
                   </DropdownMenu>
                 </TableCell>
               </TableRow>
-            )
+            ),
           )}
         </TableBody>
       </Table>

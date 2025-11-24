@@ -1,5 +1,13 @@
 "use client";
 
+import {
+  ReadonlyURLSearchParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useDebouncedCallback } from "use-debounce";
 import { Input } from "@/components/ui/input";
 import {
   InputGroup,
@@ -7,24 +15,21 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
-import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import {
   Select,
+  SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
-  SelectContent,
-  SelectGroup,
 } from "@/components/ui/select";
-import {
-  usePathname,
-  useSearchParams,
-  useRouter,
-  ReadonlyURLSearchParams,
-} from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-
-import { useDebouncedCallback } from "use-debounce";
 
 /** Single text input */
 interface TextFilterProps {
@@ -282,4 +287,3 @@ export function PaginationControls({ nextCursor }: PaginationControlsProps) {
     </Pagination>
   );
 }
-

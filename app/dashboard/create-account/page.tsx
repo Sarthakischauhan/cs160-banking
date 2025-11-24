@@ -1,15 +1,15 @@
+import { WalletMinimal } from "lucide-react";
 import {
-  Card, 
-  CardHeader, 
-  CardTitle, 
+  Card,
   CardContent,
   CardDescription,
-  CardFooter
+  CardFooter,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
-import { AccountForm }  from "./components/account-form";
-import { WalletMinimal } from "lucide-react"
+import { AccountForm } from "./components/account-form";
 
-export default async function createAccount(){
+export default async function createAccount() {
   return (
     <>
       <Card className="w-1/2 max-w-2xl mx-auto my-10 px-10">
@@ -19,7 +19,7 @@ export default async function createAccount(){
           </div>
           <CardTitle className="text-2xl">Open a bank account</CardTitle>
           <CardDescription>
-            Please provide the following information to open your bank account.  
+            Please provide the following information to open your bank account.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -27,5 +27,5 @@ export default async function createAccount(){
         </CardContent>
       </Card>
     </>
-  )
+  );
 }

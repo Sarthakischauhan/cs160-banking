@@ -46,7 +46,9 @@ export function RecentTransfersCard({
             {recentRecipients.map((recipient) => (
               <div
                 key={recipient.id}
-                onClick={() => onSelect({account_id: recipient.id, name: recipient.name} )}
+                onClick={() =>
+                  onSelect({ account_id: recipient.id, name: recipient.name })
+                }
                 className="
                   w-full cursor-pointer rounded-xl border
                   p-3 transition-all
@@ -68,26 +70,20 @@ export function RecentTransfersCard({
 
                 {/* Metadata */}
                 <div className="mt-3 w-full space-y-1 text-xs text-gray-500">
-                  <p>
-                    Acct: ****{recipient.accountNumber.slice(-4)}
-                  </p>
+                  <p>Acct: ****{recipient.accountNumber.slice(-4)}</p>
                   <p className="truncate">
                     {recipient.email ?? "No email on file"}
                   </p>
                   <p>
                     Last:{" "}
-                    {new Date(
-                      recipient.lastTransferred
-                    ).toLocaleDateString()}
+                    {new Date(recipient.lastTransferred).toLocaleDateString()}
                   </p>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground px-2">
-            No recent users
-          </p>
+          <p className="text-sm text-muted-foreground px-2">No recent users</p>
         )}
       </CardContent>
     </Card>

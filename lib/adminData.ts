@@ -1,13 +1,13 @@
 "use server";
 
-import { prisma } from "@/prisma/prisma";
-import {
+import type {
   AccountType,
   DepositTest,
   Transaction,
   TransactionStatus,
   TransactionType,
 } from "@prisma/client";
+import { prisma } from "@/prisma/prisma";
 
 const timeFrameOptions = {
   month: 30,
@@ -17,7 +17,7 @@ const timeFrameOptions = {
 export async function getTransactions(
   searchParams: { [key: string]: string | undefined },
   cursor?: string, // The transactionId of the last item from the previous page
-  pageSize: number = 20 // Number of items per page
+  pageSize: number = 20, // Number of items per page
 ) {
   const where: any = {};
 
@@ -154,7 +154,7 @@ export async function getAccountsSummary(timeFrame: "month" | "year") {
   const balances = calculateBalanceHistory(
     deposits,
     Number(overall._sum.balance),
-    timeFrameOptions["month"]
+    timeFrameOptions["month"],
   );
 
   return {
@@ -239,7 +239,7 @@ export async function getTransactionSummary(timeFrame: "month" | "year") {
 function calculateTransactionHistory(
   transactions: Transaction[],
   start: Date,
-  end: Date
+  end: Date,
 ) {
   // Pre-fill the map with all dates in the range
   const dateMap = new Map<string, number>();
@@ -268,7 +268,7 @@ function calculateTransactionHistory(
 function calculateBalanceHistory(
   deposits: DepositTest[],
   currentBalance: number,
-  timeFrame: number
+  timeFrame: number,
 ) {
   // 1. Aggregate amounts per day
   const dailyTotals = new Map<string, number>();
@@ -297,7 +297,7 @@ function calculateBalanceHistory(
 export async function getAccounts(
   searchParams: { [key: string]: string | undefined },
   cursor?: string, // The transactionId of the last item from the previous page
-  pageSize: number = 20 // Number of items per page
+  pageSize: number = 20, // Number of items per page
 ) {
   const limit = pageSize;
 

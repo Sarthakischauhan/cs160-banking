@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,7 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import Link from "next/link";
 
 export function ATMCard() {
   return (
@@ -21,7 +21,10 @@ export function ATMCard() {
         </CardHeader>
         <CardContent>
           <div>
-            <span>In partnership with Chase Bank, all deposits and withdrawal from Chase ATMs are free of charge.</span>
+            <span>
+              In partnership with Chase Bank, all deposits and withdrawal from
+              Chase ATMs are free of charge.
+            </span>
           </div>
         </CardContent>
         <CardFooter className="h-full">

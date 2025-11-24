@@ -1,5 +1,5 @@
-import { auth0, getRole } from "@/lib/auth0";
 import { redirect } from "next/navigation";
+import { auth0, getRole } from "@/lib/auth0";
 
 export default async function AdminPage() {
   const session = await auth0.getSession();
@@ -7,7 +7,7 @@ export default async function AdminPage() {
   if (!session) {
     return redirect("/auth/login");
   }
-  const role = getRole(session)
+  const role = getRole(session);
 
   if (!role.includes("Admin")) {
     return redirect("/unauthorized");

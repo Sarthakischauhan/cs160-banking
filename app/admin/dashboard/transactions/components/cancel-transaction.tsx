@@ -1,7 +1,7 @@
 "use client";
 
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner"; // or your toast lib
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 export function CancelTransactionItem({ id }: { id: string }) {
   const handleCancel = async () => {
@@ -23,9 +23,5 @@ export function CancelTransactionItem({ id }: { id: string }) {
     }
   };
 
-  return (
-    <DropdownMenuItem onClick={handleCancel}>
-      Cancel
-    </DropdownMenuItem>
-  );
+  return <DropdownMenuItem onClick={handleCancel}>Cancel</DropdownMenuItem>;
 }

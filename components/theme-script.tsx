@@ -6,11 +6,11 @@
  * theme class to the HTML element before React hydrates.
  */
 export function ThemeScript() {
-	return (
-		<script
-			// biome-ignore lint/security/noDangerouslySetInnerHtml: Required for immediate theme application before hydration
-			dangerouslySetInnerHTML={{
-				__html: `
+  return (
+    <script
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: Required for immediate theme application before hydration
+      dangerouslySetInnerHTML={{
+        __html: `
           (function() {
             try {
               // Read theme from cookie
@@ -26,7 +26,7 @@ export function ThemeScript() {
             }
           })();
         `,
-			}}
-		/>
-	);
+      }}
+    />
+  );
 }

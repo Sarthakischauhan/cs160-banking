@@ -54,7 +54,7 @@ export async function searchNearbyPlaces(lat: number, lng: number) {
           },
         },
       }),
-    }
+    },
   );
 
   if (!res.ok) {

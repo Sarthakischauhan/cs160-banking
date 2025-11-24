@@ -1,5 +1,10 @@
 "use client";
 
+import type { AccountType } from "@prisma/client";
+import Decimal from "decimal.js";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,7 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
 import {
   Form,
   FormControl,
@@ -19,12 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
 import { MoneyInput } from "./money-input";
-import { useEffect, useState } from "react";
-import Decimal from "decimal.js";
-import type { AccountType } from "@prisma/client";
 
 type DepositCardProps = {
   account_id: string;
@@ -37,34 +36,34 @@ export function DepositCard({ account_id }: DepositCardProps) {
     defaultValues: {
       amount: "",
       description: "",
-      schedule_date: "", 
+      schedule_date: "",
     },
   });
 
   const handleClick = async (values: any) => {
-  const payload = {
-    amount: values.amount,
-    account_id: account_id,
-    description: values.description,
-    scheduled: values.schedule_date, // match server API
+    const payload = {
+      amount: values.amount,
+      account_id: account_id,
+      description: values.description,
+      scheduled: values.schedule_date, // match server API
+    };
+
+    const response = await fetch("/api/autopayment", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Deposit failed:", errorData.message);
+      return new Error("Couldn't deposit money");
+    }
+
+    router.push("/dashboard");
   };
-
-  const response = await fetch("/api/autopayment", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    console.error("Deposit failed:", errorData.message);
-    return new Error("Couldn't deposit money");
-  }
-
-  router.push("/dashboard");
-};
 
   return (
     <Card className="w-2/3">
@@ -122,7 +121,9 @@ export function DepositCard({ account_id }: DepositCardProps) {
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>
-                  <FormDescription>Select the date to execute this payment</FormDescription>
+                  <FormDescription>
+                    Select the date to execute this payment
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

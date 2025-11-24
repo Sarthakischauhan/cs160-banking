@@ -1,7 +1,7 @@
 // Create users transaction
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/prisma/prisma";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth0, getRole } from "@/lib/auth0";
+import { prisma } from "@/prisma/prisma";
 
 // Get current user's customer profile. Admins can list all with ?all=true
 export const GET = auth0.withApiAuthRequired(async (req: NextRequest) => {
@@ -24,7 +24,7 @@ export const GET = auth0.withApiAuthRequired(async (req: NextRequest) => {
     if (!auth0UserId)
       return NextResponse.json(
         { message: "User not found in session" },
-        { status: 400 }
+        { status: 400 },
       );
 
     const customer = await prisma.customer.findUnique({
@@ -35,7 +35,7 @@ export const GET = auth0.withApiAuthRequired(async (req: NextRequest) => {
   } catch (error) {
     return NextResponse.json(
       { message: "Failed to fetch user" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 });
@@ -51,7 +51,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
     if (!auth0UserId)
       return NextResponse.json(
         { message: "User not found in session" },
-        { status: 400 }
+        { status: 400 },
       );
 
     const body = await req.json();
@@ -83,7 +83,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
     console.error("❌ Failed to upsert profile:", error);
     return NextResponse.json(
       { message: "Failed to upsert profile", error: String(error) },
-      { status: 500 }
+      { status: 500 },
     );
   }
 });

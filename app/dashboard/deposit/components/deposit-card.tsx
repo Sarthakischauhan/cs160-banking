@@ -1,5 +1,10 @@
 "use client";
 
+import type { AccountType } from "@prisma/client";
+import Decimal from "decimal.js";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,7 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
 import {
   Form,
   FormControl,
@@ -19,49 +23,44 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
 import { MoneyInput } from "./money-input";
-import { useEffect, useState } from "react";
-import Decimal from "decimal.js";
-import type { AccountType } from "@prisma/client";
 
 type DepositCardProps = {
-  account_id: string
-}
+  account_id: string;
+};
 
-export function DepositCard({account_id} : DepositCardProps) {
+export function DepositCard({ account_id }: DepositCardProps) {
+  const router = useRouter(); // Allows us to navigate back to dashboard
 
-  const router = useRouter() // Allows us to navigate back to dashboard
-  
-  const form = useForm({ // Initalize the structre with placeholder values 
+  const form = useForm({
+    // Initalize the structre with placeholder values
     defaultValues: {
       amount: "",
       description: "",
     },
   });
 
-  const handleClick = async (values: any) =>{ 
-     // When submit button is clicked api for deposit will hit
-     const payload = {
+  const handleClick = async (values: any) => {
+    // When submit button is clicked api for deposit will hit
+    const payload = {
       amount: values.amount,
       account_id: account_id,
-      description: values.description
-     }
-    
-     const response = await fetch("/api/deposit",{
+      description: values.description,
+    };
+
+    const response = await fetch("/api/deposit", {
       method: "POST",
       headers: {
-          'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload)
-     })
+      body: JSON.stringify(payload),
+    });
 
-     if(!response.ok){
-      return new Error("Couldn't deposit money")
-     }
+    if (!response.ok) {
+      return new Error("Couldn't deposit money");
+    }
 
-     router.push("/dashboard")
+    router.push("/dashboard");
   };
 
   return (

@@ -1,24 +1,7 @@
-import { Button } from "@/components/ui/button";
-import {
-  TextFilter,
-  RangeFilter,
-  SelectFilter,
-  PaginationControls,
-} from "../components/filters";
-import { TransactionsTable } from "./components/transactions-table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { prisma } from "@/prisma/prisma";
 import { TransactionStatus, TransactionType } from "@prisma/client";
-import { getTransactions } from "@/lib/adminData";
 import { Suspense } from "react";
-
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Pagination,
   PaginationContent,
@@ -28,14 +11,30 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { getTransactions } from "@/lib/adminData";
+import { prisma } from "@/prisma/prisma";
+import {
+  PaginationControls,
+  RangeFilter,
+  SelectFilter,
+  TextFilter,
+} from "../components/filters";
+import { TransactionsTable } from "./components/transactions-table";
 
 export default async function TransactionsPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | undefined };
+  searchParams: searchParamsType;
 }) {
   const params = await searchParams;
-  const pageSize = 20
+  const pageSize = 20;
   const {
     firstName = "",
     lastName = "",
@@ -50,9 +49,11 @@ export default async function TransactionsPage({
 
   const data = await getTransactions(params, cursor, pageSize);
 
-    // Determine the next cursor (last item's ID)
-  const transactions = data.data
-  const nextCursor = transactions.length ? transactions[transactions.length - 1].transaction_id : null;
+  // Determine the next cursor (last item's ID)
+  const transactions = data.data;
+  const nextCursor = transactions.length
+    ? transactions[transactions.length - 1].transaction_id
+    : null;
 
   return (
     <div className="w-full h-fit">

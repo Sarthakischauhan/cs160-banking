@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from "clsx";
+import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -26,6 +26,5 @@ export const dataFormatter: Record<string, (value: any) => React.ReactNode> = {
   updated_at: (v) => new Date(v).toLocaleDateString(),
   scheduled: (v) => new Date(v).toLocaleDateString(),
   limit_amount: (v) => (v ? v : "No limit"),
-  default: (value) => 
-    value instanceof Date ? value.toLocaleString() : value
+  default: (value) => (value instanceof Date ? value.toLocaleString() : value),
 };

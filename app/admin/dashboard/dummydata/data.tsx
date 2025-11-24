@@ -1,4 +1,4 @@
-import { MetricCardProps } from "../components/metric-card";
+import type { MetricCardProps } from "../components/metric-card";
 
 export const metricslist: MetricCardProps[] = [
   {

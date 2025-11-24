@@ -1,18 +1,18 @@
 "use client";
 
-import { BalanceCard } from "./balance-card";
+import type { AccountType } from "@prisma/client";
 import { useHideBalance } from "../providers/hide-balance-provider";
-import { AccountType } from "@prisma/client";
+import { BalanceCard } from "./balance-card";
 
 interface BalanceCardWrapperProps {
-	userBalance: number;
-	account_type: AccountType;
-	monthIncome?: number;
-	monthExpense?: number;
+  userBalance: number;
+  account_type: AccountType;
+  monthIncome?: number;
+  monthExpense?: number;
 }
 
 export function BalanceCardWrapper(props: BalanceCardWrapperProps) {
-	const { hideBalance } = useHideBalance();
+  const { hideBalance } = useHideBalance();
 
-	return <BalanceCard {...props} hidden={hideBalance} />;
+  return <BalanceCard {...props} hidden={hideBalance} />;
 }

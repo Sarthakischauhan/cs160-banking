@@ -1,8 +1,8 @@
 "use client";
 
+import Script from "next/script";
 import { useEffect, useState } from "react";
 import ChaseMap from "@/components/ui/ChaseMap";
-import Script from "next/script";
 
 export default function Home() {
   return (

@@ -1,3 +1,4 @@
+import { TrendingDown, TrendingUp } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -5,7 +6,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { TrendingDown, TrendingUp } from "lucide-react";
 
 export interface MetricCardProps {
   title: string;

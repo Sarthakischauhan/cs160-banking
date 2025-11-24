@@ -1,10 +1,10 @@
-import { auth0, getRole } from "@/lib/auth0";
-import { AppHeader } from "../components/landing/app-header";
-import HeroSection from "@/components/hero-section";
 import Features from "@/components/features-3";
+import FooterSection from "@/components/footer";
+import HeroSection from "@/components/hero-section";
 import StatsSection from "@/components/stats-2";
 import TeamSection from "@/components/team";
-import FooterSection from "@/components/footer";
+import { auth0, getRole } from "@/lib/auth0";
+import { AppHeader } from "../components/landing/app-header";
 
 export default async function Home() {
   const session = await auth0.getSession();
@@ -34,5 +34,5 @@ export default async function Home() {
   if (roles.includes("Admin")) {
     redirect("/admin/dashboard");
   }
-  redirect('/dashboard')
+  redirect("/dashboard");
 }

@@ -1,16 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
-import { BadgeDollarSign, Key, Settings } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
 import type { Notifications } from "@prisma/client";
-import { dismissNotificationsBatch } from "@/lib/notification";
+import { BadgeDollarSign, Key, Settings } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -18,9 +13,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"; 
+} from "@/components/ui/table";
+import { dismissNotificationsBatch } from "@/lib/notification";
 
-type NotificationType = "TRANSACTION" | "SYSTEM" | "SECURITY" | "GENERAL" | null;
+type NotificationType =
+  | "TRANSACTION"
+  | "SYSTEM"
+  | "SECURITY"
+  | "GENERAL"
+  | null;
 
 export function NotificationsPageTable({
   initialNotifications,
@@ -42,7 +43,7 @@ export function NotificationsPageTable({
   const toggleCheckAll = (checked: boolean | "indeterminate") => {
     if (checked === true) {
       // Check all visible notifications
-      const allIds = new Set(notifications.map(n => n.id));
+      const allIds = new Set(notifications.map((n) => n.id));
       setCheckedSet(allIds);
     } else {
       // Uncheck all
@@ -50,7 +51,7 @@ export function NotificationsPageTable({
     }
   };
 
-  const checkAllState: boolean | "indeterminate" = 
+  const checkAllState: boolean | "indeterminate" =
     notifications.length > 0 && checkedSet.size === notifications.length
       ? true
       : notifications.length > 0 && checkedSet.size > 0
@@ -63,8 +64,8 @@ export function NotificationsPageTable({
 
     setLoading(true);
     try {
-      await dismissNotificationsBatch(ids); 
-      
+      await dismissNotificationsBatch(ids);
+
       setNotifications((prev) => prev.filter((n) => !checkedSet.has(n.id)));
       setCheckedSet(new Set()); // Clear checked set after successful dismissal
     } finally {
@@ -82,7 +83,7 @@ export function NotificationsPageTable({
               <TableHead>Message</TableHead>
               {/* Date Column */}
               <TableHead className="text-right w-[200px]">Date</TableHead>
-              
+
               {/* CHECKBOX MOVED TO THE END */}
               <TableHead className="w-[50px] text-center">
                 <Checkbox
@@ -96,15 +97,13 @@ export function NotificationsPageTable({
           <TableBody>
             {notifications.length > 0 ? (
               notifications.map((n) => (
-                <TableRow 
+                <TableRow
                   key={n.id}
-                  className={checkedSet.has(n.id) ? "bg-accent/30" : ""} 
+                  className={checkedSet.has(n.id) ? "bg-accent/30" : ""}
                 >
                   {/* Message Cell */}
                   <TableCell>
-                    <div className="text-sm font-medium">
-                      {n.message}
-                    </div>
+                    <div className="text-sm font-medium">{n.message}</div>
                   </TableCell>
                   {/* Date Cell */}
                   <TableCell className="text-right text-xs text-gray-400">
@@ -122,7 +121,10 @@ export function NotificationsPageTable({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center text-gray-500">
+                <TableCell
+                  colSpan={4}
+                  className="h-24 text-center text-gray-500"
+                >
                   You're all caught up
                 </TableCell>
               </TableRow>
@@ -133,11 +135,7 @@ export function NotificationsPageTable({
 
       <CardFooter className="flex justify-end">
         {checkedSet.size > 0 && (
-          <Button
-            size="sm"
-            onClick={handleMarkAsRead}
-            disabled={loading}
-          >
+          <Button size="sm" onClick={handleMarkAsRead} disabled={loading}>
             {loading ? "Marking…" : `Mark ${checkedSet.size} as read`}
           </Button>
         )}

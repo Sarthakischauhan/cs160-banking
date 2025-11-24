@@ -1,9 +1,13 @@
 // components/ChatWidget.tsx
 "use client";
-import React, { useState, useRef } from "react";
-import { BotIcon } from 'lucide-react';
+import { BotIcon } from "lucide-react";
+import React, { useRef, useState } from "react";
 
-type Message = { id: string; role: "user" | "assistant" | "system"; text: string };
+type Message = {
+  id: string;
+  role: "user" | "assistant" | "system";
+  text: string;
+};
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
@@ -15,7 +19,11 @@ export default function ChatWidget() {
   async function sendMessage(goalAmount?: number) {
     if (!input.trim()) return;
 
-    const userMsg: Message = { id: Date.now().toString(), role: "user", text: input };
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      text: input,
+    };
     setMessages((m) => [...m, userMsg]);
     setInput("");
     setLoading(true);
@@ -46,7 +54,14 @@ export default function ChatWidget() {
       ]);
     } finally {
       setLoading(false);
-      setTimeout(() => scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }), 50);
+      setTimeout(
+        () =>
+          scrollRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "end",
+          }),
+        50,
+      );
     }
   }
 
@@ -94,9 +109,10 @@ export default function ChatWidget() {
                 <div
                   className={`
                     inline-block px-3 py-1 rounded-md
-                    ${m.role === "user"
-                      ? "bg-blue-100 text-gray-900 dark:bg-blue-600/40 dark:text-gray-100"
-                      : "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100"
+                    ${
+                      m.role === "user"
+                        ? "bg-blue-100 text-gray-900 dark:bg-blue-600/40 dark:text-gray-100"
+                        : "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100"
                     }
                   `}
                 >

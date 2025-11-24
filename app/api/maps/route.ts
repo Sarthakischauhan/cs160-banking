@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { searchTextPlaces, searchNearbyPlaces } from "@/lib/maps";
+import { searchNearbyPlaces, searchTextPlaces } from "@/lib/maps";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -22,9 +22,7 @@ export async function GET(request: Request) {
     const locationText = nearMatch ? nearMatch[1].trim() : null;
 
     if (locationText) {
-      const places = await searchTextPlaces(
-        `Chase ATMs near ${locationText}`
-      );
+      const places = await searchTextPlaces(`Chase ATMs near ${locationText}`);
       return NextResponse.json({ success: true, places });
     }
 
@@ -34,7 +32,7 @@ export async function GET(request: Request) {
     console.error("maps route error:", err);
     return NextResponse.json(
       { success: false, error: err.message ?? String(err) },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

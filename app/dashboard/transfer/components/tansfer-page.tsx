@@ -1,22 +1,26 @@
 "use client";
 
-import { BalanceCardWrapper } from "../../components/balance-card-wrapper";
-import { TransferCard } from "./transfer-card";
-import { RecentTransfersCard } from "./recent-transfers-card";
+import type { AccountType } from "@prisma/client";
 import { useState } from "react";
-import { AccountType } from "@prisma/client";
 import type { RecentTransferUser } from "@/lib/transactions";
+import { BalanceCardWrapper } from "../../components/balance-card-wrapper";
+import { RecentTransfersCard } from "./recent-transfers-card";
+import { TransferCard } from "./transfer-card";
 
 type TransferPageProps = {
-    account: {
-        balance: number;
-        account_type: AccountType
-    },
-    activeId:string;
-    recentRecipients: RecentTransferUser[];
-}
+  account: {
+    balance: number;
+    account_type: AccountType;
+  };
+  activeId: string;
+  recentRecipients: RecentTransferUser[];
+};
 
-export function TransferPage({account, activeId, recentRecipients} : TransferPageProps) {
+export function TransferPage({
+  account,
+  activeId,
+  recentRecipients,
+}: TransferPageProps) {
   const [selected, setSelected] = useState<SearchRecipient | null>(null);
 
   return (
@@ -28,12 +32,17 @@ export function TransferPage({account, activeId, recentRecipients} : TransferPag
           {/* Left Column */}
           <div className="flex flex-1 flex-col gap-3 w-fit">
             <div className="flex-1">
-              <BalanceCardWrapper userBalance={account.balance} account_type={account.account_type}/>
+              <BalanceCardWrapper
+                userBalance={account.balance}
+                account_type={account.account_type}
+              />
             </div>
 
             <div className="flex-1">
               <RecentTransfersCard
-                onSelect={({account_id, name}: SearchRecipient) => setSelected({account_id, name: name})}
+                onSelect={({ account_id, name }: SearchRecipient) =>
+                  setSelected({ account_id, name: name })
+                }
                 recentRecipients={recentRecipients}
               />
             </div>
@@ -42,7 +51,10 @@ export function TransferPage({account, activeId, recentRecipients} : TransferPag
           {/* Right Column */}
           <div className="flex flex-1">
             <div className="w-full max-w-xl">
-              <TransferCard selectedRecipient={selected} activeAccountId={activeId} />
+              <TransferCard
+                selectedRecipient={selected}
+                activeAccountId={activeId}
+              />
             </div>
           </div>
         </div>

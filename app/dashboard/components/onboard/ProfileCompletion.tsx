@@ -1,30 +1,41 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { User, CreditCard } from "lucide-react"
-import { useRouter } from "next/navigation"
-
-import type { Customer } from "@prisma/client"
+import type { Customer } from "@prisma/client";
+import { CreditCard, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import type React from "react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ProfileFormData {
-  firstName: string
-  lastName: string
-  dateOfBirth: string
-  phone: string
-  address: string
-  city: string
-  state: string
-  zipCode: string
+  firstName: string;
+  lastName: string;
+  dateOfBirth: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
 }
 
 export const ProfileCompletion = () => {
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<ProfileFormData>({
     firstName: "",
     lastName: "",
@@ -34,19 +45,18 @@ export const ProfileCompletion = () => {
     city: "",
     state: "",
     zipCode: "",
-  })
-  const router = useRouter()
+  });
+  const router = useRouter();
   const handleInputChange = (field: keyof ProfileFormData, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
-    })) 
-  }
+    }));
+  };
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
+    e.preventDefault();
+    setIsLoading(true);
 
     const payload: Partial<Customer> = {
       first_name: formData.firstName,
@@ -54,32 +64,31 @@ export const ProfileCompletion = () => {
       // dateOfBirth: formData.dateOfBirth, add that later
       phone: formData.phone,
       address: `${formData.address} ${formData.city} ${formData.state}`,
-    }
+    };
 
     try {
-      console.log("Profile data:", formData)
+      console.log("Profile data:", formData);
 
-      const response = await fetch("/api/customer",{
-        method: 'POST',
+      const response = await fetch("/api/customer", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload)
-      })
+        body: JSON.stringify(payload),
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       // Refresh server components so dashboard notices the updated profile
-      router.refresh()
-      
+      router.refresh();
     } catch (error) {
-      console.error("Error updating profile:", error)
-      alert("Failed to save profile. Please try again.")
+      console.error("Error updating profile:", error);
+      alert("Failed to save profile. Please try again.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Card className="w-full max-w-2xl mx-auto my-10">
@@ -89,8 +98,8 @@ export const ProfileCompletion = () => {
         </div>
         <CardTitle className="text-2xl">Complete Your Profile</CardTitle>
         <CardDescription>
-          Please provide the following information to complete your banking profile. All fields are required for
-          regulatory compliance.
+          Please provide the following information to complete your banking
+          profile. All fields are required for regulatory compliance.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -110,7 +119,9 @@ export const ProfileCompletion = () => {
                 <Input
                   id="firstName"
                   value={formData.firstName}
-                  onChange={(e) => handleInputChange("firstName", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("firstName", e.target.value)
+                  }
                   placeholder="John"
                   required
                 />
@@ -122,7 +133,9 @@ export const ProfileCompletion = () => {
                 <Input
                   id="lastName"
                   value={formData.lastName}
-                  onChange={(e) => handleInputChange("lastName", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("lastName", e.target.value)
+                  }
                   placeholder="Doe"
                   required
                 />
@@ -137,7 +150,9 @@ export const ProfileCompletion = () => {
                 id="dateOfBirth"
                 type="date"
                 value={formData.dateOfBirth}
-                onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("dateOfBirth", e.target.value)
+                }
                 max={new Date().toISOString().split("T")[0]}
                 required
               />
@@ -371,15 +386,15 @@ export const ProfileCompletion = () => {
             {isLoading ? "Saving Profile..." : "Complete Profile"}
           </Button>
           <Button>
-              <a 
-                href="/auth/logout"
-                className="bg-black text-white rounded-lg w-1/2 mx-auto text-center py-2 hover:bg-opacity-80"
-              >
-                Logout
-              </a>
-            </Button>
+            <a
+              href="/auth/logout"
+              className="bg-black text-white rounded-lg w-1/2 mx-auto text-center py-2 hover:bg-opacity-80"
+            >
+              Logout
+            </a>
+          </Button>
         </form>
       </CardContent>
     </Card>
-  )
-}
+  );
+};

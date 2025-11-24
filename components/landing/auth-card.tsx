@@ -15,12 +15,12 @@ export function AuthCard() {
         <CardHeader className="justify-items-center">
           <CardTitle>Login</CardTitle>
         </CardHeader>
-        <CardContent>
-            
-        </CardContent>
+        <CardContent></CardContent>
         <CardFooter className="flex flex-col gap-2">
           <CardDescription>Or register an account.</CardDescription>
-          <Button variant="outline" className="hover:cursor-pointer">Register</Button>
+          <Button variant="outline" className="hover:cursor-pointer">
+            Register
+          </Button>
         </CardFooter>
       </Card>
     </>

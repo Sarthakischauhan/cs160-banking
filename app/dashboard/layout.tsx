@@ -1,12 +1,12 @@
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "./components/app-sidebar";
-import { getUserData, handleCurrentId } from "@/lib/user";
-import { auth0 } from "@/lib/auth0";
-import { OnboardSidebar } from "./components/onboard-sidebar";
 import { cookies } from "next/headers";
 import { ThemeScript } from "@/components/theme-script";
-import { HideBalanceProvider } from "./providers/hide-balance-provider";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { auth0 } from "@/lib/auth0";
+import { getUserData, handleCurrentId } from "@/lib/user";
+import { AppSidebar } from "./components/app-sidebar";
 import ChatWidget from "./components/chat-widget";
+import { OnboardSidebar } from "./components/onboard-sidebar";
+import { HideBalanceProvider } from "./providers/hide-balance-provider";
 
 export default async function dashboardLayout({
   children,
@@ -17,24 +17,20 @@ export default async function dashboardLayout({
   const theme = cookieStore.get("theme")?.value ?? "light";
   const hideBalance = cookieStore.get("hideBalance")?.value === "true";
 
-  const session = await auth0.getSession()
-  if (!session){
-    return (
-      <>
-      {children}
-      </>
-    )
+  const session = await auth0.getSession();
+  if (!session) {
+    return <>{children}</>;
   }
-  const userSub = session?.user?.sub
+  const userSub = session?.user?.sub;
   if (!userSub) {
-    throw new Error("User ID (sub) is missing from session.")
+    throw new Error("User ID (sub) is missing from session.");
   }
-  const user = await getUserData({ userId: userSub })
+  const user = await getUserData({ userId: userSub });
   return (
     <div>
       <HideBalanceProvider initialHideBalance={hideBalance}>
         <SidebarProvider>
-          {user?.isOnboarded ? <AppSidebar />  : <OnboardSidebar />}
+          {user?.isOnboarded ? <AppSidebar /> : <OnboardSidebar />}
           <SidebarInset>{children}</SidebarInset>
         </SidebarProvider>
         <ChatWidget />

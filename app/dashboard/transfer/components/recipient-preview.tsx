@@ -12,21 +12,15 @@ export function RecipientPreview({ user }: { user: SearchRecipient | null }) {
       />
 
       <div className="flex flex-col">
-        <span className="text-xs">
-          Sending money to
-        </span>
+        <span className="text-xs">Sending money to</span>
 
-        <span className="text-sm font-semibold">
-          {user.name}
-        </span>
+        <span className="text-sm font-semibold">{user.name}</span>
+
+        <span className="text-xs">{user.email}</span>
 
         <span className="text-xs">
-          {user.email}
+          {`Account No ****${user.account_id.slice(-4)}`}
         </span>
-
-        <span className="text-xs">
-            {`Account No ****${user.account_id.slice(-4)}`}
-        </span> 
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth0 } from "@/lib/auth0";
 
-export async function GET(request:Request) {
+export async function GET(request: Request) {
   // If not logged in, you can choose to 401 or redirect to login
   const current = await auth0.getSession();
   if (!current) {

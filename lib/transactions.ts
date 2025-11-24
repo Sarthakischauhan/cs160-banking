@@ -1,4 +1,4 @@
-"use server"
+"use server";
 
 import { prisma } from "@/prisma/prisma";
 
@@ -20,7 +20,7 @@ export async function getRecentTransactions({
   const transactions = await prisma.transaction.findMany({
     where: {
       OR: [{ account_id }, { account_id2: account_id }],
-      transaction_type : "TRANSFER"
+      transaction_type: "TRANSFER",
     },
     orderBy: {
       created_at: "desc",
@@ -61,7 +61,11 @@ export async function getRecentTransactions({
   const seenAccounts = new Set<string>();
   const recentUsers: RecentTransferUser[] = [];
 
-  const buildName = (first?: string | null, last?: string | null, email?: string | null) => {
+  const buildName = (
+    first?: string | null,
+    last?: string | null,
+    email?: string | null,
+  ) => {
     const parts = [first, last].filter(Boolean) as string[];
     if (parts.length > 0) {
       return parts.join(" ");
@@ -89,7 +93,11 @@ export async function getRecentTransactions({
     const customer = counterpart.Customer;
     recentUsers.push({
       id: counterpartId,
-      name: buildName(customer?.first_name, customer?.last_name, customer?.email),
+      name: buildName(
+        customer?.first_name,
+        customer?.last_name,
+        customer?.email,
+      ),
       accountNumber: counterpartId,
       email: customer?.email ?? null,
       lastTransferred: transaction.created_at.toISOString(),

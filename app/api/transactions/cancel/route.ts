@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/prisma/prisma";
-import { auth0, getRole } from "@/lib/auth0";
 import { Decimal } from "@prisma/client/runtime/library";
+import { type NextRequest, NextResponse } from "next/server";
+import { auth0, getRole } from "@/lib/auth0";
+import { prisma } from "@/prisma/prisma";
 
 export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
   try {
@@ -13,7 +13,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
     if (!role.includes("Admin")) {
       return NextResponse.json(
         { message: "Forbidden: Admin only" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -21,7 +21,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
     if (!transaction_id) {
       return NextResponse.json(
         { message: "transaction_id required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -33,12 +33,12 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
     if (!tx)
       return NextResponse.json(
         { message: "Transaction not found" },
-        { status: 404 }
+        { status: 404 },
       );
     if (tx.transaction_status === "CANCELED") {
       return NextResponse.json(
         { message: "Transaction already cancelled" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -58,7 +58,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
       const sourceNewBalance =
         tx.transaction_type === "DEPOSIT"
           ? sourceAccount.balance.minus(tx.amount)
-          : sourceAccount.balance.plus(tx.amount)
+          : sourceAccount.balance.plus(tx.amount);
 
       await txDB.account.update({
         where: { account_id: tx.account_id },
@@ -75,7 +75,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
         const targetNewBalance =
           tx.transaction_type === "DEPOSIT"
             ? targetAccount.balance.plus(tx.amount)
-            : targetAccount.balance.minus(tx.amount)
+            : targetAccount.balance.minus(tx.amount);
 
         await txDB.account.update({
           where: { account_id: tx.account_id2 },
@@ -106,13 +106,13 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
 
     return NextResponse.json(
       { message: "Transaction cancelled successfully" },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error(error);
     return NextResponse.json(
       { message: "Failed to cancel transaction" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 });

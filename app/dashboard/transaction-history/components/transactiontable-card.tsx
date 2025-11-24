@@ -1,3 +1,4 @@
+import type { Transaction } from "@prisma/client";
 import {
   Card,
   CardContent,
@@ -6,14 +7,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-  Table,
 } from "@/components/ui/table";
-import { Transaction } from "@prisma/client";
 
 export function TransactionTableCard({
   transactions = [],

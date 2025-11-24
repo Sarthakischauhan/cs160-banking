@@ -8,9 +8,11 @@ export function RecipientSearchResults({
   if (!results.length) return null;
 
   return (
-    <div className="absolute z-10 mt-2 w-full max-h-56 overflow-y-auto rounded-lg border 
+    <div
+      className="absolute z-10 mt-2 w-full max-h-56 overflow-y-auto rounded-lg border 
       border-gray-200 bg-white shadow-lg 
-      dark:border-gray-800 dark:bg-black">
+      dark:border-gray-800 dark:bg-black"
+    >
       {results.map((user) => {
         const avatarUrl = `https://avatar.vercel.sh/${encodeURIComponent(user.name)}`;
 

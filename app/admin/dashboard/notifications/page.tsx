@@ -1,8 +1,8 @@
+import { Notifications } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { getNotifications } from "@/lib/adminData";
-import NotificationTable from "./components/notification-table";
-import { Notifications } from "@prisma/client";
 import { RangeFilter, SelectFilter, TextFilter } from "../components/filters";
+import NotificationTable from "./components/notification-table";
 
 enum NotificationType {
   TRANSACTION = "TRANSACTION",
@@ -11,7 +11,7 @@ enum NotificationType {
 export default async function NotificationsPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | undefined };
+  searchParams: searchParamsType;
 }) {
   const params = await searchParams;
   const firstName = params.firstName ?? "";

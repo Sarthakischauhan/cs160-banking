@@ -1,134 +1,134 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
-import { Loader } from '@googlemaps/js-api-loader';
+import { Loader } from "@googlemaps/js-api-loader";
+import React, { useEffect, useRef, useState } from "react";
 
 // Map styles for light and dark themes
 const getLightMapStyles = () => [
   {
-    featureType: 'poi',
-    elementType: 'labels',
-    stylers: [{ visibility: 'off' }],
+    featureType: "poi",
+    elementType: "labels",
+    stylers: [{ visibility: "off" }],
   },
   {
-    featureType: 'poi.business',
-    stylers: [{ visibility: 'off' }],
+    featureType: "poi.business",
+    stylers: [{ visibility: "off" }],
   },
   {
-    featureType: 'poi.attraction',
-    stylers: [{ visibility: 'off' }],
+    featureType: "poi.attraction",
+    stylers: [{ visibility: "off" }],
   },
   {
-    featureType: 'poi.school',
-    stylers: [{ visibility: 'off' }],
+    featureType: "poi.school",
+    stylers: [{ visibility: "off" }],
   },
   {
-    featureType: 'poi.sports_complex',
-    stylers: [{ visibility: 'off' }],
+    featureType: "poi.sports_complex",
+    stylers: [{ visibility: "off" }],
   },
   {
-    featureType: 'poi.place_of_worship',
-    stylers: [{ visibility: 'off' }],
+    featureType: "poi.place_of_worship",
+    stylers: [{ visibility: "off" }],
   },
   {
-    featureType: 'poi.park',
-    stylers: [{ visibility: 'off' }],
+    featureType: "poi.park",
+    stylers: [{ visibility: "off" }],
   },
   {
-    featureType: 'transit',
-    stylers: [{ visibility: 'off' }],
+    featureType: "transit",
+    stylers: [{ visibility: "off" }],
   },
   {
-    featureType: 'transit.station',
-    stylers: [{ visibility: 'off' }],
+    featureType: "transit.station",
+    stylers: [{ visibility: "off" }],
   },
 ];
 
 const getDarkMapStyles = () => [
-  { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
+  { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
   {
-    featureType: 'administrative.locality',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#d59563' }],
+    featureType: "administrative.locality",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#d59563" }],
   },
   {
-    featureType: 'poi',
-    elementType: 'labels',
-    stylers: [{ visibility: 'off' }],
+    featureType: "poi",
+    elementType: "labels",
+    stylers: [{ visibility: "off" }],
   },
   {
-    featureType: 'poi.business',
-    stylers: [{ visibility: 'off' }],
+    featureType: "poi.business",
+    stylers: [{ visibility: "off" }],
   },
   {
-    featureType: 'poi.park',
-    elementType: 'geometry',
-    stylers: [{ color: '#263c3f' }],
+    featureType: "poi.park",
+    elementType: "geometry",
+    stylers: [{ color: "#263c3f" }],
   },
   {
-    featureType: 'poi.park',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#6b9a76' }],
+    featureType: "poi.park",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#6b9a76" }],
   },
   {
-    featureType: 'road',
-    elementType: 'geometry',
-    stylers: [{ color: '#38414e' }],
+    featureType: "road",
+    elementType: "geometry",
+    stylers: [{ color: "#38414e" }],
   },
   {
-    featureType: 'road',
-    elementType: 'geometry.stroke',
-    stylers: [{ color: '#212a37' }],
+    featureType: "road",
+    elementType: "geometry.stroke",
+    stylers: [{ color: "#212a37" }],
   },
   {
-    featureType: 'road',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#9ca5b3' }],
+    featureType: "road",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#9ca5b3" }],
   },
   {
-    featureType: 'road.highway',
-    elementType: 'geometry',
-    stylers: [{ color: '#746855' }],
+    featureType: "road.highway",
+    elementType: "geometry",
+    stylers: [{ color: "#746855" }],
   },
   {
-    featureType: 'road.highway',
-    elementType: 'geometry.stroke',
-    stylers: [{ color: '#1f2835' }],
+    featureType: "road.highway",
+    elementType: "geometry.stroke",
+    stylers: [{ color: "#1f2835" }],
   },
   {
-    featureType: 'road.highway',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#f3d19c' }],
+    featureType: "road.highway",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#f3d19c" }],
   },
   {
-    featureType: 'transit',
-    elementType: 'geometry',
-    stylers: [{ color: '#2f3948' }],
+    featureType: "transit",
+    elementType: "geometry",
+    stylers: [{ color: "#2f3948" }],
   },
   {
-    featureType: 'transit',
-    stylers: [{ visibility: 'off' }],
+    featureType: "transit",
+    stylers: [{ visibility: "off" }],
   },
   {
-    featureType: 'transit.station',
-    stylers: [{ visibility: 'off' }],
+    featureType: "transit.station",
+    stylers: [{ visibility: "off" }],
   },
   {
-    featureType: 'water',
-    elementType: 'geometry',
-    stylers: [{ color: '#17263c' }],
+    featureType: "water",
+    elementType: "geometry",
+    stylers: [{ color: "#17263c" }],
   },
   {
-    featureType: 'water',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#515c6d' }],
+    featureType: "water",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#515c6d" }],
   },
   {
-    featureType: 'water',
-    elementType: 'labels.text.stroke',
-    stylers: [{ color: '#17263c' }],
+    featureType: "water",
+    elementType: "labels.text.stroke",
+    stylers: [{ color: "#17263c" }],
   },
 ];
 
@@ -140,7 +140,7 @@ interface Place {
 
 function createBankIcon(): google.maps.Icon {
   return {
-    url: '/bank.png',
+    url: "/bank.png",
     scaledSize: new google.maps.Size(40, 40),
     anchor: new google.maps.Point(20, 40),
   };
@@ -149,27 +149,33 @@ function createBankIcon(): google.maps.Icon {
 export default function ChaseMap() {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [infoWindow, setInfoWindow] = useState<google.maps.InfoWindow | null>(null);
+  const [infoWindow, setInfoWindow] = useState<google.maps.InfoWindow | null>(
+    null,
+  );
   const markersRef = useRef<google.maps.Marker[]>([]);
   const [places, setPlaces] = useState<Place[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [directionsService, setDirectionsService] = useState<google.maps.DirectionsService | null>(null);
-  const [directionsRenderer, setDirectionsRenderer] = useState<google.maps.DirectionsRenderer | null>(null);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [directionsService, setDirectionsService] =
+    useState<google.maps.DirectionsService | null>(null);
+  const [directionsRenderer, setDirectionsRenderer] =
+    useState<google.maps.DirectionsRenderer | null>(null);
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
   const [showingDirections, setShowingDirections] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [manualLat, setManualLat] = useState('');
-  const [manualLng, setManualLng] = useState('');
-  const [manualLocationText, setManualLocationText] = useState('');
+  const [manualLat, setManualLat] = useState("");
+  const [manualLng, setManualLng] = useState("");
+  const [manualLocationText, setManualLocationText] = useState("");
   const [userMarker, setUserMarker] = useState<google.maps.Marker | null>(null);
-
 
   // Detect theme on mount and when it changes
   useEffect(() => {
     const checkTheme = () => {
-      const isDark = document.documentElement.classList.contains('dark');
+      const isDark = document.documentElement.classList.contains("dark");
       setIsDarkMode(isDark);
-      
+
       // Update map styles if map exists
       if (map) {
         map.setOptions({
@@ -185,7 +191,7 @@ export default function ChaseMap() {
     const observer = new MutationObserver(checkTheme);
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['class'],
+      attributeFilter: ["class"],
     });
 
     return () => observer.disconnect();
@@ -194,13 +200,13 @@ export default function ChaseMap() {
   useEffect(() => {
     const loader = new Loader({
       apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
-      version: 'weekly',
+      version: "weekly",
     });
 
     loader.load().then(() => {
       if (!mapRef.current) return;
 
-      const initialIsDark = document.documentElement.classList.contains('dark');
+      const initialIsDark = document.documentElement.classList.contains("dark");
       setIsDarkMode(initialIsDark);
 
       const mapInstance = new google.maps.Map(mapRef.current, {
@@ -214,7 +220,9 @@ export default function ChaseMap() {
       setInfoWindow(infoWin);
 
       const dirService = new google.maps.DirectionsService();
-      const dirRenderer = new google.maps.DirectionsRenderer({ map: mapInstance });
+      const dirRenderer = new google.maps.DirectionsRenderer({
+        map: mapInstance,
+      });
       setDirectionsService(dirService);
       setDirectionsRenderer(dirRenderer);
     });
@@ -223,7 +231,7 @@ export default function ChaseMap() {
   useEffect(() => {
     if (!infoWindow) return;
 
-    const listener = infoWindow.addListener('closeclick', () => {
+    const listener = infoWindow.addListener("closeclick", () => {
       setSelectedIndex(null);
     });
 
@@ -235,55 +243,57 @@ export default function ChaseMap() {
   async function fetchNearbyChase(
     mapInstance: google.maps.Map,
     infoWin: google.maps.InfoWindow,
-    location: { lat: number; lng: number } | string
+    location: { lat: number; lng: number } | string,
   ) {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+      const baseUrl =
+        process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
       const query =
-        typeof location === 'string'
+        typeof location === "string"
           ? `Chase ATMs near ${location}`
           : `Chase ATMs near ${location.lat},${location.lng}`;
-  
-      const res = await fetch(`${baseUrl}/api/maps?q=${encodeURIComponent(query)}`);
+
+      const res = await fetch(
+        `${baseUrl}/api/maps?q=${encodeURIComponent(query)}`,
+      );
       const data = await res.json();
       const fetchedPlaces = data.places || [];
-  
-      markersRef.current.forEach(marker => marker.setMap(null));
+
+      markersRef.current.forEach((marker) => marker.setMap(null));
       markersRef.current = [];
-  
+
       fetchedPlaces.forEach((place: Place, index: number) => {
         const lat = place.location?.latitude;
         const lng = place.location?.longitude;
-  
+
         if (lat && lng) {
           const marker = new google.maps.Marker({
             position: { lat, lng },
             map: mapInstance,
-            title: place.displayName?.text || 'Chase ATM',
+            title: place.displayName?.text || "Chase ATM",
             icon: createBankIcon(),
           });
-  
-          marker.addListener('click', () => {
+
+          marker.addListener("click", () => {
             setSelectedIndex(index);
             infoWin.setContent(`
               <div class="map-infowindow">
-                <strong>${place.displayName?.text || 'Chase ATM'}</strong><br />
-                ${place.formattedAddress || ''}
+                <strong>${place.displayName?.text || "Chase ATM"}</strong><br />
+                ${place.formattedAddress || ""}
               </div>
             `);
             infoWin.open(mapInstance, marker);
           });
-  
+
           markersRef.current.push(marker);
         }
       });
-  
+
       setPlaces(fetchedPlaces);
     } catch (err) {
-      console.error('Error fetching Chase locations:', err);
+      console.error("Error fetching Chase locations:", err);
     }
   }
-  
 
   const handleGeolocate = () => {
     if (!map || !infoWindow) return;
@@ -307,13 +317,13 @@ export default function ChaseMap() {
           const marker = new google.maps.Marker({
             position: pos,
             map: map,
-            title: 'Your Location',
+            title: "Your Location",
             icon: {
               path: google.maps.SymbolPath.CIRCLE,
               scale: 8,
-              fillColor: '#0096FF',
+              fillColor: "#0096FF",
               fillOpacity: 1,
-              strokeColor: '#fff',
+              strokeColor: "#fff",
               strokeWeight: 2,
             },
           });
@@ -326,8 +336,10 @@ export default function ChaseMap() {
           await fetchNearbyChase(map, infoWindow, pos);
         },
         () => {
-          infoWindow.setContent('Error: The Geolocation service failed or was denied.');
-        }
+          infoWindow.setContent(
+            "Error: The Geolocation service failed or was denied.",
+          );
+        },
       );
     }
   };
@@ -336,64 +348,67 @@ export default function ChaseMap() {
     if (!map || !infoWindow || !manualLocationText.trim()) return;
 
     resetDirections();
-  
+
     const geocoder = new google.maps.Geocoder();
-  
-    geocoder.geocode({ address: manualLocationText }, async (results, status) => {
-      if (status === 'OK' && results && results[0]) {
-        const location = results[0].geometry.location;
-        const pos = { lat: location.lat(), lng: location.lng() };
-  
-        setUserLocation(pos);
-  
-        // Remove old user marker
-        if (userMarker) userMarker.setMap(null);
 
-        // Create new one
-        const marker = new google.maps.Marker({
-          position: pos,
-          map: map,
-          title: 'Your Location',
-          icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 8,
-            fillColor: '#0096FF',
-            fillOpacity: 1,
-            strokeColor: '#fff',
-            strokeWeight: 2,
-          },
-        });
+    geocoder.geocode(
+      { address: manualLocationText },
+      async (results, status) => {
+        if (status === "OK" && results && results[0]) {
+          const location = results[0].geometry.location;
+          const pos = { lat: location.lat(), lng: location.lng() };
 
-        // Save reference
-        setUserMarker(marker);
-  
-        map.setCenter(pos);
-        map.setZoom(14);
-  
-        // Now fetch Chase ATMs near this location
-        await fetchNearbyChase(map, infoWindow, pos);
-      } else {
-        alert('Could not find that location. Try another search.');
-      }
-    });
+          setUserLocation(pos);
+
+          // Remove old user marker
+          if (userMarker) userMarker.setMap(null);
+
+          // Create new one
+          const marker = new google.maps.Marker({
+            position: pos,
+            map: map,
+            title: "Your Location",
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 8,
+              fillColor: "#0096FF",
+              fillOpacity: 1,
+              strokeColor: "#fff",
+              strokeWeight: 2,
+            },
+          });
+
+          // Save reference
+          setUserMarker(marker);
+
+          map.setCenter(pos);
+          map.setZoom(14);
+
+          // Now fetch Chase ATMs near this location
+          await fetchNearbyChase(map, infoWindow, pos);
+        } else {
+          alert("Could not find that location. Try another search.");
+        }
+      },
+    );
   };
 
   const handleManualLocationSubmit = async () => {
     if (!map || !infoWindow) return;
 
     resetDirections();
-  
+
     const lat = parseFloat(manualLat);
     const lng = parseFloat(manualLng);
-  
+
     if (isNaN(lat) || isNaN(lng)) {
-      alert('Please enter valid latitude and longitude numbers.');
+      alert("Please enter valid latitude and longitude numbers.");
       return;
     }
-  
+
     const pos = { lat, lng };
     setUserLocation(pos);
-  
+
     // Remove old user marker
     if (userMarker) userMarker.setMap(null);
 
@@ -401,25 +416,24 @@ export default function ChaseMap() {
     const marker = new google.maps.Marker({
       position: pos,
       map: map,
-      title: 'Your Location',
+      title: "Your Location",
       icon: {
         path: google.maps.SymbolPath.CIRCLE,
         scale: 8,
-        fillColor: '#0096FF',
+        fillColor: "#0096FF",
         fillOpacity: 1,
-        strokeColor: '#fff',
+        strokeColor: "#fff",
         strokeWeight: 2,
       },
     });
 
     // Save reference
     setUserMarker(marker);
-  
+
     map.setCenter(pos);
-  
+
     await fetchNearbyChase(map, infoWindow, pos);
   };
-  
 
   const handleSelectPlace = (index: number) => {
     if (!map || !infoWindow) return;
@@ -436,8 +450,8 @@ export default function ChaseMap() {
 
     infoWindow.setContent(`
       <div class="map-infowindow">
-        <strong>${place.displayName?.text || 'Chase ATM'}</strong><br />
-        ${place.formattedAddress || ''}
+        <strong>${place.displayName?.text || "Chase ATM"}</strong><br />
+        ${place.formattedAddress || ""}
       </div>
     `);
     infoWindow.open(map, marker);
@@ -445,7 +459,7 @@ export default function ChaseMap() {
 
   async function showDirections(destination: { lat: number; lng: number }) {
     if (!directionsService || !directionsRenderer || !userLocation) {
-      alert('Please search near your location first!');
+      alert("Please search near your location first!");
       return;
     }
 
@@ -456,12 +470,12 @@ export default function ChaseMap() {
     };
 
     directionsService.route(request, (result, status) => {
-      if (status === 'OK' && result) {
+      if (status === "OK" && result) {
         directionsRenderer.setDirections(result);
         setShowingDirections(true);
       } else {
-        console.error('Directions request failed:', status);
-        alert('Could not display directions: ' + status);
+        console.error("Directions request failed:", status);
+        alert("Could not display directions: " + status);
       }
     });
   }
@@ -483,34 +497,34 @@ export default function ChaseMap() {
     setSelectedIndex(null);
   };
 
-    const autocompleteRef = useRef<HTMLInputElement | null>(null);
+  const autocompleteRef = useRef<HTMLInputElement | null>(null);
 
-    useEffect(() => {
-      if (!window.google || !window.google.maps || !autocompleteRef.current) return;
-    
-      const autocomplete = new google.maps.places.Autocomplete(
-        autocompleteRef.current,
-        {
-          types: ["address"], // enables FULL street address autocomplete
-          fields: ["formatted_address", "geometry", "address_components"],
-        }
-      );
-    
-      autocomplete.addListener("place_changed", () => {
-        const place = autocomplete.getPlace() as google.maps.places.PlaceResult;
-    
-        if (!place.geometry || !place.geometry.location) return;
-    
-        const loc = place.geometry.location;
-    
-        setManualLocationText(place.formatted_address || "");
-        setManualLat(loc.lat().toString());
-        setManualLng(loc.lng().toString());
-      });
-    }, []);
-    
+  useEffect(() => {
+    if (!window.google || !window.google.maps || !autocompleteRef.current)
+      return;
 
-    return (
+    const autocomplete = new google.maps.places.Autocomplete(
+      autocompleteRef.current,
+      {
+        types: ["address"], // enables FULL street address autocomplete
+        fields: ["formatted_address", "geometry", "address_components"],
+      },
+    );
+
+    autocomplete.addListener("place_changed", () => {
+      const place = autocomplete.getPlace() as google.maps.places.PlaceResult;
+
+      if (!place.geometry || !place.geometry.location) return;
+
+      const loc = place.geometry.location;
+
+      setManualLocationText(place.formatted_address || "");
+      setManualLat(loc.lat().toString());
+      setManualLng(loc.lng().toString());
+    });
+  }, []);
+
+  return (
     <div className="relative w-full h-screen flex bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">
       {/* Sidebar */}
       <div className="w-80 bg-sidebar text-sidebar-foreground border-r border-sidebar-border shadow-sm overflow-y-auto overflow-x-hidden z-20">
@@ -614,7 +628,6 @@ export default function ChaseMap() {
           )}
         </div>
       </div>
-
 
       {/* Map */}
       <div className="flex-1 h-full relative">

@@ -1,9 +1,10 @@
 // /app/api/assistant/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/prisma/prisma";
-import { auth0 } from "@/lib/auth0";
+
 import { TransactionType } from "@prisma/client";
+import { type NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
+import { auth0 } from "@/lib/auth0";
+import { prisma } from "@/prisma/prisma";
 
 /* ---------- Helpers ---------- */
 
@@ -11,7 +12,8 @@ function toNumberSafe(value: any): number | null {
   if (value == null) return null;
   if (typeof value === "number") return value;
   if (typeof value === "string" && value.trim() !== "") return Number(value);
-  if (typeof value === "object" && "toNumber" in value) return (value as any).toNumber();
+  if (typeof value === "object" && "toNumber" in value)
+    return (value as any).toNumber();
   const n = Number(value);
   return Number.isNaN(n) ? null : n;
 }
@@ -27,7 +29,7 @@ function extractGoalFromMessage(msg: string): number | null {
 
   if (!match) return null;
 
-  let num = match[1].replace(/[,$]/g, "");
+  const num = match[1].replace(/[,$]/g, "");
   let value = Number(num);
   if (!isFinite(value)) return null;
 
@@ -42,7 +44,8 @@ function computeProjections(data: {
   current_savings?: number | null;
   goal_amount?: number | null;
 }) {
-  const { monthly_income, monthly_expenses, current_savings, goal_amount } = data;
+  const { monthly_income, monthly_expenses, current_savings, goal_amount } =
+    data;
 
   const missing: string[] = [];
   if (monthly_income == null) missing.push("monthly_income");
@@ -56,11 +59,13 @@ function computeProjections(data: {
 
   const monthlySavings = monthly_income! - monthly_expenses!;
   const remaining = Math.max(0, goal_amount! - (current_savings ?? 0));
-  const monthsToGoal = monthlySavings > 0 ? remaining / monthlySavings : Infinity;
+  const monthsToGoal =
+    monthlySavings > 0 ? remaining / monthlySavings : Infinity;
 
   const expenses10cut = monthly_expenses! * 0.9;
   const monthlySavingsWithCut = monthly_income! - expenses10cut;
-  const monthsWithCut = monthlySavingsWithCut > 0 ? remaining / monthlySavingsWithCut : Infinity;
+  const monthsWithCut =
+    monthlySavingsWithCut > 0 ? remaining / monthlySavingsWithCut : Infinity;
 
   function round1(x: number) {
     if (!isFinite(x)) return x;
@@ -72,7 +77,8 @@ function computeProjections(data: {
     monthly_savings: round1(monthlySavings),
     remaining: round1(remaining),
     months_to_goal: monthsToGoal === Infinity ? Infinity : round1(monthsToGoal),
-    months_to_goal_with_10pct_cut: monthsWithCut === Infinity ? Infinity : round1(monthsWithCut),
+    months_to_goal_with_10pct_cut:
+      monthsWithCut === Infinity ? Infinity : round1(monthsWithCut),
   };
 }
 
@@ -82,7 +88,13 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
 });
 
-async function callAIAgent({ systemPrompt, messages }: { systemPrompt: string; messages: any[] }) {
+async function callAIAgent({
+  systemPrompt,
+  messages,
+}: {
+  systemPrompt: string;
+  messages: any[];
+}) {
   const completion = await openai.chat.completions.create({
     model: "gpt-4.1-mini",
     messages,
@@ -97,7 +109,8 @@ async function callAIAgent({ systemPrompt, messages }: { systemPrompt: string; m
 export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
   try {
     const session = await auth0.getSession();
-    if (!session) return NextResponse.json({ message: "Unauthenticated" }, { status: 401 });
+    if (!session)
+      return NextResponse.json({ message: "Unauthenticated" }, { status: 401 });
 
     const body = await req.json();
     const userMessage: string = String(body.userMessage ?? "").trim();
@@ -118,7 +131,11 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
       },
     });
 
-    if (!customer) return NextResponse.json({ message: "Customer not found" }, { status: 404 });
+    if (!customer)
+      return NextResponse.json(
+        { message: "Customer not found" },
+        { status: 404 },
+      );
 
     const accounts = await prisma.account.findMany({
       where: { customer_id: customer.customer_id },
@@ -126,7 +143,10 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
     });
 
     const accountIds = accounts.map((a) => a.account_id);
-    const currentSavings = accounts.reduce((sum, acc) => sum + (toNumberSafe(acc.balance) ?? 0), 0);
+    const currentSavings = accounts.reduce(
+      (sum, acc) => sum + (toNumberSafe(acc.balance) ?? 0),
+      0,
+    );
 
     const now = new Date();
     const ninetyDaysAgo = new Date(now);
@@ -149,7 +169,10 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
             orderBy: { created_at: "desc" },
           });
 
-    const tx = transactions.map((t) => ({ ...t, amount: toNumberSafe(t.amount) ?? 0 }));
+    const tx = transactions.map((t) => ({
+      ...t,
+      amount: toNumberSafe(t.amount) ?? 0,
+    }));
     const recentTx = tx.filter((t) => new Date(t.created_at) >= ninetyDaysAgo);
 
     const depositSum = recentTx
@@ -157,15 +180,22 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
       .reduce((s, t) => s + t.amount, 0);
 
     const expenseSum = recentTx
-      .filter((t) => t.transaction_type === TransactionType.WITHDRAWAL || t.transaction_type === TransactionType.TRANSFER)
+      .filter(
+        (t) =>
+          t.transaction_type === TransactionType.WITHDRAWAL ||
+          t.transaction_type === TransactionType.TRANSFER,
+      )
       .reduce((s, t) => s + t.amount, 0);
 
     const derivedMonthlyIncome = depositSum / 3;
     const derivedMonthlyExpenses = expenseSum / 3;
 
     const storedMonthlyIncome = toNumberSafe(customer.monthly_income);
-    const monthly_income = storedMonthlyIncome ?? (derivedMonthlyIncome > 0 ? derivedMonthlyIncome : null);
-    const monthly_expenses = derivedMonthlyExpenses > 0 ? derivedMonthlyExpenses : null;
+    const monthly_income =
+      storedMonthlyIncome ??
+      (derivedMonthlyIncome > 0 ? derivedMonthlyIncome : null);
+    const monthly_expenses =
+      derivedMonthlyExpenses > 0 ? derivedMonthlyExpenses : null;
 
     const projectionResult = computeProjections({
       monthly_income,
@@ -175,7 +205,9 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
     });
 
     const missingFields: string[] =
-      projectionResult.error === "missing_data" ? (projectionResult as any).missingFields ?? [] : [];
+      projectionResult.error === "missing_data"
+        ? ((projectionResult as any).missingFields ?? [])
+        : [];
 
     const systemPrompt = `You are a conservative financial assistant embedded in a banking website.
 Use ONLY the numeric values provided. Do not invent transactions, account balances, or income.`;
@@ -197,7 +229,11 @@ Use ONLY the numeric values provided. Do not invent transactions, account balanc
       },
     ];
 
-    if (!missingFields.length && projectionResult && !(projectionResult as any).error) {
+    if (
+      !missingFields.length &&
+      projectionResult &&
+      !(projectionResult as any).error
+    ) {
       messages.push({
         role: "user",
         content:
@@ -218,7 +254,8 @@ Use ONLY the numeric values provided. Do not invent transactions, account balanc
         missingFields,
         derived: {
           derivedMonthlyIncome: Math.round(derivedMonthlyIncome * 100) / 100,
-          derivedMonthlyExpenses: Math.round(derivedMonthlyExpenses * 100) / 100,
+          derivedMonthlyExpenses:
+            Math.round(derivedMonthlyExpenses * 100) / 100,
           current_savings: Math.round(currentSavings * 100) / 100,
         },
       },

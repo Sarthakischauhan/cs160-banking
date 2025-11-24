@@ -1,3 +1,6 @@
+import { type Account, type Customer, Transaction } from "@prisma/client";
+import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
+import { EllipsisVertical } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,9 +17,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { censorString, formatCurrency } from "@/lib/utils";
-import { Account, Customer, Transaction } from "@prisma/client";
-import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
-import { EllipsisVertical } from "lucide-react";
 
 export type AccountWithExtraData = Account & {
   Customer: Customer;

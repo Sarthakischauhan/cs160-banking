@@ -1,5 +1,8 @@
-"use client"
+"use client";
 
+import { type Transaction, TransactionType } from "@prisma/client";
+import { Check, CircleDashed, X } from "lucide-react";
+import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Card,
@@ -16,9 +19,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Transaction, TransactionType } from "@prisma/client";
-import { Check, CircleDashed, X } from "lucide-react";
-import Link from "next/link";
 
 const DEFAULT_AVATAR = "https://avatar.vercel.sh/";
 
@@ -86,7 +86,9 @@ export function TransactionCard({
               <TableRow key={idx}>
                 <TableCell className="p-2">
                   <Avatar className="h-7 w-7">
-                    <AvatarImage src={`${DEFAULT_AVATAR}/${transaction.description?.slice(-4)}`}/>
+                    <AvatarImage
+                      src={`${DEFAULT_AVATAR}/${transaction.description?.slice(-4)}`}
+                    />
                     <AvatarFallback>S</AvatarFallback>
                   </Avatar>
                 </TableCell>
@@ -110,9 +112,7 @@ export function TransactionCard({
                   )}
                 </TableCell>
 
-                <TableCell
-                  className={`text-right ${amountClass(transaction)}`}
-                >
+                <TableCell className={`text-right ${amountClass(transaction)}`}>
                   {formatter.format(Number(transaction.amount))}
                 </TableCell>
 

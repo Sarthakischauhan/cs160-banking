@@ -1,6 +1,6 @@
+import type { ControllerRenderProps } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/lib/utils";
-import { ControllerRenderProps } from "react-hook-form";
 
 type MoneyInputProps = {
   field: ControllerRenderProps<any, any>;

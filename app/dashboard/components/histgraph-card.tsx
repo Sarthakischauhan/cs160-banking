@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  ChartConfig,
+  type ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
@@ -20,8 +20,8 @@ import {
 export const description = "A bar chart";
 
 const dateOptions = {
-  month: 'long' as const,
-  day: 'numeric' as const
+  month: "long" as const,
+  day: "numeric" as const,
 };
 
 const balanceHistory = [
@@ -57,7 +57,9 @@ export function HistgraphCard() {
               tickLine={false}
               tickMargin={10}
               axisLine={false}
-              tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', dateOptions)}
+              tickFormatter={(value) =>
+                new Date(value).toLocaleDateString("en-US", dateOptions)
+              }
             />
             <YAxis
               dataKey="balance"

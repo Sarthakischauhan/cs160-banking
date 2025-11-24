@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { auth0 } from "@/lib/auth0";
 import { prisma } from "@/prisma/prisma";
 
@@ -44,12 +44,17 @@ export const GET = auth0.withApiAuthRequired(async (req: NextRequest) => {
 
     const payload = accounts.map((account) => {
       const customer = account.Customer;
-      const nameParts = [customer?.first_name ?? "", customer?.last_name ?? ""].filter(Boolean);
+      const nameParts = [
+        customer?.first_name ?? "",
+        customer?.last_name ?? "",
+      ].filter(Boolean);
 
       return {
         account_id: account.account_id,
         account_type: account.account_type,
-        name: nameParts.length ? nameParts.join(" ") : customer?.email ?? "Unknown User",
+        name: nameParts.length
+          ? nameParts.join(" ")
+          : (customer?.email ?? "Unknown User"),
         email: customer?.email ?? null,
       };
     });
@@ -59,7 +64,7 @@ export const GET = auth0.withApiAuthRequired(async (req: NextRequest) => {
     console.error("Failed to search recipients", error);
     return NextResponse.json(
       { message: "Failed to search recipients" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 });

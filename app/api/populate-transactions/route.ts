@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { TransactionStatus, TransactionType } from "@prisma/client";
+import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/prisma/prisma";
-import { TransactionType, TransactionStatus } from "@prisma/client";
 
 const ACCOUNT_ID = "e73e1cad-c501-49c2-97b9-ef0ed66f3c90";
 
@@ -89,12 +89,12 @@ export async function GET(req: NextRequest) {
     if (!account) {
       return NextResponse.json(
         { message: `Account with ID ${ACCOUNT_ID} not found!` },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
-    (`Found account: ${ACCOUNT_ID}`);
-    (`Current balance: ${account.balance}`);
+    `Found account: ${ACCOUNT_ID}`;
+    `Current balance: ${account.balance}`;
 
     // Get all existing transactions for this account to calculate starting balance
     const existingTransactions = await prisma.transaction.findMany({
@@ -104,16 +104,17 @@ export async function GET(req: NextRequest) {
 
     // Calculate current balance from transactions if needed
     let currentBalance = Number(account.balance);
-    
+
     // If we have existing transactions, use the last one's amount_after_transaction
     if (existingTransactions.length > 0) {
-      const lastTransaction = existingTransactions[existingTransactions.length - 1];
+      const lastTransaction =
+        existingTransactions[existingTransactions.length - 1];
       if (lastTransaction.amount_after_transaction) {
         currentBalance = Number(lastTransaction.amount_after_transaction);
       }
     }
 
-    (`Starting balance for transactions: ${currentBalance}`);
+    `Starting balance for transactions: ${currentBalance}`;
 
     // Get other accounts for transfers (we'll need to find another account or create a dummy one)
     const otherAccounts = await prisma.account.findMany({
@@ -123,9 +124,8 @@ export async function GET(req: NextRequest) {
       take: 5,
     });
 
-    const transferAccountId = otherAccounts.length > 0 
-      ? otherAccounts[0].account_id 
-      : null;
+    const transferAccountId =
+      otherAccounts.length > 0 ? otherAccounts[0].account_id : null;
 
     // Generate transactions for the past 6 months
     const now = new Date();
@@ -139,7 +139,7 @@ export async function GET(req: NextRequest) {
       const adjustedMonth = month < 0 ? month + 12 : month;
       const adjustedYear = month < 0 ? year - 1 : year;
 
-      (`\nGenerating transactions for ${new Date(adjustedYear, adjustedMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`);
+      `\nGenerating transactions for ${new Date(adjustedYear, adjustedMonth).toLocaleDateString("en-US", { month: "long", year: "numeric" })}`;
 
       // Generate 2-5 deposits per month
       const numDeposits = Math.floor(Math.random() * 4) + 2;
@@ -147,7 +147,7 @@ export async function GET(req: NextRequest) {
         const date = randomDateInMonth(adjustedYear, adjustedMonth);
         const amount = Math.round(randomBetween(500, 3000) * 100) / 100; // Between $500 and $3000
         runningBalance += amount;
-        
+
         transactions.push({
           account_id: ACCOUNT_ID,
           amount: amount,
@@ -167,7 +167,8 @@ export async function GET(req: NextRequest) {
         const maxWithdrawal = runningBalance - 100; // Keep at least $100
         if (maxWithdrawal <= 0) {
           // Add a deposit first if balance is too low
-          const depositAmount = Math.round(randomBetween(500, 1500) * 100) / 100;
+          const depositAmount =
+            Math.round(randomBetween(500, 1500) * 100) / 100;
           runningBalance += depositAmount;
           transactions.push({
             account_id: ACCOUNT_ID,
@@ -179,10 +180,12 @@ export async function GET(req: NextRequest) {
             transaction_type: TransactionType.DEPOSIT,
           });
         }
-        
-        const amount = Math.round(randomBetween(10, Math.min(maxWithdrawal, 500)) * 100) / 100;
+
+        const amount =
+          Math.round(randomBetween(10, Math.min(maxWithdrawal, 500)) * 100) /
+          100;
         runningBalance -= amount;
-        
+
         transactions.push({
           account_id: ACCOUNT_ID,
           amount: amount,
@@ -201,9 +204,11 @@ export async function GET(req: NextRequest) {
           const date = randomDateInMonth(adjustedYear, adjustedMonth);
           const maxTransfer = runningBalance - 100;
           if (maxTransfer > 0) {
-            const amount = Math.round(randomBetween(50, Math.min(maxTransfer, 500)) * 100) / 100;
+            const amount =
+              Math.round(randomBetween(50, Math.min(maxTransfer, 500)) * 100) /
+              100;
             runningBalance -= amount;
-            
+
             transactions.push({
               account_id: ACCOUNT_ID,
               account_id2: transferAccountId,
@@ -220,21 +225,27 @@ export async function GET(req: NextRequest) {
     }
 
     // Sort transactions by date
-    transactions.sort((a, b) => a.created_at.getTime() - b.created_at.getTime());
+    transactions.sort(
+      (a, b) => a.created_at.getTime() - b.created_at.getTime(),
+    );
 
     // Recalculate balance_after_transaction based on sorted order
     let recalculatedBalance = currentBalance;
     transactions.forEach((transaction) => {
       if (transaction.transaction_type === TransactionType.DEPOSIT) {
         recalculatedBalance += transaction.amount;
-      } else if (transaction.transaction_type === TransactionType.WITHDRAWAL || transaction.transaction_type === TransactionType.TRANSFER) {
+      } else if (
+        transaction.transaction_type === TransactionType.WITHDRAWAL ||
+        transaction.transaction_type === TransactionType.TRANSFER
+      ) {
         recalculatedBalance -= transaction.amount;
       }
-      transaction.amount_after_transaction = Math.round(recalculatedBalance * 100) / 100;
+      transaction.amount_after_transaction =
+        Math.round(recalculatedBalance * 100) / 100;
     });
 
-    (`\nGenerated ${transactions.length} transactions`);
-    (`Final balance: ${recalculatedBalance}`);
+    `\nGenerated ${transactions.length} transactions`;
+    `Final balance: ${recalculatedBalance}`;
     runningBalance = recalculatedBalance;
 
     // Insert transactions in batches
@@ -247,7 +258,7 @@ export async function GET(req: NextRequest) {
         skipDuplicates: true,
       });
       insertedCount += result.count;
-      (`Inserted batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(transactions.length / batchSize)}`);
+      `Inserted batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(transactions.length / batchSize)}`;
     }
 
     // Update account balance
@@ -266,8 +277,7 @@ export async function GET(req: NextRequest) {
     console.error("Error populating transactions:", error);
     return NextResponse.json(
       { message: "Failed to populate transactions", error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

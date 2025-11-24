@@ -1,33 +1,47 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import {
-  Card, CardHeader, CardTitle, CardContent, CardAction,
-  CardFooter,
-} from "@/components/ui/card";
-import {
-  Table, TableHeader, TableHead, TableRow, TableBody, TableCell,
-} from "@/components/ui/table";
-import { BadgeDollarSign, Key, Settings as SettingsIcon } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import type { Notifications } from "@prisma/client";
+import { BadgeDollarSign, Key, Settings as SettingsIcon } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { dismissNotificationsBatch } from "@/lib/notification";
 
-type NotificationType = "TRANSACTION" | "SYSTEM" | "SECURITY" | "GENERAL" | null;
+type NotificationType =
+  | "TRANSACTION"
+  | "SYSTEM"
+  | "SECURITY"
+  | "GENERAL"
+  | null;
 
 export function NotificationCard({
   notifications = [],
-  render_type
+  render_type,
 }: {
-  notifications?: Notifications[]
-  render_type: "COMPONENT" | "PAGE",
+  notifications?: Notifications[];
+  render_type: "COMPONENT" | "PAGE";
 }) {
   const [checkedSet, setCheckedSet] = useState<Set<bigint>>(new Set());
   const [loading, setLoading] = useState(false);
   const toggleCheck = (id: bigint, checked: boolean | "indeterminate") => {
-    setCheckedSet(prev => {
+    setCheckedSet((prev) => {
       const next = new Set(prev);
       if (checked === true) next.add(id);
       else next.delete(id);
@@ -37,10 +51,14 @@ export function NotificationCard({
 
   const typeIcon = (type: NotificationType) => {
     switch (type) {
-      case "TRANSACTION": return <BadgeDollarSign className="w-5 h-5" />;
-      case "SYSTEM": return <SettingsIcon className="w-5 h-5" />;
-      case "SECURITY": return <Key className="w-5 h-5" />;
-      default: return <span className="text-xl">🔔</span>;
+      case "TRANSACTION":
+        return <BadgeDollarSign className="w-5 h-5" />;
+      case "SYSTEM":
+        return <SettingsIcon className="w-5 h-5" />;
+      case "SECURITY":
+        return <Key className="w-5 h-5" />;
+      default:
+        return <span className="text-xl">🔔</span>;
     }
   };
 
@@ -94,7 +112,7 @@ export function NotificationCard({
                 <TableCell className="font-medium truncate max-w-[200px]">
                   {n.message}
                 </TableCell>
-{/* 
+                {/* 
                 <TableCell className="text-sm text-muted-foreground">
                   {n.account_id}
                 </TableCell> */}

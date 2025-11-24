@@ -1,12 +1,12 @@
 import {
-  House,
-  Landmark,
+  ArrowLeftRight,
   Bell,
   FileText,
+  House,
+  Landmark,
   UserCog,
-  ArrowLeftRight,
 } from "lucide-react";
-
+import Link from "next/link";
 import {
   Sidebar,
   SidebarContent,
@@ -17,7 +17,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import Link from "next/link";
 
 // A collection of possible sidebar options users can use to route through the page.
 // UPDATE ME when another page is added for routing purposes
@@ -30,7 +29,7 @@ const sidebarOptions = [
   {
     title: "Notifications",
     url: "/admin/dashboard/notifications",
-    img: Bell
+    img: Bell,
   },
   {
     title: "Reports",
@@ -46,7 +45,7 @@ const sidebarOptions = [
     title: "Transactions",
     url: "/admin/dashboard/transactions",
     img: ArrowLeftRight,
-  }
+  },
 ];
 
 export function AdminSidebar() {
@@ -77,13 +76,13 @@ export function AdminSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuButton>
-              <a 
-                href="/auth/logout"
-                className="bg-black text-white rounded-lg w-1/2 mx-auto text-center py-2 hover:bg-opacity-80"
-              >
-                Logout
-              </a>
-            </SidebarMenuButton>
+            <a
+              href="/auth/logout"
+              className="bg-black text-white rounded-lg w-1/2 mx-auto text-center py-2 hover:bg-opacity-80"
+            >
+              Logout
+            </a>
+          </SidebarMenuButton>
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>

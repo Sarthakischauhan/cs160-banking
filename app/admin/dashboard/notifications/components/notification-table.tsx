@@ -1,22 +1,22 @@
-import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-} from "@/components/ui/table";
-import { censorString, formatCurrency } from "@/lib/utils";
-import { Customer, Notifications } from "@prisma/client";
+import type { Customer, Notifications } from "@prisma/client";
+import { Check, EllipsisVertical, X } from "lucide-react";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EllipsisVertical, Check, X } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { censorString, formatCurrency } from "@/lib/utils";
 
 type NotificationsType = Notifications & {
   Customer: Customer | null;
@@ -62,10 +62,16 @@ function NotificationTable({
                   <TableCell></TableCell>
                 </>
               )}
-              <TableCell>{notification.customer && censorString(notification.customer)}</TableCell>
-              <TableCell className="truncate max-w-[120px]">{notification.message}</TableCell>
+              <TableCell>
+                {notification.customer && censorString(notification.customer)}
+              </TableCell>
+              <TableCell className="truncate max-w-[120px]">
+                {notification.message}
+              </TableCell>
               <TableCell>{notification.notification_type}</TableCell>
-              <TableCell>{notification.dismissed ? <Check /> : <X />}</TableCell>
+              <TableCell>
+                {notification.dismissed ? <Check /> : <X />}
+              </TableCell>
               <TableCell>{notification.delivery_method}</TableCell>
               <TableCell>
                 {new Date(notification.created_at).toLocaleDateString()}

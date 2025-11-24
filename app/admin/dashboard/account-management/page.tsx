@@ -1,20 +1,22 @@
-import { prisma } from "@/prisma/prisma";
-import { AccountsTable } from "./components/accounts-table";
+import { AccountType } from "@prisma/client";
+import { get } from "http";
 import { Button } from "@/components/ui/button";
+import { getAccounts } from "@/lib/adminData";
+import { prisma } from "@/prisma/prisma";
 import {
   PaginationControls,
   RangeFilter,
   SelectFilter,
   TextFilter,
 } from "../components/filters";
-import { AccountType } from "@prisma/client";
-import { getAccounts } from "@/lib/adminData";
-import { get } from "http";
+import { AccountsTable } from "./components/accounts-table";
+
+type searchParamsType = Promise<{ [key: string]: string | undefined }>;
 
 export default async function AccountManagementPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | undefined };
+  searchParams: searchParamsType;
 }) {
   const params = await searchParams;
 

@@ -1,8 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,17 +14,17 @@ import {
 } from "@/components/ui/card";
 import {
   Form,
+  FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
-  FormDescription,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "../../deposit/components/money-input";
-import { RecipientSearchResults } from "../components/recipient-search-result";
 import { RecipientPreview } from "../components/recipient-preview";
+import { RecipientSearchResults } from "../components/recipient-search-result";
 
 type Transfer = {
   account_id: string | null;
@@ -61,7 +61,7 @@ export function TransferCard({
 
   useEffect(() => {
     if (selectedRecipient) {
-      console.log(selectedRecipient)
+      console.log(selectedRecipient);
       setRecipient(selectedRecipient);
       form.setValue("account_id2", selectedRecipient.account_id);
     }
@@ -120,7 +120,10 @@ export function TransferCard({
 
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-6"
+          >
             {/* Amount */}
             <FormField
               control={form.control}
@@ -173,7 +176,9 @@ export function TransferCard({
                       />
                     </div>
                   </FormControl>
-                  <FormDescription>Search and select a recipient</FormDescription>
+                  <FormDescription>
+                    Search and select a recipient
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

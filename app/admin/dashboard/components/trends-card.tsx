@@ -1,20 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
 import { useState } from "react";
 import {
   CartesianGrid,
@@ -24,6 +9,20 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  type ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 
 type TimeMetric = {
   date: string;
@@ -37,7 +36,7 @@ export interface TrendsCardProps {
 }
 
 export function TrendsCard({ title, description, trendData }: TrendsCardProps) {
-  const [data, setData] = useState(trendData["balance"])
+  const [data, setData] = useState(trendData["balance"]);
   const chartConfig = {
     amount: {
       label: "Amount",
@@ -54,8 +53,18 @@ export function TrendsCard({ title, description, trendData }: TrendsCardProps) {
         </CardHeader>
         <CardContent className="flex flex-col">
           <div className="flex px-20 pb-5 gap-4 ">
-            <Button variant={"outline"} onClick={(e) => setData(trendData['balance'])}>Balance</Button>
-            <Button variant={"outline"} onClick={(e) => setData(trendData['transactions'])}>Transactions</Button>
+            <Button
+              variant={"outline"}
+              onClick={(e) => setData(trendData["balance"])}
+            >
+              Balance
+            </Button>
+            <Button
+              variant={"outline"}
+              onClick={(e) => setData(trendData["transactions"])}
+            >
+              Transactions
+            </Button>
           </div>
 
           <ChartContainer config={chartConfig} className="w-full h-[250px]">
@@ -85,7 +94,7 @@ export function TrendsCard({ title, description, trendData }: TrendsCardProps) {
               />
               <ChartTooltip
                 cursor={false}
-                content={<ChartTooltipContent className="px-5"/>}
+                content={<ChartTooltipContent className="px-5" />}
               />
               <Line
                 dataKey="amount"

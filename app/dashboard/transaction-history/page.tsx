@@ -1,6 +1,6 @@
+import { auth0 } from "@/lib/auth0";
 import { prisma } from "@/prisma/prisma";
 import { TransactionTableCard } from "./components/transactiontable-card";
-import { auth0 } from "@/lib/auth0";
 
 export default async function TransactionHistoryPage() {
   // Get the current authenticated user session
