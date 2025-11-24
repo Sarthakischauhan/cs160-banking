@@ -1,3 +1,5 @@
+"use client";
+
 import { Input } from "@/components/ui/input";
 import {
   InputGroup,
@@ -5,27 +7,59 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import {
+  Select,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectGroup,
+} from "@/components/ui/select";
+import {
+  usePathname,
+  useSearchParams,
+  useRouter,
+  ReadonlyURLSearchParams,
+} from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
-type Input = {
-  id: string;
-  placeholder?: string;
-  type?: string;
-  prefix?: string;
-};
+import { useDebouncedCallback } from "use-debounce";
 
-interface FilterInputProps {
+/** Single text input */
+interface TextFilterProps {
   label: string;
+  name?: string;
+  value: string;
+  defaultValue?: string;
   placeholder?: string;
   type?: string;
-  prefix?: string;
 }
 
-interface FilterRangeProps {
-  label: string;
-  minPlaceholder?: string;
-  maxPlaceholder?: string;
-  type?: string;
-  prefix?: string;
+function useURLFilter(delay = 300) {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+  const { reset } = usePagination();
+
+  const updateFilter = useDebouncedCallback((name: string, value: string) => {
+    const params = new URLSearchParams(searchParams);
+
+    if (value.trim()) {
+      params.set(name, value);
+    } else {
+      params.delete(name);
+    }
+
+    // ⚡ Clear the cursor whenever a filter changes
+    reset();
+    params.delete("cursor");
+
+    const queryString = params.toString();
+    replace(queryString ? `${pathname}?${queryString}` : pathname);
+  }, delay);
+
+  return { updateFilter, searchParams };
 }
 
 /**
@@ -33,54 +67,107 @@ interface FilterRangeProps {
  * @param param0 - Properties for a single filter input including label, placeholder, and type.
  * @returns Component rendering a single input field for filtering.
  */
-function FilterInput({
-  inputProps,
+export function TextFilter({
+  label,
+  name = "",
+  value = "",
+  placeholder,
+  type = "text",
   ...props
-}: {
-  inputProps: FilterInputProps;
-}) {
+}: TextFilterProps) {
+  const { updateFilter, searchParams } = useURLFilter();
+
   return (
     <div {...props}>
-      <Label className="mr-2 mb-2">{inputProps.label}</Label>
+      <Label className="mb-2">{label}</Label>
       <Input
-        type={inputProps.type ? inputProps.type : ""}
-        placeholder={inputProps.placeholder}
+        type={type}
+        placeholder={placeholder}
+        name={name}
         className="w-full"
+        onChange={(e) => {
+          updateFilter(name, e.target.value);
+        }}
+        defaultValue={searchParams.get(name)?.toString()}
       />
     </div>
   );
 }
 
+/** Numeric range filter */
+interface RangeFilterProps {
+  label: string;
+  minName?: string;
+  maxName?: string;
+  minValue: string;
+  maxValue: string;
+  minPlaceholder?: string;
+  maxPlaceholder?: string;
+  className?: string;
+  type?: string;
+  prefix?: string;
+}
 /**
  * Multiple filter inputs grouped together.
- * @param param0 - An array of filter field definitions including label, placeholder, and type.
  * @returns Component rendering multiple input fields for filtering.
  */
-function FilterGroup({
+export function RangeFilter({
   label,
-  inputFields,
+  minName = "",
+  maxName = "",
+  maxValue,
+  minValue,
+  minPlaceholder,
+  maxPlaceholder,
+  prefix,
+  type = "text",
+  className,
   ...props
-}: {
-  label: string;
-  inputFields: Input[];
-}) {
+}: RangeFilterProps) {
+  const { updateFilter, searchParams } = useURLFilter();
+
   return (
-    <div className="flex flex-col" {...props}>
-      <div>
-        <Label className="mr-2 mb-2">{label}</Label>
-      </div>
-      <div className="flex flex-row gap-4">
-        {inputFields.map((field) => (
-          <Input
-            key={field.id}
-            type={field.type ? field.type : "text"}
-            placeholder={field.placeholder}
-            className="w-1/2"
+    <div className={className}>
+      <Label className="mb-2">{label}</Label>
+      <div className="flex gap-2 items-center">
+        <InputGroup className="w-1/2">
+          {prefix && <InputGroupAddon>{prefix}</InputGroupAddon>}
+          <InputGroupInput
+            name={minName}
+            type={type}
+            placeholder={minPlaceholder}
+            defaultValue={minValue ? minValue : ""}
+            onChange={(e) => {
+              updateFilter(minName, e.target.value);
+            }}
           />
-        ))}
+        </InputGroup>
+        <span>-</span>
+        <InputGroup className="w-1/2">
+          {prefix && <InputGroupAddon>{prefix}</InputGroupAddon>}
+          <InputGroupInput
+            name={maxName}
+            type={type}
+            placeholder={maxPlaceholder}
+            defaultValue={maxValue ? maxValue : ""}
+            onChange={(e) => {
+              updateFilter(maxName, e.target.value);
+            }}
+          />
+        </InputGroup>
       </div>
     </div>
   );
+}
+
+/** Select or radio filter */
+
+interface SelectFilterProps {
+  label: string;
+  name?: string;
+  options: string[];
+  value: string;
+  defaultValue?: string;
 }
 
 /**
@@ -88,42 +175,135 @@ function FilterGroup({
  * @param rangeProps - Properties for the range filter including label, min/max placeholders, type, and prefix.
  * @returns Component rendering two input fields for specifying a range.
  */
-function FilterRange({
-  rangeProps,
+export function SelectFilter({
+  label,
+  options,
+  value,
+  defaultValue,
+  name = "",
   ...props
-}: {
-  rangeProps: FilterRangeProps;
-}) {
+}: SelectFilterProps) {
+  const { updateFilter, searchParams } = useURLFilter();
+
   return (
-    <div>
-      <Label className="mr-2 mb-2">{rangeProps.label}</Label>
-      <div className="flex flex-row items-center">
-        <InputGroup className="w-3/7 mr-2">
-          {rangeProps.prefix ? (
-            <InputGroupAddon>{rangeProps.prefix}</InputGroupAddon>
-          ) : (
-            <></>
-          )}
-          <InputGroupInput
-            type={rangeProps.type}
-            placeholder={rangeProps.minPlaceholder}
-          ></InputGroupInput>
-        </InputGroup>
-        <span>-</span>
-        <InputGroup className="w-3/7 ml-2">
-          {rangeProps.prefix ? (
-            <InputGroupAddon>{rangeProps.prefix}</InputGroupAddon>
-          ) : (
-            <></>
-          )}
-          <InputGroupInput
-            type={rangeProps.type}
-            placeholder={rangeProps.maxPlaceholder}
-          ></InputGroupInput>
-        </InputGroup>
-      </div>
+    <div className="flex flex-col" {...props}>
+      <label className="flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 mb-2">
+        {label}
+      </label>
+      <select
+        name={name}
+        defaultValue={value}
+        className="border p-2 rounded-md"
+        onChange={(e) => {
+          updateFilter(name, e.target.value);
+        }}
+      >
+        <option value="">ANY</option>
+        {options.map((opt) => (
+          <option key={opt} value={opt}>
+            {opt}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
 
-export { FilterInput, FilterRange, FilterGroup };
+export function usePagination() {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+  
+  const initialCursor = searchParams.get("cursor"); 
+  const historyRef = useRef<(string | null)[]>([initialCursor]);
+
+  const ignoreNextPush = useRef(false); // 🔑 new
+
+  useEffect(() => {
+    if (ignoreNextPush.current) {
+      ignoreNextPush.current = false;
+      return; // skip adding current cursor
+    }
+    const cursor = searchParams.get("cursor") ?? null;
+    const last = historyRef.current[historyRef.current.length - 1];
+    if (cursor !== last) {
+      historyRef.current.push(cursor);
+    }
+  }, [searchParams]);
+
+  const goNext = (cursor: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("cursor", cursor);
+    router.replace(`${pathname}?${params.toString()}`);
+    historyRef.current.push(cursor);
+  };
+
+  const goPrevious = () => {
+    if (historyRef.current.length < 2) return;
+    historyRef.current.pop();
+    const previousCursor = historyRef.current[historyRef.current.length - 1];
+    const params = new URLSearchParams(searchParams.toString());
+    if (previousCursor) params.set("cursor", previousCursor);
+    else params.delete("cursor");
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+
+  const reset = () => {
+    historyRef.current = [null];
+    ignoreNextPush.current = true; // 🔑 ignore next effect push
+  };
+
+  return {
+    goNext,
+    goPrevious,
+    reset,
+    hasPrevious: historyRef.current.length > 1,
+  };
+}
+
+
+interface PaginationControlsProps {
+  nextCursor: string | null;
+}
+
+export function PaginationControls({ nextCursor }: PaginationControlsProps) {
+  const { goNext, goPrevious, hasPrevious } = usePagination();
+
+  const searchParams = useSearchParams();
+
+  // get cursor from URL
+  const cursor = searchParams.get("cursor");
+
+  return (
+    <Pagination>
+      <PaginationContent>
+        <PaginationItem>
+          <PaginationPrevious
+            href="#"
+            className={!hasPrevious || !cursor ? "pointer-events-none opacity-50" : ""}
+            onClick={(e) => {
+              e.preventDefault();
+              goPrevious();
+            }}
+          >
+            Previous
+          </PaginationPrevious>
+        </PaginationItem>
+
+        <PaginationItem>
+          <PaginationNext
+            href="#"
+            className={!nextCursor ? "pointer-events-none opacity-50" : ""}
+            onClick={(e) => {
+              e.preventDefault();
+              if (nextCursor) goNext(nextCursor);
+            }}
+          >
+            Next
+          </PaginationNext>
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
+  );
+}
+

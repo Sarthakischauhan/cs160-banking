@@ -1,0 +1,47 @@
+"use client";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { EllipsisVertical } from "lucide-react";
+import { RequestApprovalTransactionItem } from "./approve-item";
+import { RequestCancelTransactionItem } from "./cancel-item";
+import { Transaction, TransactionStatus } from "@prisma/client";
+
+export default function TransactionManagementDropdown({
+  transaction_id,
+  transaction_status,
+  user,
+}: {
+  transaction_id: string;
+  transaction_status: TransactionStatus
+  user: any;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger>
+        <EllipsisVertical className="hover:cursor-pointer" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuLabel>Manage Transaction</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>View Details</DropdownMenuItem>
+        <RequestApprovalTransactionItem
+          id={transaction_id}
+          disabled={transaction_status === "COMPLETED"}
+          user={user}
+        />
+        <RequestCancelTransactionItem
+          id={transaction_id}
+          disabled={transaction_status === "CANCELED"}
+          user={user}
+        />
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
