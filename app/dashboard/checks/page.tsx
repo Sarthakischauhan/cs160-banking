@@ -125,6 +125,10 @@ export default function Page() {
       throw new Error("Deposit response missing transactionId");
     }
 
+    if (!account.customer_id) {
+        throw new Error("account missing");
+    }
+
     const formData = new FormData();
     if (front_image) {
       formData.append("image", front_image);
@@ -136,6 +140,7 @@ export default function Page() {
       formData.append("amount", amount.toString());
     }
     formData.append("transactionId", transactionId);
+    formData.append("customerId", account.customer_id)
     try {
       const res = await fetch("/api/checks", {
         method: "POST",
