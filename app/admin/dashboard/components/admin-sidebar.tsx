@@ -57,7 +57,7 @@ const sidebarOptions = [
 
 export function AdminSidebar() {
   return (
-    <Sidebar className="p-2">
+    <Sidebar collapsible="offcanvas" className="p-2">
       <SidebarHeader>
         <div className="flex flex-row items-center">
           <Landmark className="mx-2" />
