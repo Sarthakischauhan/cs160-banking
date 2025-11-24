@@ -7,13 +7,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { AccountType } from "@prisma/client";
 
 import { ChevronUp, ChevronDown } from "lucide-react";
 
 interface BalanceProps {
   userBalance: number;
+  account_type: AccountType;
   monthIncome?: number;
   monthExpense?: number;
+  hidden?: boolean;
 }
 
 /**
@@ -27,12 +30,13 @@ export function BalanceCard(props: BalanceProps) {
     <>
       <Card className="h-full">
         <CardHeader>
-          <CardTitle>Current Balance</CardTitle>
-          {!(props.monthIncome === undefined) &&
-          !(props.monthExpense === undefined) ? (
+          <CardTitle><h1>Current Balance</h1></CardTitle>
+
+          {props.monthIncome !== undefined &&
+           props.monthExpense !== undefined && (
             <CardAction>
               <div className="flex flex-row justify-center items-center">
-                <span className="">
+                <span>
                   {props.monthIncome - props.monthExpense >= 0 ? (
                     <ChevronUp color="green" />
                   ) : (
@@ -47,16 +51,26 @@ export function BalanceCard(props: BalanceProps) {
                 </span>
               </div>
             </CardAction>
-          ) : (
-            <></>
           )}
         </CardHeader>
-        <CardContent className="text-center">
-          <div className="text-5xl my-10">
-            <span>${props.userBalance.toFixed(2).toLocaleString()}</span>
+
+        <CardContent>
+          <div className="text-5xl my-10 h-14 flex items-center">
+            <span
+              className={`transition-all duration-500 ${
+                props.hidden
+                  ? "blur-sm opacity-60 select-none"
+                  : "opacity-100 blur-0"
+              }`}
+            >
+              {props.hidden
+                ? "••••••••"
+                : `$${props.userBalance.toFixed(2).toLocaleString()}`}
+            </span>
           </div>
-          {!(props.monthIncome === undefined) &&
-          !(props.monthExpense === undefined) ? (
+
+          {props.monthIncome !== undefined &&
+           props.monthExpense !== undefined && (
             <div className="grid grid-cols-2 gap-10 text-lg">
               <div className="flex flex-col">
                 <span>Income</span>
@@ -67,8 +81,6 @@ export function BalanceCard(props: BalanceProps) {
                 <span>${props.monthExpense.toFixed(2).toLocaleString()}</span>
               </div>
             </div>
-          ) : (
-            <></>
           )}
         </CardContent>
       </Card>

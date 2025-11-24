@@ -1,38 +1,25 @@
-"use client";
+import { getAccount } from "@/lib/accounts";
+import { handleCurrentId } from "@/lib/user";
+import { TransferPage } from "./components/tansfer-page";
+import { redirect } from "next/navigation";
+import { getRecentTransactions } from "@/lib/transactions";
 
-import { BalanceCard } from "../components/balance-card";
-import { TransferCard } from "./components/transfer-card";
-import { RecentTransfersCard } from "./components/recent-transfers-card";
-import { useState } from "react";
+export default async function Page() {
+  const activeId = (await handleCurrentId()) ?? "";
+  const account = await getAccount({ account_id: activeId });
 
-export default function TransferPage() {
-  const [selected, setSelected] = useState<string | null>(null);
+  const recentTransactions = await getRecentTransactions({account_id: activeId})
+  if (account){
+    const normalizedAccount = {
+      balance: Number(account.balance), 
+      account_type: account.account_type
+    }
+    return ( 
+      <>
+        <TransferPage account={normalizedAccount} activeId={activeId} recentRecipients={recentTransactions} />
+      </>
+    );
+  }
 
-  return (
-    <>
-      <div className="p-10 space-y-6">
-        <h1 className="text-4xl font-bold">Transfer</h1>
 
-        <div className="grid grid-cols-2 gap-6">
-          {/* Left Column */}
-          <div className="flex flex-col gap-6 w-fit">
-            <div className="flex-1">
-              <BalanceCard userBalance={1000} />
-            </div>
-
-            <div className="flex-1">
-              <RecentTransfersCard onSelect={setSelected} />
-            </div>
-          </div>
-
-          {/* Right Column */}
-          <div className="flex">
-            <div className="w-full max-w-xl">
-              <TransferCard selectedRecipient={selected} />
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
-  );
 }

@@ -1,4 +1,11 @@
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
   Table,
   TableBody,
   TableCell,
@@ -6,13 +13,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { censorString, formatCurrency } from "@/lib/utils";
 import { Account, Customer, Transaction } from "@prisma/client";
+import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import { EllipsisVertical } from "lucide-react";
 
 export type AccountWithExtraData = Account & {
   Customer: Customer;
   _count: {
-    Transaction: number;
+    Transaction_Transaction_account_idToAccount: number;
   };
 };
 
@@ -28,7 +37,8 @@ export function AccountsTable(props: AccountsTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Customer ID</TableHead>
+            <TableHead>First Name</TableHead>
+            <TableHead>Last Name</TableHead>
             <TableHead>Account ID</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Balance</TableHead>
@@ -40,15 +50,38 @@ export function AccountsTable(props: AccountsTableProps) {
         <TableBody>
           {props.accounts.map((account: AccountWithExtraData) => (
             <TableRow key={account.account_id}>
-              <TableCell>{account.Customer.customer_id.slice(0, 4) + "********"}</TableCell>
-              <TableCell>{account.account_id.slice(0, 4) + "********"}</TableCell>
-              <TableCell>{account.account_type ? decoder.decode(account.account_type) : ""}</TableCell>
-              <TableCell>
-                ${account.balance.toFixed(2).toLocaleString()}
+              <TableCell className="max-w-[120px]">
+                {account.Customer.first_name?.toLocaleUpperCase()}
               </TableCell>
-              <TableCell>{account._count.Transaction}</TableCell>
+              <TableCell>
+                {account.Customer.last_name?.toLocaleUpperCase()}
+              </TableCell>
+              <TableCell>{censorString(account.account_id)}</TableCell>
+              <TableCell>{account.account_type}</TableCell>
+              <TableCell>{formatCurrency(Number(account.balance))}</TableCell>
+              <TableCell>
+                {account._count.Transaction_Transaction_account_idToAccount}
+              </TableCell>
               <TableCell>{account.created_at.toLocaleDateString()}</TableCell>
-              <TableCell className="hover:cursor-pointer"><EllipsisVertical /></TableCell>
+              <TableCell>
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="hover:cursor-pointer">
+                    <EllipsisVertical />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuLabel>Manage Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>View Details</DropdownMenuItem>
+                    <DropdownMenuItem>Edit Balance</DropdownMenuItem>
+                    <DropdownMenuItem>Add Note</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>Suspend</DropdownMenuItem>
+                    <DropdownMenuItem variant="destructive">
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

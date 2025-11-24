@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Link from "next/link";
 
 export function ATMCard() {
   return (
@@ -27,9 +29,11 @@ export function ATMCard() {
             <div />
             <div />
             <div className="w-full">
-              <Button variant="outline" className="hover:cursor-pointer">
-                Locate
-              </Button>
+              <Link href="/dashboard/maps">
+                <Button variant="outline" className="hover:cursor-pointer">
+                  Locate
+                </Button>
+              </Link>
             </div>
           </div>
         </CardFooter>

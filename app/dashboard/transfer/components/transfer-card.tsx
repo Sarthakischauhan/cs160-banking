@@ -1,5 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,95 +22,105 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
 import { MoneyInput } from "../../deposit/components/money-input";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { RecipientSearchResults } from "../components/recipient-search-result";
+import { RecipientPreview } from "../components/recipient-preview";
 
 type Transfer = {
   account_id: string | null;
   account_id2: string | null;
   amount: number | null;
-  balance: number | null;
   transaction_type: "immediate" | "scheduled";
   description: string | null;
 };
 
-let test = ""; 
-let test2 = ""; 
-
-
 export function TransferCard({
-  selectedRecipient, }: {
-  selectedRecipient?: string | null; }) {
-    
+  selectedRecipient,
+  activeAccountId,
+}: {
+  selectedRecipient?: SearchRecipient | null;
+  activeAccountId?: string;
+}) {
   const router = useRouter();
-  const [accountId, setAccountId] = useState<Transfer | null>(null);
+
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchRecipient[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const [recipient, setRecipient] = useState<SearchRecipient | null>(null);
 
   const form = useForm<Transfer>({
     defaultValues: {
       account_id: null,
-      account_id2: selectedRecipient ?? null,
+      account_id2: null,
       amount: null,
       transaction_type: "immediate",
       description: null,
     },
   });
 
-   useEffect(() => { // Fetchs the api to get Account info 
-      async function fetchProfile() {
-        const res = await fetch("/api/account");
-        if (res.status === 401) { // Ensures user is logged in correctly
-          window.location.href = "/auth/login";
-          return;
-        }
-    
-        const data = await res.json();
-        const firstAccount = data[0]; 
-        setAccountId(firstAccount); //gets the first account ID
-     
-        if (!firstAccount.account_id) {
-          console.error("No account_id found!");
-          return;
-        }
+  useEffect(() => {
+    if (selectedRecipient) {
+      console.log(selectedRecipient)
+      setRecipient(selectedRecipient);
+      form.setValue("account_id2", selectedRecipient.account_id);
+    }
+  }, [selectedRecipient, form]);
 
-        test = firstAccount.account_id; //Just to retain value
-        test2 = firstAccount.balance
-  
-      }
-  
-      fetchProfile();      
-    }, []);
-    
-    const handleClick = async (values: any) =>{
-      if (!accountId?.account_id) return;
-      const res = await fetch("/api/transactions", {
-      method: "POST",
-      headers: {
-      "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ // Will give api deposit these values to allow it to work
-      account_id : test,
-      account_id2: values.account_id2,
+  const searchRecipients = async (q: string) => {
+    if (!q || q.length < 2) {
+      setResults([]);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/recipients?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      setResults(data);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSelectRecipient = (user: SearchRecipient) => {
+    setRecipient(user);
+    form.setValue("account_id2", user.account_id);
+    setQuery(user.name);
+    setResults([]);
+  };
+
+  const handleSubmit = async (values: any) => {
+    if (!activeAccountId || !recipient) return;
+
+    const payload = {
+      from_account_id: activeAccountId,
+      to_account_id: recipient.account_id,
       amount: Number(values.amount),
-      balance: test2,
-      transaction_type: values.transaction_type,
-      description: values.description, 
-      }),
+      description: values.description,
+    };
+
+    const res = await fetch("/api/transfer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     });
-    router.push("/dashboard"); // Return to dashboard
+
+    if (!res.ok) return;
+
+    router.push("/dashboard");
   };
 
   return (
     <Card className="h-fit w-full">
       <CardHeader>
         <CardTitle>Transfer</CardTitle>
-        <CardDescription>Transfer funds securely and quickly</CardDescription>
+        <CardDescription>Transfer funds securely</CardDescription>
       </CardHeader>
 
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleClick)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             {/* Amount */}
             <FormField
               control={form.control}
@@ -122,29 +136,44 @@ export function TransferCard({
                       <MoneyInput field={field} />
                     </div>
                   </FormControl>
-                  <FormDescription>Amount to Transfer</FormDescription>
+                  <FormDescription>Amount to transfer</FormDescription>
+                  <RecipientPreview user={recipient} />
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Recipient */}
+            {/* Recipient Search */}
             <FormField
               control={form.control}
               name="account_id2"
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
-                  <FormLabel>Recipient Account</FormLabel>
+                  <FormLabel>Recipient</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Recipient Account ID or Email"
-                      {...field}
-                      value={field.value ?? ""}
-                    />
+                    <div className="space-y-2 relative">
+                      <Input
+                        placeholder="Search by name or email"
+                        value={query}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setQuery(val);
+                          searchRecipients(val);
+                        }}
+                      />
+
+                      {loading && (
+                        <div className="text-sm text-gray-500">
+                          Searching...
+                        </div>
+                      )}
+                      <RecipientSearchResults
+                        results={results}
+                        onSelect={handleSelectRecipient}
+                      />
+                    </div>
                   </FormControl>
-                  <FormDescription>
-                    Enter the recipient’s account ID
-                  </FormDescription>
+                  <FormDescription>Search and select a recipient</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -158,10 +187,7 @@ export function TransferCard({
                 <FormItem>
                   <FormLabel>Transfer Type</FormLabel>
                   <FormControl>
-                    <select
-                      className="border rounded-md p-2 w-full"
-                      {...field}
-                    >
+                    <select className="border rounded-md p-2 w-full" {...field}>
                       <option value="immediate">Immediate</option>
                       <option value="scheduled">Scheduled</option>
                     </select>
@@ -181,7 +207,7 @@ export function TransferCard({
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="What's this transfer for?"
+                      placeholder="What's this for?"
                       {...field}
                       value={field.value ?? ""}
                     />
@@ -192,9 +218,8 @@ export function TransferCard({
               )}
             />
 
-            {/* Submit */}
-            <Button type="submit" variant="success" disabled={!accountId}>
-              {accountId ? "Send" : "Loading..."}
+            <Button type="submit" variant="default">
+              Send
             </Button>
           </form>
         </Form>

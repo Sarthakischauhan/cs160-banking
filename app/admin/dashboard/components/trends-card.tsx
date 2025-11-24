@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -14,6 +15,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -31,10 +33,11 @@ type TimeMetric = {
 export interface TrendsCardProps {
   title: string;
   description?: string;
-  data: TimeMetric[];
+  trendData: Record<string, TimeMetric[]>;
 }
 
-export function TrendsCard({ title, description, data }: TrendsCardProps) {
+export function TrendsCard({ title, description, trendData }: TrendsCardProps) {
+  const [data, setData] = useState(trendData["balance"])
   const chartConfig = {
     amount: {
       label: "Amount",
@@ -49,14 +52,19 @@ export function TrendsCard({ title, description, data }: TrendsCardProps) {
           <CardTitle>{title}</CardTitle>
           {description && <CardDescription>{description}</CardDescription>}
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col">
+          <div className="flex px-20 pb-5 gap-4 ">
+            <Button variant={"outline"} onClick={(e) => setData(trendData['balance'])}>Balance</Button>
+            <Button variant={"outline"} onClick={(e) => setData(trendData['transactions'])}>Transactions</Button>
+          </div>
+
           <ChartContainer config={chartConfig} className="w-full h-[250px]">
             <LineChart
               accessibilityLayer
               data={data ?? []}
               margin={{
-                left: 12,
-                right: 12,
+                left: 25,
+                right: 25,
               }}
             >
               <CartesianGrid vertical={false} />
@@ -77,7 +85,7 @@ export function TrendsCard({ title, description, data }: TrendsCardProps) {
               />
               <ChartTooltip
                 cursor={false}
-                content={<ChartTooltipContent hideLabel />}
+                content={<ChartTooltipContent className="px-5"/>}
               />
               <Line
                 dataKey="amount"
