@@ -112,12 +112,12 @@ export default function BankManagerDashboard() {
 
   if (!reportData || reportData.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted/50 p-6">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-slate-200">
+          <div className="bg rounded-xl p-12 text-center shadow-sm border border">
             <div className="text-6xl mb-4"></div>
-            <h3 className="text-xl font-semibold text-slate-700 mb-2">No Data Available</h3>
-            <p className="text-slate-500">No customer accounts to display at this time.</p>
+            <h3 className="text-xl font-semibold text mb-2">No Data Available</h3>
+            <p className="text-">No customer accounts to display at this time.</p>
           </div>
         </div>
       </div>
@@ -125,16 +125,16 @@ export default function BankManagerDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/50 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 mb-1">Account Overview</h1>
+            <h1 className="text-3xl font-bold text mb-1">Account Overview</h1>
           </div>
-          <div className="text-right text-sm text-slate-500">
+          <div className="text-right text-sm text">
             <p>Last updated</p>
-            <p className="font-semibold text-slate-700">{new Date().toLocaleDateString()}</p>
+            <p className="font-semibold text">{new Date().toLocaleDateString()}</p>
           </div>
         </div>
 
@@ -148,13 +148,13 @@ export default function BankManagerDashboard() {
         {/* Filters */}
         <div className="flex flex-wrap gap-4 items-center justify-between">
           <div className="flex items-center gap-3">
-            <label className="text-sm font-medium text-slate-700">Filter by Type:</label>
+            <label className="text-sm font-medium text">Filter by Type:</label>
             <div className="flex gap-2">
               {["all", "checking", "savings"].map((type) => (
                 <button
                   key={type}
                   onClick={() => setFilter(type)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filter === type ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filter === type ? "bg " : "bg text hover:bg"
                     }`}
                 >
                   {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -170,12 +170,12 @@ export default function BankManagerDashboard() {
               value={nameQuery}
               onChange={(e) => setNameQuery(e.target.value)}
               placeholder="Search by name…"
-              className="w-64 px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
+              className="w-64 px-3 py-2 rounded-lg border border text-sm focus:outline-none focus:ring-2 focus:ring"
             />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white"
+              className="px-3 py-2 rounded-lg border border text-sm bg"
             >
               <option value="balance_desc">Balance: High → Low</option>
               <option value="balance_asc">Balance: Low → High</option>
@@ -193,7 +193,7 @@ export default function BankManagerDashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
               whileHover={{ scale: 1.02 }}
-              className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all"
+              className="bg rounded-xl shadow-sm border border overflow-hidden hover:shadow-md transition-all"
             >
               <div className="p-5">
                 <div className="flex items-center justify-between mb-4">
@@ -203,12 +203,12 @@ export default function BankManagerDashboard() {
                     {(account.account_type || "unknown").charAt(0).toUpperCase() +
                       (account.account_type || "unknown").slice(1)}
                   </span>
-                  <span className="text-xs font-mono text-slate-500">{account.account_id}</span>
+                  <span className="text-xs font-mono text">{account.account_id}</span>
                 </div>
 
                 <div className="mb-4">
-                  <p className="text-sm text-slate-600 mb-1">Current Balance</p>
-                  <p className="text-3xl font-bold text-slate-800">
+                  <p className="text-sm text mb-1">Current Balance</p>
+                  <p className="text-3xl font-bold text">
                     ${Number(account.balance ?? 0).toLocaleString("en-US", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
@@ -220,14 +220,14 @@ export default function BankManagerDashboard() {
                   customer_id={account.Customer?.customer_id || ""}
                   account_id={account.account_id}
                 />
-                <div className="space-y-2 py-3 border-t border-slate-100">
+                <div className="space-y-2 py-3 border-t border">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600">Customer Name</span>
-                    <span className="font-semibold text-slate-800 font-mono">{`${account.Customer?.first_name ?? ""} ${account.Customer?.last_name ?? ""}`.trim() || "N/A"}</span>
+                    <span className="text">Customer Name</span>
+                    <span className="font-semibold text font-mono">{`${account.Customer?.first_name ?? ""} ${account.Customer?.last_name ?? ""}`.trim() || "N/A"}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600">Transactions</span>
-                    <span className="font-semibold text-slate-800"> {account.Transaction_Transaction_account_id2ToAccount?.length ?? 0}</span>
+                    <span className="text">Transactions</span>
+                    <span className="font-semibold text"> {account.Transaction_Transaction_account_id2ToAccount?.length ?? 0}</span>
                   </div>
                 </div>
 
@@ -246,14 +246,15 @@ function SummaryCard({ title, value, icon, subtitle, delay }: any) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      className="bg-white rounded-xl p-6 shadow-sm border border-slate-200"
+      className="bg-background rounded-xl p-6 shadow-sm border border-border"
+
     >
       <div className="flex items-center justify-between mb-2">
-        <p className="text-sm font-medium text-slate-600">{title}</p>
+        <p className="text-sm font-medium text-muted-foreground">{title}</p>
         <span className="text-2xl">{icon}</span>
       </div>
-      <p className="text-3xl font-bold text-slate-800">{value}</p>
-      <p className="text-xs text-slate-500 mt-1">{subtitle}</p>
+      <p className="text-3xl font-bold text">{value}</p>
+      <p className="text-xs text mt-1">{subtitle}</p>
     </motion.div>
   );
 }
