@@ -13,13 +13,9 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
         if (!customer) return NextResponse.json({ message: "Customer not found" }, { status: 400 });
 
         const body = await req.json();
-        const { account_id, amount, transaction_type } = body || {};
-        if (!account_id || typeof amount !== "number" || !transaction_type) {
-            return NextResponse.json({ message: "account_id, amount (number), transaction_type required" }, { status: 400 });
-        }
-        if (!["deposit", "withdraw"].includes(String(transaction_type).toLowerCase())) {
-            return NextResponse.json({ message: "transaction_type must be deposit or withdraw" }, { status: 400 });
-        }
+        const { account_id, amount, description, transaction_type } = body || {};
+        
+
         if (amount <= 0) {
             return NextResponse.json({ message: "amount must be positive" }, { status: 400 });
         }
@@ -50,9 +46,9 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
                     account_id,
                     amount,
                     amount_after_transaction: nextBalance,
-                    transaction_status: "success",
-                    customer_id: customer.customer_id,
-                    transaction_type: isWithdraw ? "withdraw" : "deposit",
+                    created_at: new Date(),
+                    transaction_status: "COMPLETED",
+                    transaction_type: "DEPOSIT",
                 },
             });
 

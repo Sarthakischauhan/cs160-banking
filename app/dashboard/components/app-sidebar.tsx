@@ -61,7 +61,7 @@ const sidebarOptions = [
   },
   {
     title: "Deposit Checks",
-    url: "/checks",
+    url: "/dashboard/checks",
     img: Banknote,
   }
 ];

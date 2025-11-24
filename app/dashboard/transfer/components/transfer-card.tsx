@@ -27,90 +27,74 @@ type Transfer = {
   account_id: string | null;
   account_id2: string | null;
   amount: number | null;
-  type: "immediate" | "scheduled";
+  balance: number | null;
+  transaction_type: "immediate" | "scheduled";
   description: string | null;
 };
 
+let test = ""; 
+let test2 = ""; 
+
+
 export function TransferCard({
-  selectedRecipient,
-}: {
-  selectedRecipient?: string | null;
-}) {
+  selectedRecipient, }: {
+  selectedRecipient?: string | null; }) {
+    
   const router = useRouter();
-  const [accountId, setAccountId] = useState<string | null>(null);
+  const [accountId, setAccountId] = useState<Transfer | null>(null);
 
   const form = useForm<Transfer>({
     defaultValues: {
       account_id: null,
       account_id2: selectedRecipient ?? null,
       amount: null,
-      type: "immediate",
+      transaction_type: "immediate",
       description: null,
     },
   });
 
-  useEffect(() => {
-    async function fetchTransactions() {
-      try {
-        const res = await fetch("/api/transactions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-        });
-
-        if (res.status === 401) {
+   useEffect(() => { // Fetchs the api to get Account info 
+      async function fetchProfile() {
+        const res = await fetch("/api/account");
+        if (res.status === 401) { // Ensures user is logged in correctly
           window.location.href = "/auth/login";
           return;
         }
-
-        await res.json(); // we don’t actually use the transactions result
-
-        // Fetch the user’s account
-        const res2 = await fetch("/api/account");
-        if (res2.status === 401) {
-          window.location.href = "/auth/login";
-          return;
-        }
-
-        const data2 = await res2.json();
-        const firstAccount = data2[0];
-
-        if (!firstAccount?.account_id) {
+    
+        const data = await res.json();
+        const firstAccount = data[0]; 
+        setAccountId(firstAccount); //gets the first account ID
+     
+        if (!firstAccount.account_id) {
           console.error("No account_id found!");
           return;
         }
 
-        // Set the user’s account ID
-        setAccountId(firstAccount.account_id);
-        form.setValue("account_id", firstAccount.account_id);
-      } catch (error) {
-        console.error("Failed to fetch transactions:", error);
+        test = firstAccount.account_id; //Just to retain value
+        test2 = firstAccount.balance
+  
       }
-    }
-
-    fetchTransactions();
-
-    if (selectedRecipient) {
-      form.setValue("account_id2", selectedRecipient);
-    }
-  }, [selectedRecipient, form]);
-
-  const onSubmit = async (values: Transfer) => {
-    if (!accountId) {
-      console.error("Account not ready yet");
-      return;
-    }
-
-    const res = await fetch("/api/transactions", {
+  
+      fetchProfile();      
+    }, []);
+    
+    const handleClick = async (values: any) =>{
+      if (!accountId?.account_id) return;
+      const res = await fetch("/api/transactions", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
+      headers: {
+      "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ // Will give api deposit these values to allow it to work
+      account_id : test,
+      account_id2: values.account_id2,
+      amount: Number(values.amount),
+      balance: test2,
+      transaction_type: values.transaction_type,
+      description: values.description, 
+      }),
     });
-
-    if (res.ok) {
-      router.push("/dashboard");
-    } else {
-      console.error("Transfer failed:", await res.text());
-    }
+    router.push("/dashboard"); // Return to dashboard
   };
 
   return (
@@ -122,7 +106,7 @@ export function TransferCard({
 
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleClick)} className="space-y-6">
             {/* Amount */}
             <FormField
               control={form.control}
@@ -169,7 +153,7 @@ export function TransferCard({
             {/* Transfer Type */}
             <FormField
               control={form.control}
-              name="type"
+              name="transaction_type"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Transfer Type</FormLabel>

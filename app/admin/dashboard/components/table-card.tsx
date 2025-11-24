@@ -13,19 +13,30 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { dataFormatter } from "@/lib/utils";
+import { DataTable } from "./data-table";
 
 interface TableCardProps {
   title: string;
   description: string;
   data: Array<Record<string, any>>;
-  optional?: number[];
+  disable?: string[];
 }
 
+/**
+ * A Card for displaying data in a table
+ * 
+ * @param title Title of the card
+ * @param description Description put under the title of the card
+ * @param data Tabular data which populates the table
+ * @param disable Array of keys to be removed
+ * @returns Full formatted table component
+ */
 export function TableCard({
   title,
   description,
   data,
-  optional,
+  disable,
 }: TableCardProps) {
   return (
     <>
@@ -37,40 +48,7 @@ export function TableCard({
           )}
         </CardHeader>
         <CardContent>
-          <Table className="w-full">
-            <TableHeader>
-              <TableRow>
-                {data &&
-                  Object.keys(data[0]).map((key: string, i: number) => {
-                    return optional?.includes(i) ? (
-                      <TableHead className="hidden md:table-cell" key={i}>
-                        {key}
-                      </TableHead>
-                    ) : (
-                      <TableHead key={i}>{key}</TableHead>
-                    );
-                  })}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data &&
-                data.map((object: Record<string, any>, key) => {
-                  return (
-                    <TableRow key={key}>
-                      {Object.values(object).map((value, key) => {
-                        return optional?.includes(key) ? (
-                          <TableCell className="hidden md:table-cell" key={key}>
-                            {value}
-                          </TableCell>
-                        ) : (
-                          <TableCell key={key}>{value}</TableCell>
-                        );
-                      })}
-                    </TableRow>
-                  );
-                })}
-            </TableBody>
-          </Table>
+          <DataTable data={data} disable={disable} />
         </CardContent>
       </Card>
     </>
