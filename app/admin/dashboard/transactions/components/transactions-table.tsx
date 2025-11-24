@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/table";
 import { EllipsisVertical } from "lucide-react";
 
-import { Account, Customer, Transaction } from "@prisma/client";
+import { Account, Customer, Transaction, TransactionStatus } from "@prisma/client";
+import { CheckCircle2, XCircle, Clock3, Ban, Loader2 } from "lucide-react";
 import { prisma } from "@/prisma/prisma";
 import { censorString, formatCurrency } from "@/lib/utils";
 import {
@@ -28,6 +29,38 @@ import { ApproveTransactionItem } from "./approve-transaction";
 export function TransactionsTable(transactions: {
   transactions: Record<string, any>;
 }) {
+
+function statusIcon(status: TransactionStatus) {
+  switch (status) {
+    case "COMPLETED":
+      return (
+        <CheckCircle2 className="h-5 w-5 text-green-600" />
+      );
+
+    case "PENDING":
+      return (
+        <Loader2 className="h-5 w-5 text-yellow-600 animate-spin" />
+      );
+
+    case "FAILED":
+      return (
+        <XCircle className="h-5 w-5 text-red-600" />
+      );
+
+    case "CANCELED":
+      return (
+        <Ban className="h-5 w-5 text-gray-500" />
+      );
+
+    case "SCHEDULED":
+      return (
+        <Clock3 className="h-5 w-5 text-blue-500" />
+      );
+
+    default:
+      return null;
+  }
+}
   return (
     <div className="w-full h-fit border-2 rounded-md">
       <Table>
@@ -71,7 +104,7 @@ export function TransactionsTable(transactions: {
                         .Customer.last_name}
                 </TableCell>
                 <TableCell>{transaction.transaction_type}</TableCell>
-                <TableCell>{transaction.transaction_status}</TableCell>
+                <TableCell>{statusIcon(transaction.transaction_status)}</TableCell>
                 <TableCell>
                   {formatCurrency(Number(transaction.amount))}
                 </TableCell>

@@ -8,7 +8,8 @@ import {
   MapPin,
   HandCoins,
   Banknote,
-  LogOut
+  LogOut,
+  Settings
 } from "lucide-react";
 
 import {
@@ -62,6 +63,11 @@ const sidebarOptions = [
     title: "Nearby ATMs",
     url: "/dashboard/maps",
     img: MapPin,
+  },
+  {
+    title: "Account Settings",
+    url: "/dashboard/account-settings",
+    img: Settings
   },
 ];
 
