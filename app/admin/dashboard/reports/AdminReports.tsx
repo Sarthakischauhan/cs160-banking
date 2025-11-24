@@ -2,16 +2,33 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button"; 
-import { jsPDF } from "jspdf"; 
-import { ReportCard } from "@/app/dashboard/components/report-card";
+import { AdminReportCard } from "@/app/dashboard/components/admin-report-card";
 
+type ReportAccount = {
+  account_id: string;
+  account_type?: string | null;
+  balance?: number | null;
+  Customer?: {
+    customer_id: string;
+    first_name?: string | null;
+    last_name?: string | null;
+    email?: string | null;
+  } | null;
+  Transaction_Transaction_account_id2ToAccount?: Array<{
+    transaction_id: string;
+    amount: number;
+    transaction_type: string;
+    transaction_status: string;
+    created_at: string;
+  }>;
+};
 
 export default function BankManagerDashboard() {
   const [reportData, setReportData] = useState<any[]>([]);
   const [filter, setFilter] = useState("all");
   const [sortBy, setSortBy] = useState("balance");
   const [loading, setLoading] = useState(true);
+  const [nameQuery, setNameQuery] = useState("");
 
   async function fetchAccounts() {
     try {
@@ -26,25 +43,6 @@ export default function BankManagerDashboard() {
       setLoading(false);
     }
   }
-  async function generateReport() {
-  try {
-    const response = await fetch("/api/report");
-    if (!response.ok) throw new Error("Failed to fetch report data");
-
-    const data = await response.json();
-    const { customer, transactions } = data;
-
-    // make a simple PDF
-    const doc = new jsPDF();
-    doc.text(`Customer ID: ${customer.customer_id}`, 10, 10);
-    doc.text(`Transactions: ${transactions.length}`, 10, 20);
-    doc.save(`report-${customer.customer_id}.pdf`);
-  } catch (err) {
-    console.error("Error generating report:", err);
-  }
-}
-
-
   useEffect(() => {
     fetchAccounts();
   }, []);
@@ -52,19 +50,49 @@ export default function BankManagerDashboard() {
   // Summary metrics
   const totalAccounts = reportData.length;
   const totalBalance = reportData.reduce(
-  (sum, a) => sum + Number(a.balance ?? 0),
-  0
-);
+    (sum, a) => sum + Number(a.balance ?? 0),
+    0
+  );
 
-  const totalTransactions = reportData.reduce((sum, acc) => sum + (acc._count?.Transaction || 0), 0);
+  const totalTransactions = reportData.reduce(
+    (sum, acc) => sum + (acc.Transaction_Transaction_account_id2ToAccount?.length ?? 0),
+    0
+  );
+
 
   const filteredData = (reportData ?? [])
-    // Filter by account type
     .filter((acc) => {
-      const type = acc.account_type?.toLowerCase() ?? "";
-      return filter === "all" || type === filter.toLowerCase();
+      // account-type filter
+      const type = (acc.account_type ?? "").toLowerCase();
+      if (filter !== "all" && type !== filter.toLowerCase()) return false;
+
+      // name filter
+      const q = nameQuery.trim().toLowerCase();
+      if (!q) return true;
+
+      const first = (acc.Customer?.first_name ?? "").toLowerCase();
+      const last = (acc.Customer?.last_name ?? "").toLowerCase();
+      const full = `${first} ${last}`.trim();
+      const email = (acc.Customer?.email ?? "").toLowerCase();
+
+      return (
+        first.includes(q) ||
+        last.includes(q) ||
+        full.includes(q) ||
+        email.includes(q)
+      );
     })
- 
+    .sort((a, b) => {
+      if (sortBy === "balance_desc") {
+        return Number(b.balance ?? 0) - Number(a.balance ?? 0); // high → low
+      }
+      if (sortBy === "balance_asc") {
+        return Number(a.balance ?? 0) - Number(b.balance ?? 0); // low → high
+      }
+      return 0;
+    });
+
+
 
   const getAccountTypeColor = (type: string) => {
     switch (type) {
@@ -87,7 +115,7 @@ export default function BankManagerDashboard() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
         <div className="max-w-7xl mx-auto">
           <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-slate-200">
-            <div className="text-6xl mb-4">📊</div>
+            <div className="text-6xl mb-4"></div>
             <h3 className="text-xl font-semibold text-slate-700 mb-2">No Data Available</h3>
             <p className="text-slate-500">No customer accounts to display at this time.</p>
           </div>
@@ -118,23 +146,40 @@ export default function BankManagerDashboard() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
-          <div className="flex flex-wrap gap-4 items-center justify-between">
-            <div className="flex items-center gap-3">
-              <label className="text-sm font-medium text-slate-700">Filter by Type:</label>
-              <div className="flex gap-2">
-                {["all", "checking", "savings"].map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => setFilter(type)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filter === type ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                      }`}
-                  >
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
-                  </button>
-                ))}
-              </div>
+        <div className="flex flex-wrap gap-4 items-center justify-between">
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium text-slate-700">Filter by Type:</label>
+            <div className="flex gap-2">
+              {["all", "checking", "savings"].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setFilter(type)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filter === type ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                >
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </button>
+              ))}
             </div>
+          </div>
+
+          {/* Name search */}
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={nameQuery}
+              onChange={(e) => setNameQuery(e.target.value)}
+              placeholder="Search by name…"
+              className="w-64 px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
+            />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white"
+            >
+              <option value="balance_desc">Balance: High → Low</option>
+              <option value="balance_asc">Balance: Low → High</option>
+            </select>
 
           </div>
         </div>
@@ -170,17 +215,19 @@ export default function BankManagerDashboard() {
                     })}
                   </p>
                 </div>
-                <Button onClick={generateReport}>Download PDF</Button>
 
-
+                <AdminReportCard
+                  customer_id={account.Customer?.customer_id || ""}
+                  account_id={account.account_id}
+                />
                 <div className="space-y-2 py-3 border-t border-slate-100">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600">Customer ID</span>
-                    <span className="font-semibold text-slate-800 font-mono">{account.customer_id ?? "N/A"}</span>
+                    <span className="text-slate-600">Customer Name</span>
+                    <span className="font-semibold text-slate-800 font-mono">{`${account.Customer?.first_name ?? ""} ${account.Customer?.last_name ?? ""}`.trim() || "N/A"}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-600">Transactions</span>
-                    <span className="font-semibold text-slate-800">{account._count?.Transaction ?? 0}</span>
+                    <span className="font-semibold text-slate-800"> {account.Transaction_Transaction_account_id2ToAccount?.length ?? 0}</span>
                   </div>
                 </div>
 
