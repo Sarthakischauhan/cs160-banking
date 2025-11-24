@@ -16,7 +16,8 @@ import {
 import { censorString, formatCurrency } from "@/lib/utils";
 import { Account, Customer, Transaction } from "@prisma/client";
 import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
-import { EllipsisVertical } from "lucide-react";
+import { EllipsisVertical, Squircle } from "lucide-react";
+import AccountStatusItem from "./accountstatus-item";
 
 export type AccountWithExtraData = Account & {
   Customer: Customer;
@@ -42,6 +43,7 @@ export function AccountsTable(props: AccountsTableProps) {
             <TableHead>Account ID</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Balance</TableHead>
+            <TableHead>Status</TableHead>
             <TableHead>Transactions</TableHead>
             <TableHead>Date Created</TableHead>
             <TableHead />
@@ -59,6 +61,7 @@ export function AccountsTable(props: AccountsTableProps) {
               <TableCell>{censorString(account.account_id)}</TableCell>
               <TableCell>{account.account_type}</TableCell>
               <TableCell>{formatCurrency(Number(account.balance))}</TableCell>
+              <TableCell>{account.account_status === "ACTIVE" ? (<span className="text-green-500"><Squircle /></span>) : (<span><Squircle className="text-red-500"/></span>)}</TableCell>
               <TableCell>
                 {account._count.Transaction_Transaction_account_idToAccount}
               </TableCell>
@@ -75,7 +78,8 @@ export function AccountsTable(props: AccountsTableProps) {
                     <DropdownMenuItem>Edit Balance</DropdownMenuItem>
                     <DropdownMenuItem>Add Note</DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>Suspend</DropdownMenuItem>
+                    <AccountStatusItem id={account.account_id} disabled={account.account_status === "ACTIVE"} status={"ACTIVE"} />
+                    <AccountStatusItem id={account.account_id} disabled={account.account_status === "CLOSED"} status={"CLOSED"} />
                     <DropdownMenuItem variant="destructive">
                       Delete
                     </DropdownMenuItem>

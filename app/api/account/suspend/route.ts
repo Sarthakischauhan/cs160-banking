@@ -20,7 +20,7 @@ export const PUT = auth0.withApiAuthRequired(async (req: NextRequest) => {
       );
     }
 
-    const { account_id } = await req.json();
+    const { account_id, accountStatus } = await req.json();
 
     // validate input
     if (!account_id || typeof account_id !== "string") {
@@ -30,8 +30,15 @@ export const PUT = auth0.withApiAuthRequired(async (req: NextRequest) => {
       );
     }
 
+    if (!accountStatus) {
+      return NextResponse.json(
+        { message: "Missing Account Status" },
+        { status: 400 }
+      );
+    }
+
     const account = await prisma.account.findUnique({
-      where: { account_id }
+      where: { account_id },
     });
 
     if (!account) {
@@ -45,8 +52,8 @@ export const PUT = auth0.withApiAuthRequired(async (req: NextRequest) => {
     await prisma.account.update({
       where: { account_id },
       data: {
-        account_status: AccountStatus.CLOSED
-      }
+        account_status: accountStatus,
+      },
     });
 
     return NextResponse.json(
