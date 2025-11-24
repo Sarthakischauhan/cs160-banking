@@ -40,7 +40,6 @@ export default function Page() {
 
       const data = await res.json();
       const firstAccount = data[0];
-      console.log(firstAccount)
       setAccount(firstAccount); //retrieve the first account info will need to modify later to allow picking of multiple accounts
 
       if (!firstAccount.account_id) {
@@ -113,7 +112,7 @@ export default function Page() {
       return;
     }
 
-    const createDeposit = await fetch("/api/transactions", {
+    const createDeposit = await fetch("/api/deposit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -121,7 +120,6 @@ export default function Page() {
         account_id: account.account_id,
         amount: Number(amount),
         description: "Check deposit",
-        transaction_type: TransactionType.DEPOSIT,
       }),
     });
     console.log("seee", createDeposit);
@@ -133,7 +131,7 @@ export default function Page() {
     const depositData = await createDeposit.json();
     console.log("Deposit API response:", depositData);
     const transactionId =
-      depositData.transaction_id || depositData.id || depositData.transactionId;
+      depositData.transaction.transaction_id || depositData.transaction.id || depositData.transaction.transactionId;
 
     if (!transactionId) {
       throw new Error("Deposit response missing transactionId");
