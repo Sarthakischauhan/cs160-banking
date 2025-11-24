@@ -27,7 +27,7 @@ type DashboardProps = {
 
 export default async function Page({ searchParams }: DashboardProps) {
   const session = await auth0.getSession();
-  
+
   if (!session) {
     redirect("/");
   }
@@ -46,8 +46,7 @@ export default async function Page({ searchParams }: DashboardProps) {
 
   return (
     <>
-      {/* Header */}
-      <div className="grid grid-cols-3 m-4">
+      <div className="flex flex-col md:grid md:grid-cols-3 m-4 gap-4 md:gap-0">
         {accountNames ? (
           <div className="flex gap-2">
             <AccountSelect
@@ -67,13 +66,13 @@ export default async function Page({ searchParams }: DashboardProps) {
             </Link>
           </Button>
         )}
-        <div />
+        <div className="hidden md:block" /> 
         {getRole(session).includes("Admin") ? (
-          <div className="flex justify-end">
-            <Button className="w-[200] hover:cursor-pointer">
+          <div className="flex md:justify-end">
+            <Button className="w-full md:w-[200] hover:cursor-pointer">
               <a
                 href="/admin/dashboard"
-                className="bg-black text-white rounded-lg text-center py-2 hover:bg-opacity-80"
+                className="bg-black text-white rounded-lg text-center py-2 hover:bg-opacity-80 block"
               >
                 View Admin Dashboard
               </a>
@@ -82,17 +81,15 @@ export default async function Page({ searchParams }: DashboardProps) {
         ) : (
           <></>
         )}
-        <div></div>
       </div>
 
-      {/* ROW 1 */}
       <div className="mx-4 my-2">
         <WelcomeCard firstName={user.firstName as string} />
       </div>
 
-      {/* ROW 2 */}
-      <div className="grid grid-cols-4 h-fit">
-        <div className="col-span-1 ml-4 mr-2">
+      <div className="grid grid-cols-1 md:grid-cols-4 h-fit gap-4 mx-4">
+        {/* BalanceCardWrapper: Full width on mobile, col-span-1 on desktop */}
+        <div className="md:col-span-1">
           {currentAccount && (
             <BalanceCardWrapper
               userBalance={currentAccount.balance}
@@ -106,7 +103,8 @@ export default async function Page({ searchParams }: DashboardProps) {
             />
           )}
         </div>
-        <div className="col-span-3 mr-4 ml-2">
+        
+        <div className="md:col-span-3">
           <TransactionCard
             transactions={user.transactions[accountId]}
             activeAccountId={accountId}
@@ -114,25 +112,25 @@ export default async function Page({ searchParams }: DashboardProps) {
         </div>
       </div>
 
-      {/* ROW 3 */}
-      <div className="grid grid-cols-2 my-2 h-fit">
-        <div className="ml-4 mr-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 my-2 h-fit gap-4 mx-4">
+        {/* Both children take full width on mobile, and col-span-1 on desktop */}
+        <div>
           <NotificationCard notifications={user?.notifications} />
         </div>
-        <div className="mr-4 ml-2">
+        <div>
           <HistgraphCard />
         </div>
       </div>
 
-      {/* ROW 4 */}
-      <div className="grid grid-cols-7 my-2 h-fit">
-        <div className="ml-4 col-span-3 mr-2">
-          <UpcomingCard  />
+      <div className="grid grid-cols-1 md:grid-cols-7 my-2 h-fit gap-4 mx-4">
+        {/* UpcomingCard: Full width on mobile, col-span-3 on desktop */}
+        <div className="md:col-span-3">
+          <UpcomingCard />
         </div>
-        <div className="mr-2 ml-2 col-span-2">
+        <div className="md:col-span-2">
           <ATMCard />
         </div>
-        <div className="mr-4 ml-2 col-span-2">
+        <div className="md:col-span-2">
           <ReportCard />
         </div>
       </div>

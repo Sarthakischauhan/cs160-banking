@@ -66,7 +66,7 @@ export function DepositCard({account_id} : DepositCardProps) {
 
   return (
     <>
-      <Card className="w-2/3">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Deposit</CardTitle>
           <CardDescription>Transfer funds into your account</CardDescription>
