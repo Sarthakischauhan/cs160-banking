@@ -22,9 +22,6 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { MoneyInput } from "./money-input";
-import { useEffect, useState } from "react";
-import Decimal from "decimal.js";
-import type { AccountType } from "@prisma/client";
 
 type DepositCardProps = {
   account_id: string;
@@ -67,7 +64,7 @@ export function DepositCard({ account_id }: DepositCardProps) {
 };
 
   return (
-    <Card className="w-2/3">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Automated Payments</CardTitle>
         <CardDescription>Schedule automated payments</CardDescription>
@@ -129,7 +126,7 @@ export function DepositCard({ account_id }: DepositCardProps) {
             />
 
             <div>
-              <Button type="submit" variant="success">
+              <Button type="submit" variant="default">
                 Submit
               </Button>
             </div>

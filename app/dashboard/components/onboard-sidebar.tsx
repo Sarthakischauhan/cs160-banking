@@ -59,6 +59,21 @@ import {
           </SidebarMenu>
           <SidebarGroup />
         </SidebarContent>
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild className="
+                text-red-600 dark:text-red-400
+                hover:bg-red-100 dark:hover:bg-red-900/40
+                transition-colors
+              ">
+                <a href="/auth/logout">
+                  <span className="text-lg group-data-[collapsible=icon]:hidden">Logout</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
         <SidebarRail />
       </Sidebar>
     );
