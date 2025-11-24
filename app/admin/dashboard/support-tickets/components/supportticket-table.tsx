@@ -56,6 +56,7 @@ function SupportTicketTable({ tickets }: { tickets: SupportTableData[] }) {
             <TableHead>Subject</TableHead>
             <TableHead>Date Created</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Handler</TableHead>
             <TableHead>Type</TableHead>
             <TableHead />
           </TableRow>
@@ -74,6 +75,7 @@ function SupportTicketTable({ tickets }: { tickets: SupportTableData[] }) {
                 {new Date(ticket.created_at).toLocaleDateString()}
               </TableCell>
               <TableCell>{statusIcon(ticket.ticket_status)}</TableCell>
+              <TableCell>{ticket.Handler ? (`${ticket?.Handler?.first_name} ${ticket?.Handler?.last_name}`) : "N/A"}</TableCell>
               <TableCell>{ticket.ticket_type}</TableCell>
               <TableCell>
                 <DropdownMenu>

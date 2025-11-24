@@ -13,7 +13,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
         if (!customer) return NextResponse.json({ message: "Customer not found" }, { status: 400 });
 
         const body = await req.json();
-        const { account_id, amount, description, transaction_type } = body || {};
+        const { account_id, account_id2, amount, description, transaction_type } = body || {};
         
 
         if (amount <= 0) {
@@ -21,12 +21,15 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
         }
 
         // Ensure account belongs to user
-        const account = await prisma.account.findUnique({ where: { account_id } });
+        const account = await prisma.account.findUnique({ where: { account_id: account_id } });
+        console.log(customer.customer_id, account?.customer_id)
         if (!account || account.customer_id !== customer.customer_id) {
             return NextResponse.json({ message: "Account not found" }, { status: 404 });
         }
 
-        if (balance - amount < 0 ){
+        const balance = account.balance
+
+        if (balance.toNumber() - amount < 0 ){
             return NextResponse.json({ message: "not enough in balance to give this amount" }, { status: 400 });
         }
 
@@ -42,9 +45,9 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
         const createdTransaction = await prisma.transaction.create({
             data: {
                 account_id,
-                account_id2,
+                account_id2: account_id2 ?? null,
                 amount,
-                amount_after_transaction: balance - amount,
+                amount_after_transaction: balance.toNumber() - amount,
                 description,
                 created_at: new Date(),
                 transaction_status: "COMPLETED",
@@ -88,6 +91,6 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
         if (error?.message === "Insufficient funds") {
             return NextResponse.json({ message: error.message }, { status: 400 });
         }
-        return NextResponse.json({ message: "Failed to create transaction" }, { status: 500 });
+        return NextResponse.json({ message: error.message }, { status: 500 });
     }
 });
