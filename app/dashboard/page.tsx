@@ -16,6 +16,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { AccountType } from "@prisma/client";
 import { cookies } from "next/headers";
+import { AccountSettingsDropdown } from "./components/account-settings-gear";
 
 interface DashboardParams {
   [key: string]: string | undefined;
@@ -66,21 +67,22 @@ export default async function Page({ searchParams }: DashboardProps) {
             </Link>
           </Button>
         )}
-        <div className="hidden md:block" /> 
-        {getRole(session).includes("Admin") ? (
-          <div className="flex md:justify-end">
+        <div className="hidden md:block" />
+        <div className="flex items-center md:justify-end gap-5">
+          <AccountSettingsDropdown accountId={accountId} user={user} />
+          {getRole(session).includes("Admin") ? (
             <Button className="w-full md:w-[200] hover:cursor-pointer">
               <a
                 href="/admin/dashboard"
-                className="bg-black text-white rounded-lg text-center py-2 hover:bg-opacity-80 block"
+                className="rounded-lg text-center py-2 hover:bg-opacity-80"
               >
                 View Admin Dashboard
               </a>
             </Button>
-          </div>
-        ) : (
-          <></>
-        )}
+          ) : (
+            <></>
+          )}
+        </div>
       </div>
 
       <div className="mx-4 my-2">
@@ -103,7 +105,7 @@ export default async function Page({ searchParams }: DashboardProps) {
             />
           )}
         </div>
-        
+
         <div className="md:col-span-3">
           <TransactionCard
             transactions={user.transactions[accountId]}
