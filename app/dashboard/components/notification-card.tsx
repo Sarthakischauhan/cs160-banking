@@ -8,7 +8,7 @@ import {
 import {
   Table, TableHeader, TableHead, TableRow, TableBody, TableCell,
 } from "@/components/ui/table";
-import { BadgeDollarSign, Key, Settings } from "lucide-react";
+import { BadgeDollarSign, Key, Settings as SettingsIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -19,12 +19,13 @@ type NotificationType = "TRANSACTION" | "SYSTEM" | "SECURITY" | "GENERAL" | null
 
 export function NotificationCard({
   notifications = [],
+  render_type
 }: {
-  notifications?: Notifications[];
+  notifications?: Notifications[]
+  render_type: "COMPONENT" | "PAGE",
 }) {
   const [checkedSet, setCheckedSet] = useState<Set<bigint>>(new Set());
   const [loading, setLoading] = useState(false);
-
   const toggleCheck = (id: bigint, checked: boolean | "indeterminate") => {
     setCheckedSet(prev => {
       const next = new Set(prev);
@@ -37,7 +38,7 @@ export function NotificationCard({
   const typeIcon = (type: NotificationType) => {
     switch (type) {
       case "TRANSACTION": return <BadgeDollarSign className="w-5 h-5" />;
-      case "SYSTEM": return <Settings className="w-5 h-5" />;
+      case "SYSTEM": return <SettingsIcon className="w-5 h-5" />;
       case "SECURITY": return <Key className="w-5 h-5" />;
       default: return <span className="text-xl">🔔</span>;
     }
@@ -54,17 +55,17 @@ export function NotificationCard({
       setCheckedSet(new Set());
     } catch (err) {
       console.error("Dismiss failed:", err);
-      alert("Failed to mark notifications as read");
+      alert("Failed to mark notificgations as read");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Card className="h-full relative">
+    <Card className="w-full h-full relative">
       <CardHeader>
         <div>
-          <CardTitle>Notifications</CardTitle>
+          {render_type === "COMPONENT" && <CardTitle>Notifications</CardTitle>}
           <CardAction>
             <Link href="/dashboard/notifications">View All</Link>
           </CardAction>

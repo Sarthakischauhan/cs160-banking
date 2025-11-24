@@ -2,12 +2,13 @@ import {
   House,
   ArrowLeftRight,
   FileClock,
-  Settings,
+  Settings as SettingsIcon,
   Landmark,
   Bell,
   MapPin,
   HandCoins,
-  Banknote
+  Banknote,
+  LogOut
 } from "lucide-react";
 
 import {
@@ -40,6 +41,11 @@ const sidebarOptions = [
     img: ArrowLeftRight,
   },
   {
+    title: "Deposit Checks",
+    url: "/dashboard/checks",
+    img: Banknote,
+  },
+  {
     title: "Transaction History",
     url: "/dashboard/transaction-history",
     img: FileClock,
@@ -50,19 +56,14 @@ const sidebarOptions = [
     img: Bell,
   },
   {
-    title: "Account Settings",
-    url: "#",
-    img: Settings,
-  },
-  {
     title: "Nearby ATMs",
     url: "/dashboard/maps",
     img: MapPin,
   },
   {
-    title: "Deposit Checks",
-    url: "/checks",
-    img: Banknote,
+    title: "Account Settings",
+    url: "/dashboard/account-settings",
+    img: SettingsIcon,
   }
 ];
 
@@ -91,10 +92,20 @@ export function AppSidebar({currentAccountId}: {currentAccountId?: string}) {
         </SidebarMenu>
         <SidebarGroup />
       </SidebarContent>
+
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <h1 className="text-center">Username</h1>
+            <SidebarMenuButton asChild className="
+              text-red-600 dark:text-red-400
+              hover:bg-red-100 dark:hover:bg-red-900/40
+              transition-colors
+            ">
+              <a href="/auth/logout">
+                <LogOut className="mr-2" />
+                <span className="text-lg">Logout</span>
+              </a>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

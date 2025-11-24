@@ -1,74 +1,39 @@
 import { prisma } from "@/prisma/prisma";
 import { AccountsTable } from "./components/accounts-table";
 import { Button } from "@/components/ui/button";
-import { RangeFilter, SelectFilter, TextFilter } from "../components/filters";
+import {
+  PaginationControls,
+  RangeFilter,
+  SelectFilter,
+  TextFilter,
+} from "../components/filters";
 import { AccountType } from "@prisma/client";
+import { getAccounts } from "@/lib/adminData";
+import { get } from "http";
 
 export default async function AccountManagementPage({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
 }) {
-  const firstName = searchParams.firstName ?? "";
-  const lastName = searchParams.lastName ?? "";
-  const minBalance = searchParams.minBalance ?? "";
-  const maxBalance = searchParams.maxBalance ?? "";
-  const minDate = searchParams.minDate ?? "";
-  const maxDate = searchParams.maxDate ?? "";
-  const accountType = searchParams.accountType ?? "";
+  const params = await searchParams;
 
-  const accountData = await prisma.account.findMany({
-    where: {
-      ...(accountType ? { account_type: accountType as AccountType } : {}),
-      ...(firstName
-        ? {
-            Customer: {
-              first_name: {
-                contains: firstName,
-                mode: "insensitive"
-              }
-            },
-          }
-        : {}),
-      ...(lastName
-        ? {
-            Customer: {
-              last_name: {
-                contains: lastName,
-                mode: "insensitive"
-              }
-            },
-          }
-        : {}),
-      ...(minBalance || maxBalance
-        ? {
-            balance: {
-              gte: minBalance ? Number(minBalance) : undefined,
-              lte: maxBalance ? Number(maxBalance) : undefined,
-            },
-          }
-        : {}),
-      ...(minDate || maxDate
-        ? {
-            created_at: {
-              gte: minDate ? new Date(minDate) : undefined,
-              lte: maxDate ? new Date(maxDate) : undefined,
-            },
-          }
-        : {}),
-    },
-    include: {
-      Customer: true,
-      _count: {
-        select: { Transaction_Transaction_account_idToAccount: true },
-      },
-    },
-    orderBy: {
-      created_at: "desc",
-    },
-  });
+  const pageSize = 20;
+  const {
+    firstName = "",
+    lastName = "",
+    minBalance = "",
+    maxBalance = "",
+    minDate = "",
+    maxDate = "",
+    accountType = "",
+    cursor = undefined,
+  } = params;
 
-  console.log(accountData);
+  const accountData = await getAccounts(params, cursor, pageSize);
+  const nextCursor = accountData.accounts.length
+    ? accountData.accounts[accountData.accounts.length - 1].account_id
+    : null;
 
   return (
     <>
@@ -77,9 +42,6 @@ export default async function AccountManagementPage({
           <h1 className="text-4xl font-bold mb-10">Account Management</h1>
           <form method="GET" className="flex flex-col gap-4">
             <p className="font-bold w-full border-b-2">Filters</p>
-            <div className="flex gap-4">
-              <Button type="submit">Apply Filters</Button>
-            </div>
             <div className="grid grid-cols-4 w-full gap-4">
               <TextFilter
                 label={"First Name"}
@@ -101,6 +63,7 @@ export default async function AccountManagementPage({
                 maxValue={maxBalance}
                 minPlaceholder="Minimum Balance"
                 maxPlaceholder="Maximum Balance"
+                type="number"
                 prefix="$"
               />
               <RangeFilter
@@ -126,7 +89,10 @@ export default async function AccountManagementPage({
 
           <div className="w-full h-[calc(100%-100px)] flex flex-col items-center py-6 gap-4">
             <p className="font-bold w-full border-b-2">Accounts</p>
-            <AccountsTable accounts={accountData} />
+            <AccountsTable accounts={accountData.accounts} />
+          </div>
+          <div className="w-full flex justify-center items-center">
+            <PaginationControls nextCursor={nextCursor} />
           </div>
         </div>
       </div>

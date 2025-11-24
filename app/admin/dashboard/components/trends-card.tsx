@@ -37,7 +37,7 @@ export interface TrendsCardProps {
 }
 
 export function TrendsCard({ title, description, trendData }: TrendsCardProps) {
-  const [data, setData] = useState(trendData["transactions"])
+  const [data, setData] = useState(trendData["balance"])
   const chartConfig = {
     amount: {
       label: "Amount",

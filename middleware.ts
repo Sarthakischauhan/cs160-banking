@@ -13,7 +13,7 @@ export async function middleware(request: NextRequest) {
     return auth0.middleware(request);
   }
 
-  const role = getRole(session);
+   const role = getRole(session);
   const emailVerified = session.user?.email_verified
 
   if (!emailVerified && !request.nextUrl.pathname.includes("email-verify") && !request.nextUrl.pathname.includes("/api")) {

@@ -13,6 +13,16 @@ import { EllipsisVertical } from "lucide-react";
 import { Account, Customer, Transaction } from "@prisma/client";
 import { prisma } from "@/prisma/prisma";
 import { censorString, formatCurrency } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { TransactionDetailsButton } from "./transaction-details";
+import { CancelTransactionItem } from "./cancel-transaction";
 
 export function TransactionsTable(transactions: {
   transactions: Record<string, any>;
@@ -22,7 +32,6 @@ export function TransactionsTable(transactions: {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Transaction ID</TableHead>
             <TableHead>From</TableHead>
             <TableHead>To</TableHead>
             <TableHead>Type</TableHead>
@@ -35,7 +44,7 @@ export function TransactionsTable(transactions: {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {transactions.transactions.map(
+          {transactions.transactions.data.map(
             (
               transaction: Transaction & {
                 Account: Account & { Customer: Customer };
@@ -47,19 +56,18 @@ export function TransactionsTable(transactions: {
             ) => (
               <TableRow key={transaction.transaction_id}>
                 <TableCell>
-                  {censorString(transaction.transaction_id)}
-                </TableCell>
-                <TableCell>
                   {transaction.Account.Customer.first_name +
                     " " +
                     transaction.Account.Customer.last_name}
                 </TableCell>
                 <TableCell>
-                  {transaction.Account_Transaction_account_id2ToAccount.Customer
-                    .first_name +
-                    " " +
+                  {transaction.Account_Transaction_account_id2ToAccount
+                    .Customer &&
                     transaction.Account_Transaction_account_id2ToAccount
-                      .Customer.last_name}
+                      .Customer.first_name +
+                      " " +
+                      transaction.Account_Transaction_account_id2ToAccount
+                        .Customer.last_name}
                 </TableCell>
                 <TableCell>{transaction.transaction_type}</TableCell>
                 <TableCell>{transaction.transaction_status}</TableCell>
@@ -79,7 +87,27 @@ export function TransactionsTable(transactions: {
                   {transaction.created_at.toLocaleTimeString()}
                 </TableCell>
                 <TableCell className="hover:cursor-pointer">
-                  <EllipsisVertical />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger>
+                      <EllipsisVertical className="hover:cursor-pointer" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuLabel>Manage Transaction</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <TransactionDetailsButton transaction={transaction} />
+                      <DropdownMenuItem
+                        disabled={["COMPLETED"].includes(transaction.transaction_status)}
+                      >
+                        Approve
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>Flag</DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <CancelTransactionItem id={transaction.transaction_id} />
+                      <DropdownMenuItem variant="destructive">
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             )

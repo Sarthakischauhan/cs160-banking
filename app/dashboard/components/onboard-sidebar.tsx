@@ -2,7 +2,7 @@ import {
     House,
     ArrowLeftRight,
     FileClock,
-    Settings,
+    Settings as SettingsIcon,
     Landmark,
     Bell,
     MapPin,

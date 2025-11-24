@@ -20,7 +20,7 @@ import { Transaction, TransactionType } from "@prisma/client";
 import { Check, CircleDashed, X } from "lucide-react";
 import Link from "next/link";
 
-const DEFAULT_AVATAR = "https://cdn.jsdelivr.net/gh/alohe/avatars/png/toon_9.png";
+const DEFAULT_AVATAR = "https://avatar.vercel.sh/";
 
 export function TransactionCard({
   transactions = [],
@@ -72,7 +72,7 @@ export function TransactionCard({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-12"></TableHead>
+              <TableHead className="w-12">To</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Status</TableHead>
@@ -86,13 +86,13 @@ export function TransactionCard({
               <TableRow key={idx}>
                 <TableCell className="p-2">
                   <Avatar className="h-7 w-7">
-                    <AvatarImage src={DEFAULT_AVATAR} />
+                    <AvatarImage src={`${DEFAULT_AVATAR}/${transaction.description?.slice(-4)}`}/>
                     <AvatarFallback>S</AvatarFallback>
                   </Avatar>
                 </TableCell>
 
                 <TableCell className="font-medium truncate capitalize">
-                  {transaction.description.slice(0, 50 - 3) + "..." ||
+                  {transaction.description?.slice(0, 50 - 3) + "..." ||
                     "Unknown Transaction"}
                 </TableCell>
 
