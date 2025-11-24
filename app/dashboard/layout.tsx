@@ -42,7 +42,7 @@ export default async function dashboardLayout({
             {children}
           </SidebarInset>
         </SidebarProvider>
-        <ChatWidget />
+        {user?.isOnboarded && <ChatWidget />}
       </HideBalanceProvider>
     </div>
   );

@@ -1,85 +1,162 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { User, CreditCard } from "lucide-react"
-import { useRouter } from "next/navigation"
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-import type { Customer } from "@prisma/client"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { User, CreditCard } from "lucide-react";
 
-interface ProfileFormData {
-  firstName: string
-  lastName: string
-  dateOfBirth: string
-  phone: string
-  address: string
-  city: string
-  state: string
-  zipCode: string
-}
+import type { Customer } from "@prisma/client";
+import AddressAutocomplete from "./AddressAutoComplete";
 
-export const ProfileCompletion = () => {
-  const [isLoading, setIsLoading] = useState(false)
-  const [formData, setFormData] = useState<ProfileFormData>({
-    firstName: "",
-    lastName: "",
-    dateOfBirth: "",
-    phone: "",
-    address: "",
-    city: "",
-    state: "",
-    zipCode: "",
-  })
-  const router = useRouter()
-  const handleInputChange = (field: keyof ProfileFormData, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    })) 
-  }
+// Validation
 
-  const handleProfileSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+const minAge = 18;
+
+const profileSchema = z.object({
+  firstName: z
+    .string()
+    .min(1, "First name is required")
+    .refine(
+      (v) => /^[A-Za-z\s\-]+$/.test(v),
+      "First name can only contain letters, spaces, and hyphens"
+    ),
+
+  lastName: z
+    .string()
+    .min(1, "Last name is required")
+    .refine(
+      (v) => /^[A-Za-z\s\-]+$/.test(v),
+      "Last name can only contain letters, spaces, and hyphens"
+    ),
+
+  dateOfBirth: z
+    .string()
+    .refine((val) => {
+      const dob = new Date(val);
+      if (Object.prototype.toString.call(dob) !== "[object Date]" || isNaN(dob.getTime())) {
+        return false;
+      }
+
+      const now = new Date();
+      let age = now.getFullYear() - dob.getFullYear();
+      const m = now.getMonth() - dob.getMonth();
+      if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age--;
+
+      return age >= 18;
+    }, "You must be at least 18 years old"),
+
+  phone: z
+    .string()
+    .refine((v) => /^\d{10}$/.test(v), "Phone number must be exactly 10 digits"),
+
+  address: z.string().min(3, "Street address is required"),
+
+  city: z
+    .string()
+    .min(1, "City is required")
+    .refine(
+      (v) => /^[A-Za-z\s\-]+$/.test(v),
+      "City can only contain letters, spaces, and hyphens"
+    ),
+
+  state: z
+    .string()
+    .transform((s) => s.toUpperCase())
+    .refine((v) => /^[A-Z]{2}$/.test(v), "Use a 2-letter state abbreviation (e.g. NY)"),
+
+  zipCode: z
+    .string()
+    .refine((v) => /^\d{5}$/.test(v), "ZIP must be 5 digits"),
+});
 
 
+type ProfileFormData = z.infer<typeof profileSchema>;
+
+// Component
+export const ProfileCompletion: React.FC = () => {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors, isValid },
+  } = useForm<ProfileFormData>({
+    resolver: zodResolver(profileSchema),
+    mode: "onChange",
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      dateOfBirth: "",
+      phone: "",
+      address: "",
+      city: "",
+      state: "",
+      zipCode: "",
+    },
+  });
+
+  // helper: normalize phone input to digits-only
+  const onPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digitsOnly = e.target.value.replace(/\D/g, "");   // remove non-digits
+    const trimmed = digitsOnly.slice(0, 10);                // limit to 10 digits
+    setValue("phone", trimmed, { shouldValidate: true });
+  };
+
+  // helper: uppercase state
+  const onStateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 2);
+    setValue("state", val, { shouldValidate: true });
+  };
+
+  const onSubmit = async (data: ProfileFormData) => {
+    setIsLoading(true);
+
+    // Map to your API payload shape (Partial<Customer>)
     const payload: Partial<Customer> = {
-      first_name: formData.firstName,
-      last_name: formData.lastName,
-      // dateOfBirth: formData.dateOfBirth, add that later
-      phone: formData.phone,
-      address: `${formData.address} ${formData.city} ${formData.state}`,
-    }
+      first_name: data.firstName,
+      last_name: data.lastName,
+      // dateOfBirth left for later per your comment; could be data.dateOfBirth
+      phone: data.phone,
+      address: `${data.address} ${data.city} ${data.state} ${data.zipCode}`,
+    };
 
     try {
-      console.log("Profile data:", formData)
+      const resp = await fetch("/api/customer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-      const response = await fetch("/api/customer",{
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!resp.ok) {
+        const text = await resp.text().catch(() => "");
+        throw new Error(`Failed to save profile: ${resp.status} ${text}`);
       }
-      // Refresh server components so dashboard notices the updated profile
-      router.refresh()
-      
-    } catch (error) {
-      console.error("Error updating profile:", error)
-      alert("Failed to save profile. Please try again.")
+
+      // refresh server components that depend on the profile (like layout)
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      // You can replace alert with a nicer toast if you have one
+      alert("Failed to save profile — please try again.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Card className="w-full max-w-2xl mx-auto my-10">
@@ -94,8 +171,8 @@ export const ProfileCompletion = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleProfileSubmit} className="space-y-6">
-          {/* Personal Information Section */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+          {/* Personal Information */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b">
               <User className="w-4 h-4 text-muted-foreground" />
@@ -107,25 +184,20 @@ export const ProfileCompletion = () => {
                 <Label htmlFor="firstName">
                   First Name <span className="text-destructive">*</span>
                 </Label>
-                <Input
-                  id="firstName"
-                  value={formData.firstName}
-                  onChange={(e) => handleInputChange("firstName", e.target.value)}
-                  placeholder="John"
-                  required
-                />
+                <Input id="firstName" {...register("firstName")} placeholder="John" />
+                {errors.firstName && (
+                  <p className="text-sm text-destructive mt-1">{errors.firstName.message}</p>
+                )}
               </div>
+
               <div>
                 <Label htmlFor="lastName">
                   Last Name <span className="text-destructive">*</span>
                 </Label>
-                <Input
-                  id="lastName"
-                  value={formData.lastName}
-                  onChange={(e) => handleInputChange("lastName", e.target.value)}
-                  placeholder="Doe"
-                  required
-                />
+                <Input id="lastName" {...register("lastName")} placeholder="Doe" />
+                {errors.lastName && (
+                  <p className="text-sm text-destructive mt-1">{errors.lastName.message}</p>
+                )}
               </div>
             </div>
 
@@ -133,14 +205,10 @@ export const ProfileCompletion = () => {
               <Label htmlFor="dateOfBirth">
                 Date of Birth <span className="text-destructive">*</span>
               </Label>
-              <Input
-                id="dateOfBirth"
-                type="date"
-                value={formData.dateOfBirth}
-                onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
-                max={new Date().toISOString().split("T")[0]}
-                required
-              />
+              <Input id="dateOfBirth" type="date" {...register("dateOfBirth")} max={new Date().toISOString().split("T")[0]} />
+              {errors.dateOfBirth && (
+                <p className="text-sm text-destructive mt-1">{errors.dateOfBirth.message}</p>
+              )}
             </div>
 
             <div>
@@ -150,11 +218,22 @@ export const ProfileCompletion = () => {
               <Input
                 id="phone"
                 type="tel"
-                value={formData.phone}
-                onChange={(e) => handleInputChange("phone", e.target.value)}
-                placeholder="(555) 123-4567"
-                required
+                inputMode="numeric"
+                maxLength={10}
+                placeholder="5551234567"
+                {...register("phone")}
+                onChange={(e) => {
+                  // Remove non-digits
+                  e.target.value = e.target.value.replace(/\D/g, "");
+
+                  // Call RHF's built-in onChange so validation still works
+                  register("phone").onChange(e);
+                }}
               />
+
+              {errors.phone && (
+                <p className="text-sm text-destructive mt-1">{errors.phone.message}</p>
+              )}
             </div>
           </div>
 
@@ -169,13 +248,21 @@ export const ProfileCompletion = () => {
               <Label htmlFor="address">
                 Street Address <span className="text-destructive">*</span>
               </Label>
+
+              <AddressAutocomplete setValue={setValue} />
+
+              {/* Hidden real RHF field (for validation + submission) */}
               <Input
                 id="address"
-                value={formData.address}
-                onChange={(e) => handleInputChange("address", e.target.value)}
-                placeholder="123 Main Street"
-                required
+                {...register("address")}
+                className="hidden"
               />
+
+              {errors.address && (
+                <p className="text-sm text-destructive mt-1">
+                  {errors.address.message}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -183,203 +270,49 @@ export const ProfileCompletion = () => {
                 <Label htmlFor="city">
                   City <span className="text-destructive">*</span>
                 </Label>
-                <Input
-                  id="city"
-                  value={formData.city}
-                  onChange={(e) => handleInputChange("city", e.target.value)}
-                  placeholder="New York"
-                  required
-                />
+                <Input id="city" {...register("city")} placeholder="New York" />
+                {errors.city && <p className="text-sm text-destructive mt-1">{errors.city.message}</p>}
               </div>
+
               <div>
                 <Label htmlFor="state">
                   State <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="state"
-                  value={formData.state}
-                  onChange={(e) => handleInputChange("state", e.target.value)}
+                  {...register("state")}
                   placeholder="NY"
                   maxLength={2}
-                  required
+                  onChange={onStateChange}
                 />
+                {errors.state && <p className="text-sm text-destructive mt-1">{errors.state.message}</p>}
               </div>
+
               <div>
                 <Label htmlFor="zipCode">
                   ZIP Code <span className="text-destructive">*</span>
                 </Label>
-                <Input
-                  id="zipCode"
-                  value={formData.zipCode}
-                  onChange={(e) => handleInputChange("zipCode", e.target.value)}
-                  placeholder="10001"
-                  maxLength={5}
-                  required
-                />
+                <Input id="zipCode" {...register("zipCode")} placeholder="10001" maxLength={5} inputMode="numeric" />
+                {errors.zipCode && <p className="text-sm text-destructive mt-1">{errors.zipCode.message}</p>}
               </div>
             </div>
           </div>
 
-          {/* Identity Verification Section */}
-          {/* <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b">
-              <Shield className="w-4 h-4 text-muted-foreground" />
-              <h3 className="font-semibold text-sm">Identity Verification</h3>
-            </div>
-
-            <div>
-              <Label htmlFor="ssn">
-                Social Security Number <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="ssn"
-                type="password"
-                value={formData.ssn}
-                onChange={(e) => handleInputChange("ssn", e.target.value)}
-                placeholder="XXX-XX-XXXX"
-                maxLength={11}
-                required
-              />
-              <p className="text-xs text-muted-foreground mt-1">Required for tax reporting and identity verification</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="idType">
-                  ID Type <span className="text-destructive">*</span>
-                </Label>
-                <Select value={formData.idType} onValueChange={(value) => handleInputChange("idType", value)} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select ID type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="drivers_license">Driver's License</SelectItem>
-                    <SelectItem value="passport">Passport</SelectItem>
-                    <SelectItem value="state_id">State ID</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="idNumber">
-                  ID Number <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="idNumber"
-                  value={formData.idNumber}
-                  onChange={(e) => handleInputChange("idNumber", e.target.value)}
-                  placeholder="Enter ID number"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="citizenship">
-                Citizenship Status <span className="text-destructive">*</span>
-              </Label>
-              <Select
-                value={formData.citizenship}
-                onValueChange={(value) => handleInputChange("citizenship", value)}
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select citizenship status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="us_citizen">U.S. Citizen</SelectItem>
-                  <SelectItem value="permanent_resident">Permanent Resident</SelectItem>
-                  <SelectItem value="visa_holder">Visa Holder</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div> */}
-
-          {/* Employment & Financial Section */}
-          {/* <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b">
-              <Briefcase className="w-4 h-4 text-muted-foreground" />
-              <h3 className="font-semibold text-sm">Employment & Financial Information</h3>
-            </div>
-
-            <div>
-              <Label htmlFor="employmentStatus">
-                Employment Status <span className="text-destructive">*</span>
-              </Label>
-              <Select
-                value={formData.employmentStatus}
-                onValueChange={(value) => handleInputChange("employmentStatus", value)}
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select employment status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="employed">Employed</SelectItem>
-                  <SelectItem value="self_employed">Self-Employed</SelectItem>
-                  <SelectItem value="unemployed">Unemployed</SelectItem>
-                  <SelectItem value="retired">Retired</SelectItem>
-                  <SelectItem value="student">Student</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="annualIncome">
-                Annual Income <span className="text-destructive">*</span>
-              </Label>
-              <Select
-                value={formData.annualIncome}
-                onValueChange={(value) => handleInputChange("annualIncome", value)}
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select income range" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="0-25000">Under $25,000</SelectItem>
-                  <SelectItem value="25000-50000">$25,000 - $50,000</SelectItem>
-                  <SelectItem value="50000-75000">$50,000 - $75,000</SelectItem>
-                  <SelectItem value="75000-100000">$75,000 - $100,000</SelectItem>
-                  <SelectItem value="100000-150000">$100,000 - $150,000</SelectItem>
-                  <SelectItem value="150000+">Over $150,000</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="accountType">
-                Preferred Account Type <span className="text-destructive">*</span>
-              </Label>
-              <Select
-                value={formData.accountType}
-                onValueChange={(value) => handleInputChange("accountType", value)}
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select account type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="checking">Checking Account</SelectItem>
-                  <SelectItem value="savings">Savings Account</SelectItem>
-                  <SelectItem value="both">Both Checking & Savings</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div> */}
-
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full" disabled={isLoading || !isValid}>
             {isLoading ? "Saving Profile..." : "Complete Profile"}
           </Button>
-          <Button>
-              <a 
-                href="/auth/logout"
-                className="bg-black text-white rounded-lg w-1/2 mx-auto text-center py-2 hover:bg-opacity-80"
-              >
-                Logout
-              </a>
-            </Button>
+
+          <Button
+            asChild
+            variant="outline"
+            className="w-full text-destructive border-destructive hover:bg-destructive/10"
+          >
+            <a href="/auth/logout">Logout</a>
+          </Button>
         </form>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
+
+export default ProfileCompletion;

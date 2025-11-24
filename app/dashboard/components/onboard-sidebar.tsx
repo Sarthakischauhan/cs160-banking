@@ -59,13 +59,6 @@ import {
           </SidebarMenu>
           <SidebarGroup />
         </SidebarContent>
-        <SidebarFooter>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <h1 className="text-center">Username</h1>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
         <SidebarRail />
       </Sidebar>
     );
