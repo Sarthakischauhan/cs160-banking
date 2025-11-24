@@ -13,10 +13,11 @@ import {
   getAccountsSummary,
   getCustomerSummary,
   getTransactionSummary,
-} from "@/lib/adminData";
+} from "@/lib/admin/adminData";
 import { formatCurrency } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { getSupportTickets } from "@/lib/admin/supportTickets";
 
 export default async function AdminDashboardPage() {
   const start = new Date();
@@ -25,15 +26,17 @@ export default async function AdminDashboardPage() {
 
   start.setDate(end.getDate() - timePeriod);
 
-  const [account, customer, transaction] = await Promise.all([
+  const [account, customer, transaction, tickets] = await Promise.all([
     getAccountsSummary("month"),
     getCustomerSummary(),
     getTransactionSummary("month"),
+    getSupportTickets({'ticketStatus': ['OPEN', 'PENDING']}, undefined, 5)
   ]);
   const data = {
     account: account,
     customer: customer,
     transaction: transaction,
+    tickets: tickets,
   };
 
   const metricsList: MetricCardProps[] = [
@@ -110,8 +113,8 @@ export default async function AdminDashboardPage() {
         <TableCard
           title="Pending Support Tickets"
           description="See recent support tickets from users"
-          data={supportTickets}
-          disable={["ticketId"]}
+          data={tickets}
+          disable={['account_id', 'sticket_id', 'customer_id', 'handler_id', 'transaction_id', 'message', 'updated_at', 'tags', 'Handler']}
         />
         {transaction.pendingTransactions.length > 0 ? (
           <TableCard

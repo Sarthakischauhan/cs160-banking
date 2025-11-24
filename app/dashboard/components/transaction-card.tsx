@@ -92,7 +92,7 @@ export function TransactionCard({
                 </TableCell>
 
                 <TableCell className="font-medium truncate capitalize">
-                  {transaction.description.slice(0, 50 - 3) + "..." ||
+                  {transaction.description?.slice(0, 50 - 3) + "..." ||
                     "Unknown Transaction"}
                 </TableCell>
 

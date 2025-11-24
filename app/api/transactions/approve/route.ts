@@ -12,38 +12,40 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
 
     const role = getRole(session);
     if (!role.includes("Admin")) {
-      return NextResponse.json({ message: "Forbidden: Admin only" }, { status: 403 });
+      return NextResponse.json(
+        { message: "Forbidden: Admin only" },
+        { status: 403 }
+      );
     }
 
     const { transaction_id } = await req.json();
     if (!transaction_id) {
-      return NextResponse.json({ message: "transaction_id required" }, { status: 400 });
+      return NextResponse.json(
+        { message: "transaction_id required" },
+        { status: 400 }
+      );
     }
 
-    const tx = await prisma.transaction.findUnique({ where: { transaction_id } });
+    const tx = await prisma.transaction.findUnique({
+      where: { transaction_id },
+    });
 
     if (!tx) {
-      return NextResponse.json({ message: "Transaction not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Transaction not found" },
+        { status: 404 }
+      );
     }
 
-    if (tx.transaction_status === "CANCELED") {
-      return NextResponse.json({ message: "Transaction already cancelled" }, { status: 400 });
-    }
-
-    if (tx.transaction_status === "PENDING") {
-      await prisma.transaction.update({
-        where: {
-          transaction_id: transaction_id
-        },
-        data: {
-          transaction_status: "CANCELED"
-        }
-      })
-      return NextResponse.json({ message: "Transaction Cancelled from PENDING" }, { status: 400 });
+    if (tx.transaction_status === "COMPLETED") {
+      return NextResponse.json(
+        { message: "Transaction already completed/approved" },
+        { status: 400 }
+      );
     }
 
     await prisma.$transaction(async (txDB) => {
-      console.log(">> STARTING CANCEL FOR", transaction_id);
+      console.log(">> STARTING APPROVE FOR", transaction_id);
 
       // Fetch source account
       const sourceAccount = await txDB.account.findUnique({
@@ -56,18 +58,26 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
 
       switch (tx.transaction_type) {
         case "DEPOSIT":
-          sourceNewBalance = sourceAccount.balance.sub(tx.amount);
-          if (sourceNewBalance.lt(0)) {
-            throw new Error("Cannot cancel deposit: would result in negative balance");
-          }
+          sourceNewBalance = sourceAccount.balance.add(tx.amount);
           break;
 
         case "WITHDRAWAL":
-          sourceNewBalance = sourceAccount.balance.add(tx.amount);
+          sourceNewBalance = sourceAccount.balance.sub(tx.amount);
+          if (sourceNewBalance.lt(0)) {
+            throw new Error(
+              "Cannot cancel transaction: would result in negative balance"
+            );
+          }
           break;
 
         case "TRANSFER":
-          sourceNewBalance = sourceAccount.balance.add(tx.amount);
+          sourceNewBalance = sourceAccount.balance.sub(tx.amount);
+
+          if (sourceNewBalance.lt(0)) {
+            throw new Error(
+              "Cannot approve transfer: insufficient funds in source account"
+            );
+          }
 
           if (tx.account_id2 && tx.account_id2 !== tx.account_id) {
             const targetAccount = await txDB.account.findUnique({
@@ -75,17 +85,16 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
             });
             if (!targetAccount) throw new Error("Target account not found");
 
-            targetNewBalance = targetAccount.balance.sub(tx.amount);
-
-            if (targetNewBalance.lt(0)) {
-              throw new Error("Cannot cancel transfer: target account would go negative");
-            }
+            targetNewBalance = targetAccount.balance.add(tx.amount);
 
             await txDB.account.update({
               where: { account_id: tx.account_id2 },
               data: { balance: targetNewBalance },
             });
-            console.log(">> TARGET BALANCE UPDATED", { before: targetAccount.balance.toString(), after: targetNewBalance.toString() });
+            console.log(">> TARGET BALANCE UPDATED", {
+              before: targetAccount.balance.toString(),
+              after: targetNewBalance.toString(),
+            });
           }
           break;
 
@@ -94,6 +103,7 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
       }
 
       // Update source account balance
+
       await txDB.account.update({
         where: { account_id: tx.account_id },
         data: { balance: sourceNewBalance },
@@ -104,21 +114,29 @@ export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
         data: { amount_after_transaction: sourceNewBalance}
       })
 
-      console.log(">> SOURCE BALANCE UPDATED", { before: sourceAccount.balance.toString(), after: sourceNewBalance.toString() });
+      console.log(">> SOURCE BALANCE UPDATED", {
+        before: sourceAccount.balance.toString(),
+        after: sourceNewBalance.toString(),
+      });
 
       // Mark transaction canceled
       await txDB.transaction.update({
         where: { transaction_id },
-        data: { transaction_status: "CANCELED" },
+        data: { transaction_status: "COMPLETED" },
       });
 
-      console.log(">> TRANSACTION CANCELED SUCCESSFULLY");
+      console.log(">> TRANSACTION APPROVED SUCCESSFULLY");
     });
 
-    return NextResponse.json({ message: "Transaction cancelled and balances updated" }, { status: 200 });
-
+    return NextResponse.json(
+      { message: "Transaction approved and balances updated" },
+      { status: 200 }
+    );
   } catch (error: any) {
     console.error("Cancel Error:", error);
-    return NextResponse.json({ message: "Failed to cancel transaction", error: error?.message }, { status: 500 });
+    return NextResponse.json(
+      { message: "Failed to approve transaction", error: error?.message },
+      { status: 500 }
+    );
   }
 });

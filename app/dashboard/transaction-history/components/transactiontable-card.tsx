@@ -6,6 +6,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   TableBody,
   TableCell,
   TableHead,
@@ -14,14 +22,46 @@ import {
   Table,
 } from "@/components/ui/table";
 import { Transaction } from "@prisma/client";
+import { Check, CircleDashed, EllipsisVertical } from "lucide-react";
+import { prisma } from "@/prisma/prisma";
+import { RequestCancelTransactionItem } from "./cancel-item";
+import { redirect } from "next/navigation";
+import { X } from "lucide-react"
+import { RequestApprovalTransactionItem } from "./approve-item";
+import TransactionManagementDropdown from "./dropdown";
 
-export function TransactionTableCard({
+export async function TransactionTableCard({
   transactions = [],
   activeAccountId,
+  userId,
 }: {
   transactions?: Transaction[];
   activeAccountId: string;
+  userId: string;
 }) {
+  const user = await prisma.customer.findUnique({
+    where: {
+      auth0_user_id: userId,
+    },
+  });
+
+  if (!user) {
+    redirect("/");
+  }
+
+  function renderStatus(status: string) {
+    switch (status) {
+      case "PENDING":
+        return <span className="text-yellow-500"><CircleDashed /></span>;
+      case "COMPLETED":
+        return <span className="text-green-500"><Check /></span>;
+      case "CANCELED":
+        return <span className="text-red-500"><X /></span>;
+      default:
+        return <span className="text-gray-500">Unknown</span>;
+    }
+  }
+
   return (
     <Card className="w-[80%]">
       <CardHeader>
@@ -37,7 +77,9 @@ export function TransactionTableCard({
               <TableHead>Type</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Date</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Amount</TableHead>
+              <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -53,11 +95,15 @@ export function TransactionTableCard({
                   <TableCell>
                     {new Date(transaction.created_at).toLocaleDateString()}
                   </TableCell>
+                  <TableCell>{renderStatus(transaction.transaction_status)}</TableCell>
                   <TableCell>
                     $
                     {Math.abs(Number(transaction.amount))
                       .toFixed(2)
                       .toLocaleString()}
+                  </TableCell>
+                  <TableCell className="hover:cursor-pointer">
+                    <TransactionManagementDropdown transaction_id={transaction.transaction_id} transaction_status={transaction.transaction_status} user={user} />
                   </TableCell>
                 </TableRow>
               );
