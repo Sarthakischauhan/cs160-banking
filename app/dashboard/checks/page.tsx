@@ -22,7 +22,7 @@ export default function Page() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  useEffect(() => {y
+  useEffect(() => {
     async function fetchProfile() {
       const res = await fetch("/api/account");
       if (res.status === 401) {

@@ -19,6 +19,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarRail,
+    SidebarTrigger,
   } from "@/components/ui/sidebar";
   
 
@@ -34,7 +35,8 @@ import {
     return (
       <Sidebar className="p-2" collapsible="icon">
         <SidebarHeader>
-          <div className="flex flex-row items-center">
+          <div className="flex flex-row items-center gap-2">
+            <SidebarTrigger className="md:hidden" />
             <Landmark className="mx-2"/>
             <h1 className="text-3xl items-center">Online Bank</h1>
           </div>
@@ -47,7 +49,7 @@ import {
                 <SidebarMenuButton asChild tooltip={option.title}>
                   <a href={option.url}>
                     <option.img />
-                    <span className="text-lg transition-all group-data-[collapsible=icon]:hidden">
+                    <span className="text-lg group-data-[collapsible=icon]:hidden">
                       {option.title}
                     </span>
                   </a>

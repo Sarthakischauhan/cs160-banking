@@ -88,7 +88,7 @@ export function AppSidebar({currentAccountId}: {currentAccountId?: string}) {
               <SidebarMenuButton asChild tooltip={option.title}>
                 <a href={option.url}>
                   <option.img />
-                  <span className="text-lg group-data-[collapsible=icon]:hidden hidden sm:inline">
+                  <span className="text-lg group-data-[collapsible=icon]:hidden">
                     {option.title}
                   </span>
                 </a>
@@ -109,7 +109,7 @@ export function AppSidebar({currentAccountId}: {currentAccountId?: string}) {
             ">
               <a href="/auth/logout">
                 <LogOut className="mr-2" />
-                <span className="text-lg group-data-[collapsible=icon]:hidden hidden sm:inline">Logout</span>
+                <span className="text-lg group-data-[collapsible=icon]:hidden">Logout</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
