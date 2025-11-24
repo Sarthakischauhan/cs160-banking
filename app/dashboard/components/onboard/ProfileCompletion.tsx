@@ -82,7 +82,7 @@ export const ProfileCompletion = () => {
   }
 
   return (
-    <Card className="w-[50] max-w-2xl mx-auto my-10">
+    <Card className="w-[50%] max-w-2xl mx-auto my-10">
       <CardHeader className="text-center">
         <div className="mx-auto mb-4 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
           <User className="w-6 h-6 text-primary" />

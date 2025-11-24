@@ -29,11 +29,11 @@ export function ATMCard() {
             <div />
             <div />
             <div className="w-full">
-              <Link href="/dashboard/maps">
-                <Button variant="outline" className="hover:cursor-pointer">
+              <Button asChild variant="outline" className="hover:cursor-pointer">
+                <Link href="/dashboard/maps">
                   Locate
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </div>
         </CardFooter>

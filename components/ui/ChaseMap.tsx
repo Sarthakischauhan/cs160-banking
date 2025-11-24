@@ -162,6 +162,8 @@ export default function ChaseMap() {
   const [manualLng, setManualLng] = useState('');
   const [manualLocationText, setManualLocationText] = useState('');
   const [userMarker, setUserMarker] = useState<google.maps.Marker | null>(null);
+  const [googleReady, setGoogleReady] = useState(false);
+
 
 
   // Detect theme on mount and when it changes
@@ -195,10 +197,13 @@ export default function ChaseMap() {
     const loader = new Loader({
       apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
       version: 'weekly',
+      libraries: ["places"],
     });
 
     loader.load().then(() => {
       if (!mapRef.current) return;
+
+      setGoogleReady(true);
 
       const initialIsDark = document.documentElement.classList.contains('dark');
       setIsDarkMode(initialIsDark);
@@ -486,28 +491,26 @@ export default function ChaseMap() {
     const autocompleteRef = useRef<HTMLInputElement | null>(null);
 
     useEffect(() => {
-      if (!window.google || !window.google.maps || !autocompleteRef.current) return;
+      if (!googleReady || !autocompleteRef.current) return;
     
       const autocomplete = new google.maps.places.Autocomplete(
         autocompleteRef.current,
         {
-          types: ["address"], // enables FULL street address autocomplete
+          types: ["address"],
           fields: ["formatted_address", "geometry", "address_components"],
         }
       );
     
       autocomplete.addListener("place_changed", () => {
-        const place = autocomplete.getPlace() as google.maps.places.PlaceResult;
-    
-        if (!place.geometry || !place.geometry.location) return;
+        const place = autocomplete.getPlace();
+        if (!place.geometry?.location) return;
     
         const loc = place.geometry.location;
-    
         setManualLocationText(place.formatted_address || "");
         setManualLat(loc.lat().toString());
         setManualLng(loc.lng().toString());
       });
-    }, []);
+    }, [googleReady]);
     
 
     return (
