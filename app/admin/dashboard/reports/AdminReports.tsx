@@ -4,11 +4,31 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { AdminReportCard } from "@/app/dashboard/components/admin-report-card";
 
+type ReportAccount = {
+  account_id: string;
+  account_type?: string | null;
+  balance?: number | null;
+  Customer?: {
+    customer_id: string;
+    first_name?: string | null;
+    last_name?: string | null;
+    email?: string | null;
+  } | null;
+  Transaction_Transaction_account_id2ToAccount?: Array<{
+    transaction_id: string;
+    amount: number;
+    transaction_type: string;
+    transaction_status: string;
+    created_at: string;
+  }>;
+};
+
 export default function BankManagerDashboard() {
   const [reportData, setReportData] = useState<any[]>([]);
   const [filter, setFilter] = useState("all");
   const [sortBy, setSortBy] = useState("balance");
   const [loading, setLoading] = useState(true);
+  const [nameQuery, setNameQuery] = useState("");
 
   async function fetchAccounts() {
     try {
@@ -41,11 +61,37 @@ export default function BankManagerDashboard() {
 
 
   const filteredData = (reportData ?? [])
-    // Filter by account type
     .filter((acc) => {
-      const type = acc.account_type?.toLowerCase() ?? "";
-      return filter === "all" || type === filter.toLowerCase();
+      // account-type filter
+      const type = (acc.account_type ?? "").toLowerCase();
+      if (filter !== "all" && type !== filter.toLowerCase()) return false;
+
+      // name filter
+      const q = nameQuery.trim().toLowerCase();
+      if (!q) return true;
+
+      const first = (acc.Customer?.first_name ?? "").toLowerCase();
+      const last = (acc.Customer?.last_name ?? "").toLowerCase();
+      const full = `${first} ${last}`.trim();
+      const email = (acc.Customer?.email ?? "").toLowerCase();
+
+      return (
+        first.includes(q) ||
+        last.includes(q) ||
+        full.includes(q) ||
+        email.includes(q)
+      );
     })
+    .sort((a, b) => {
+      if (sortBy === "balance_desc") {
+        return Number(b.balance ?? 0) - Number(a.balance ?? 0); // high → low
+      }
+      if (sortBy === "balance_asc") {
+        return Number(a.balance ?? 0) - Number(b.balance ?? 0); // low → high
+      }
+      return 0;
+    });
+
 
 
   const getAccountTypeColor = (type: string) => {
@@ -100,23 +146,40 @@ export default function BankManagerDashboard() {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
-          <div className="flex flex-wrap gap-4 items-center justify-between">
-            <div className="flex items-center gap-3">
-              <label className="text-sm font-medium text-slate-700">Filter by Type:</label>
-              <div className="flex gap-2">
-                {["all", "checking", "savings"].map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => setFilter(type)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filter === type ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                      }`}
-                  >
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
-                  </button>
-                ))}
-              </div>
+        <div className="flex flex-wrap gap-4 items-center justify-between">
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium text-slate-700">Filter by Type:</label>
+            <div className="flex gap-2">
+              {["all", "checking", "savings"].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setFilter(type)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filter === type ? "bg-slate-800 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                >
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </button>
+              ))}
             </div>
+          </div>
+
+          {/* Name search */}
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={nameQuery}
+              onChange={(e) => setNameQuery(e.target.value)}
+              placeholder="Search by name…"
+              className="w-64 px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
+            />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white"
+            >
+              <option value="balance_desc">Balance: High → Low</option>
+              <option value="balance_asc">Balance: Low → High</option>
+            </select>
 
           </div>
         </div>
