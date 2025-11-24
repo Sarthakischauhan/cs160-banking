@@ -41,6 +41,11 @@ const sidebarOptions = [
     img: ArrowLeftRight,
   },
   {
+    title: "Deposit Checks",
+    url: "/dashboard/checks",
+    img: Banknote,
+  },
+  {
     title: "Transaction History",
     url: "/dashboard/transaction-history",
     img: FileClock,
@@ -51,19 +56,14 @@ const sidebarOptions = [
     img: Bell,
   },
   {
-    title: "Account Settings",
-    url: "/dashboard/account-settings",
-    img: SettingsIcon,
-  },
-  {
     title: "Nearby ATMs",
     url: "/dashboard/maps",
     img: MapPin,
   },
   {
-    title: "Deposit Checks",
-    url: "/checks",
-    img: Banknote,
+    title: "Account Settings",
+    url: "/dashboard/account-settings",
+    img: SettingsIcon,
   }
 ];
 

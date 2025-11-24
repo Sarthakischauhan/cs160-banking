@@ -37,8 +37,6 @@ export default async function AccountManagementPage({
       ? accountData.accounts[accountData.accounts.length - 1].account_id
       : null;
 
-  console.log(accountData);
-
   return (
     <>
       <div className="w-full h-fit">
