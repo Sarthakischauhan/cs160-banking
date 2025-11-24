@@ -190,7 +190,7 @@ export async function POST(req: Request) {
                 customer_id: customerId!,
                 transaction_id: transaction.transaction_id,
                 account_id: account.account_id,           
-                ticket_type: TicketType.APPROVE,              
+                ticket_type: "APPROVE",              
                 ticket_status: "OPEN",                     
                 subject: `Check deposit of $${amount} awaiting approval.`,
                 message: `Check deposit for $${amount} is pending admin approval.`,
