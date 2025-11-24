@@ -1,5 +1,3 @@
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "../components/app-sidebar";
 import { DepositCard } from "./components/deposit-card";
 import { BalanceCardWrapper } from "../components/balance-card-wrapper";
 import { getAccount } from "@/lib/accounts";
