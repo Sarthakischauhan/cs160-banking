@@ -201,3 +201,21 @@ html, body {
   color: var(--foreground);
   background: var(--background);
 }
+
+.gm-style .gm-ui-hover-effect {
+  filter: none;
+}
+
+.dark .gm-style .gm-ui-hover-effect {
+  filter: invert(1);
+}
+
+/* Default (light mode) */
+.gm-style .gm-ui-hover-effect {
+  filter: none;
+}
+
+/* Dark mode */
+.dark .gm-style .gm-ui-hover-effect {
+  filter: invert(1);
+}

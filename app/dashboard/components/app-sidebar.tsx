@@ -109,7 +109,6 @@ export function AppSidebar({currentAccountId}: {currentAccountId?: string}) {
               transition-colors
             ">
               <a href="/auth/logout">
-                <LogOut className="mr-2" />
                 <span className="text-lg group-data-[collapsible=icon]:hidden">Logout</span>
               </a>
             </SidebarMenuButton>
