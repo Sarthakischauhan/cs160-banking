@@ -76,13 +76,10 @@ function NotificationTable({
                     <EllipsisVertical />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuLabel>Manage Account</DropdownMenuLabel>
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>View Details</DropdownMenuItem>
-                    <DropdownMenuItem>Edit Balance</DropdownMenuItem>
-                    <DropdownMenuItem>Add Note</DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>Suspend</DropdownMenuItem>
                     <DropdownMenuItem variant="destructive">
                       Delete
                     </DropdownMenuItem>
