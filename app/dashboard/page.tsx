@@ -96,8 +96,6 @@ export default async function Page({ searchParams }: DashboardProps) {
           {currentAccount && (
             <BalanceCardWrapper
               userBalance={currentAccount.balance}
-              monthIncome={1400}
-              monthExpense={1000}
               account_type={
                 currentAccount.account_type === "SAVINGS"
                   ? AccountType.SAVINGS
