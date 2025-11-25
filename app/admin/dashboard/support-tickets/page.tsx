@@ -1,5 +1,5 @@
 import { TicketStatus, TicketType } from "@prisma/client";
-import { RangeFilter, SelectFilter, TextFilter } from "../components/filters";
+import { PaginationControls, RangeFilter, SelectFilter, TextFilter } from "../components/filters";
 import { getSupportTickets } from "@/lib/admin/supportTickets";
 import SupportTicketTable from "./components/supportticket-table";
 
@@ -21,7 +21,12 @@ async function AdminSupportTicketPage({
   } = params;
 
   const tickets = await getSupportTickets(params, cursor, pageSize);
-  console.log(tickets)
+  console.log(tickets);
+
+  const nextCursor =
+    tickets.length >= pageSize
+      ? tickets[tickets.length - 1].sticket_id.toString()
+      : null;
 
   return (
     <div className="w-full h-fit">
@@ -63,8 +68,13 @@ async function AdminSupportTicketPage({
         </form>
         <p className="font-bold w-full border-b-2">Support Tickets</p>
         <div className="w-full h-[calc(100%-100px)] flex justify-center items-center py-6">
-          {tickets ? (<SupportTicketTable tickets={tickets} />) : <p>No tickets to show. . .</p>}</div>
-        <div className="w-full flex justify-center items-center"></div>
+          {tickets ? (
+            <SupportTicketTable tickets={tickets} />
+          ) : (
+            <p>No tickets to show. . .</p>
+          )}
+        </div>
+        <div className="w-full flex justify-center items-center"><PaginationControls nextCursor={nextCursor} /></div>
       </div>
     </div>
   );

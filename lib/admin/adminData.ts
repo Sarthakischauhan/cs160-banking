@@ -4,6 +4,7 @@ import { prisma } from "@/prisma/prisma";
 import {
   AccountType,
   DepositTest,
+  TicketStatus,
   Transaction,
   TransactionStatus,
   TransactionType,
@@ -214,6 +215,20 @@ export async function getCustomerSummary() {
   };
 }
 
+export async function getSupportTicketSummary() {
+  const count = await prisma.supportTicket.count({
+    where: {
+      OR: [
+        {ticket_status: TicketStatus.OPEN},
+        {ticket_status: TicketStatus.PENDING}
+      ]
+    }
+  });
+  return {
+    count: count
+  }
+}
+
 export async function getTransactionSummary(timeFrame: "month" | "year") {
   const start = new Date();
   const end = new Date();
@@ -226,6 +241,12 @@ export async function getTransactionSummary(timeFrame: "month" | "year") {
         gte: start,
         lte: end,
       },
+    },
+  });
+
+  const pendingCount = await prisma.transaction.count({
+    where: {
+      transaction_status: TransactionStatus.PENDING,
     },
   });
 
@@ -271,6 +292,7 @@ export async function getTransactionSummary(timeFrame: "month" | "year") {
 
   return {
     count: count,
+    pendingCount: pendingCount,
     transactionTotal: types,
     transactionHistory: history,
     pendingTransactions: pendingTransactions,

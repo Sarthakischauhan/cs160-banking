@@ -207,7 +207,8 @@ export async function POST(req: Request) {
             { status: 200, headers: { "Content-Type": "application/json" } }
         );
 
-    } catch (error) {
+    } catch (error: any) {
+        console.log(error.message)
         console.error("OCR failed:", error);
         return new Response("OCR failed", { status: 500 });
     }

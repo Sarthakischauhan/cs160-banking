@@ -34,12 +34,14 @@ export default function TransactionManagementDropdown({
         <RequestApprovalTransactionItem
           id={transaction_id}
           disabled={transaction_status === "COMPLETED"}
-          user={user}
+          first_name={user.first_name}
+          last_name={user.last_name}
         />
         <RequestCancelTransactionItem
           id={transaction_id}
           disabled={transaction_status === "CANCELED"}
-          user={user}
+          first_name={user.first_name}
+          last_name={user.last_name}
         />
       </DropdownMenuContent>
     </DropdownMenu>

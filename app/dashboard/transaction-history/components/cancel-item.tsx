@@ -19,14 +19,16 @@ import { getUserData } from "@/lib/user";
 export function RequestCancelTransactionItem({
   id,
   disabled,
-  user,
+  first_name,
+  last_name,
 }: {
   id: string;
   disabled: boolean;
-  user: Customer;
+  first_name: string;
+  last_name: string
 }) {
   const [open, setOpen] = useState(false);
-  const message = `${user.first_name} ${user.last_name} wants to cancel transaction ${id}: `;
+  const message = `${first_name} ${last_name} wants to cancel transaction ${id}: `;
   const subject = "Cancel Transaction";
   const ticketType = "CANCEL";
 

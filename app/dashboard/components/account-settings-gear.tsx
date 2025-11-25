@@ -16,7 +16,7 @@ interface AccountSettingsDropdownProps {
   user: any
 }
 
-export async function AccountSettingsDropdown({ accountId, user }: AccountSettingsDropdownProps) {
+export function AccountSettingsDropdown({ accountId, user }: AccountSettingsDropdownProps) {
     const message = `${user.firstName} ${user.lastName} is requesting to suspend account ${accountId}`
     const subject = `Suspend Account`
     const ticketType: TicketType = "SUSPEND"

@@ -16,7 +16,8 @@ import {
 import { censorString, formatCurrency } from "@/lib/utils";
 import { Account, Customer, Transaction } from "@prisma/client";
 import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
-import { EllipsisVertical } from "lucide-react";
+import { EllipsisVertical, Squircle } from "lucide-react";
+import AccountStatusItem from "./accountstatus-item";
 
 export type AccountWithExtraData = Account & {
   Customer: Customer;
@@ -37,19 +38,32 @@ export function AccountsTable(props: AccountsTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Status</TableHead>
+            <TableHead>Date Created</TableHead>
             <TableHead>First Name</TableHead>
             <TableHead>Last Name</TableHead>
             <TableHead>Account ID</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Balance</TableHead>
             <TableHead>Transactions</TableHead>
-            <TableHead>Date Created</TableHead>
             <TableHead />
           </TableRow>
         </TableHeader>
         <TableBody>
           {props.accounts.map((account: AccountWithExtraData) => (
             <TableRow key={account.account_id}>
+              <TableCell>
+                {account.account_status === "ACTIVE" ? (
+                  <span className="text-green-500">
+                    <Squircle />
+                  </span>
+                ) : (
+                  <span>
+                    <Squircle className="text-red-500" />
+                  </span>
+                )}
+              </TableCell>
+              <TableCell>{account.created_at.toLocaleDateString()}</TableCell>
               <TableCell className="max-w-[120px]">
                 {account.Customer.first_name?.toLocaleUpperCase()}
               </TableCell>
@@ -62,7 +76,6 @@ export function AccountsTable(props: AccountsTableProps) {
               <TableCell>
                 {account._count.Transaction_Transaction_account_idToAccount}
               </TableCell>
-              <TableCell>{account.created_at.toLocaleDateString()}</TableCell>
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger className="hover:cursor-pointer">
@@ -75,7 +88,16 @@ export function AccountsTable(props: AccountsTableProps) {
                     <DropdownMenuItem>Edit Balance</DropdownMenuItem>
                     <DropdownMenuItem>Add Note</DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>Suspend</DropdownMenuItem>
+                    <AccountStatusItem
+                      id={account.account_id}
+                      disabled={account.account_status === "ACTIVE"}
+                      status={"ACTIVE"}
+                    />
+                    <AccountStatusItem
+                      id={account.account_id}
+                      disabled={account.account_status === "CLOSED"}
+                      status={"CLOSED"}
+                    />
                     <DropdownMenuItem variant="destructive">
                       Delete
                     </DropdownMenuItem>
