@@ -107,9 +107,6 @@ function SupportTicketTable({ tickets }: { tickets: SupportTableData[] }) {
                       status={"CLOSED"}
                     />
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem variant="destructive">
-                      Delete
-                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>
