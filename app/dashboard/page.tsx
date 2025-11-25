@@ -32,6 +32,7 @@ export default async function Page({ searchParams }: DashboardProps) {
   if (!session) {
     redirect("/");
   }
+  
   const user = await getUserData({ userId: session.user.sub });
   if (!user?.isOnboarded) {
     return <ProfileCompletion />;
