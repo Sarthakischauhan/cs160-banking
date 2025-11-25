@@ -41,6 +41,7 @@ export default async function TransactionHistoryPage() {
         <TransactionTableCard
           transactions={transactions}
           activeAccountId={customer.customer_id} // or some default account id
+          userId={session.user.sub}
         />
       </div>
     </div>

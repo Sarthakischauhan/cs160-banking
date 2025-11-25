@@ -8,7 +8,8 @@ import {
   MapPin,
   HandCoins,
   Banknote,
-  LogOut
+  LogOut,
+  Settings
 } from "lucide-react";
 
 import {
@@ -20,7 +21,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
+import Image from "next/image";
 
 // A collection of possible sidebar options users can use to route through the page.
 // UPDATE ME when another page is added for routing purposes
@@ -63,16 +67,17 @@ const sidebarOptions = [
   {
     title: "Account Settings",
     url: "/dashboard/account-settings",
-    img: SettingsIcon,
-  }
+    img: Settings
+  },
 ];
 
 export function AppSidebar({currentAccountId}: {currentAccountId?: string}) {
   return (
-    <Sidebar className="p-2">
+    <Sidebar className="p-2" collapsible="icon">
       <SidebarHeader>
-        <div className="flex flex-row items-center">
-          <Landmark className="mx-2"/>
+        <div className="flex flex-row items-center gap-2">
+          <SidebarTrigger className="md:hidden" />
+          <Landmark />
           <h1 className="text-3xl items-center">Online Bank</h1>
         </div>
       </SidebarHeader>
@@ -81,10 +86,12 @@ export function AppSidebar({currentAccountId}: {currentAccountId?: string}) {
         <SidebarMenu>
           {sidebarOptions.map((option) => (
             <SidebarMenuItem key={option.title}>
-              <SidebarMenuButton asChild>
+              <SidebarMenuButton asChild tooltip={option.title}>
                 <a href={option.url}>
                   <option.img />
-                  <span className="text-lg">{option.title}</span>
+                  <span className="text-lg group-data-[collapsible=icon]:hidden">
+                    {option.title}
+                  </span>
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -102,13 +109,13 @@ export function AppSidebar({currentAccountId}: {currentAccountId?: string}) {
               transition-colors
             ">
               <a href="/auth/logout">
-                <LogOut className="mr-2" />
-                <span className="text-lg">Logout</span>
+                <span className="text-lg group-data-[collapsible=icon]:hidden">Logout</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   );
 }

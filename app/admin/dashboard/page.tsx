@@ -12,11 +12,13 @@ import { pendingTransfers, supportTickets } from "./dummydata/data";
 import {
   getAccountsSummary,
   getCustomerSummary,
+  getSupportTicketSummary,
   getTransactionSummary,
-} from "@/lib/adminData";
+} from "@/lib/admin/adminData";
 import { formatCurrency } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { getSupportTickets } from "@/lib/admin/supportTickets";
 
 export default async function AdminDashboardPage() {
   const start = new Date();
@@ -25,15 +27,19 @@ export default async function AdminDashboardPage() {
 
   start.setDate(end.getDate() - timePeriod);
 
-  const [account, customer, transaction] = await Promise.all([
+  const [account, customer, transaction, tickets, ticketsSummary] = await Promise.all([
     getAccountsSummary("month"),
     getCustomerSummary(),
     getTransactionSummary("month"),
+    getSupportTickets({'ticketStatus': ['OPEN', 'PENDING']}, undefined, 5),
+    getSupportTicketSummary()
   ]);
   const data = {
     account: account,
     customer: customer,
     transaction: transaction,
+    tickets: tickets,
+    ticketsSummary: ticketsSummary
   };
 
   const metricsList: MetricCardProps[] = [
@@ -51,23 +57,23 @@ export default async function AdminDashboardPage() {
     },
     {
       title: "Pending Transactions",
-      value: 2,
+      value: transaction.pendingCount,
     },
     {
-      title: "Unread Notifications",
-      value: 4,
+      title: "Pending Support Tickets",
+      value: ticketsSummary.count,
     },
   ];
 
   return (
     <div className="w-full h-fit">
-      <div className="p-10 grid grid-cols-2">
+      <div className="p-10 grid md:grid-cols-2 sm:grid-cols-1 gap-4">
         <h1 className="text-4xl font-bold">Welcome, Administrator!</h1>
-        <div className="w-full flex justify-end">
+        <div className="w-full flex md:justify-end sm:justify-center">
           <Button className="w-[200] hover:cursor-pointer">
             <a
               href="/dashboard"
-              className="bg-black text-white rounded-lg text-center py-2 hover:bg-opacity-80"
+              className= "rounded-lg text-center py-2 hover:bg-opacity-80"
             >
               View User Dashboard
             </a>
@@ -78,9 +84,9 @@ export default async function AdminDashboardPage() {
         <h1 className="text-4xl font-bold">Metrics</h1>
       </div>
 
-      <div className="w-full max-w-[90%] mx-auto px-4">
+      <div className="max-w-[80%] mx-auto px-4">
         <Carousel opts={{ loop: true }} className="relative w-full">
-          <CarouselPrevious />
+          <CarouselPrevious className="hover:cursor-pointer" />
           <CarouselContent>
             {metricsList.map((metric, key) => {
               return (
@@ -90,7 +96,7 @@ export default async function AdminDashboardPage() {
               );
             })}
           </CarouselContent>
-          <CarouselNext />
+          <CarouselNext className="hover:cursor-pointer"/>
         </Carousel>
       </div>
       <div className="w-full h-fit p-2 justify-center items-center">
@@ -109,15 +115,15 @@ export default async function AdminDashboardPage() {
         <TableCard
           title="Pending Support Tickets"
           description="See recent support tickets from users"
-          data={supportTickets}
-          disable={["ticketId"]}
+          data={tickets}
+          disable={['account_id', 'sticket_id', 'customer_id', 'handler_id', 'transaction_id', 'message', 'updated_at', 'tags', 'Handler']}
         />
         {transaction.pendingTransactions.length > 0 ? (
           <TableCard
             title="Pending Transfers"
             description="See pending transfers requiring your attention"
             data={transaction.pendingTransactions}
-            disable={["transaction_id", "account_id", "account_id2"]}
+            disable={["transaction_id", "account_id", "account_id2", "amount_after_transaction"]}
           />
         ) : (
           <Card className="flex h-full">

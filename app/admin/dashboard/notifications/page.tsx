@@ -1,8 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { getNotifications } from "@/lib/adminData";
+import { getNotifications } from "@/lib/admin/adminData";
 import NotificationTable from "./components/notification-table";
 import { Notifications } from "@prisma/client";
-import { RangeFilter, SelectFilter, TextFilter } from "../components/filters";
+import {
+  PaginationControls,
+  RangeFilter,
+  SelectFilter,
+  TextFilter,
+} from "../components/filters";
 
 enum NotificationType {
   TRANSACTION = "TRANSACTION",
@@ -14,14 +19,24 @@ export default async function NotificationsPage({
   searchParams: { [key: string]: string | undefined };
 }) {
   const params = await searchParams;
-  const firstName = params.firstName ?? "";
-  const lastName = params.lastName ?? "";
-  const notificationType = params.notificationType ?? "";
-  const dismissed = params.dismissed ?? "";
-  const minDate = params.minDate ?? "";
-  const maxDate = params.maxDate ?? "";
+  const pageSize = 20;
+  const {
+    firstName = "",
+    lastName = "",
+    notificationType = "",
+    dismissed = "",
+    minDate = "",
+    maxDate = "",
+    cursor = undefined,
+  } = await params;
 
-  const notifications = await getNotifications(params);
+  const notifications = await getNotifications(params, cursor, pageSize);
+  console.log(notifications);
+
+  const nextCursor =
+    notifications.length >= pageSize
+      ? notifications[notifications.length - 1].id.toString()
+      : null;
 
   return (
     <div className="w-full h-full">
@@ -29,13 +44,15 @@ export default async function NotificationsPage({
         <h1 className="text-4xl font-bold mb-10">Notifications</h1>
         <form method="GET" className="flex flex-col gap-4">
           <p className="font-bold w-full border-b-2">Filters</p>
-          <div className="w-full h-20 grid grid-cols-4 gap-4 py-4">
+          <div className="w-full grid sm:grid-cols-1 md:grid-cols-4 gap-4 py-4">
             <TextFilter
               label={"First Name"}
               name="firstName"
               value={firstName}
             />
             <TextFilter label={"Last Name"} name="lastName" value={lastName} />
+          </div>
+          <div className="w-full grid sm:grid-cols-1 md:grid-cols-4 gap-4 py-4">
             <SelectFilter
               label={"Notification Type"}
               options={Object.keys(NotificationType)}
@@ -48,8 +65,6 @@ export default async function NotificationsPage({
               name="dismissed"
               value={dismissed}
             />
-          </div>
-          <div className="w-full h-20 grid grid-cols-4 gap-4 py-4">
             <RangeFilter
               label={"Date"}
               minName="minDate"
@@ -64,6 +79,7 @@ export default async function NotificationsPage({
         <div className="w-full h-[calc(100%-100px)] flex justify-center items-center py-6">
           <NotificationTable notifications={notifications} />
         </div>
+        <PaginationControls nextCursor={nextCursor} />
       </div>
     </div>
   );

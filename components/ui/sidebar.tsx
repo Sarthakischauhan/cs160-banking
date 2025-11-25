@@ -113,6 +113,10 @@ function SidebarProvider({
   // This makes it easier to style the sidebar with Tailwind classes.
   const state = open ? "expanded" : "collapsed"
 
+  React.useEffect(() => {
+    setOpen(isMobile ? false : true)
+  }, [isMobile, setOpen])
+
   const contextValue = React.useMemo<SidebarContextProps>(
     () => ({
       state,
@@ -533,17 +537,17 @@ function SidebarMenuButton({
   }
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>{button}</TooltipTrigger>
-      <TooltipContent
-        side="right"
-        align="center"
-        hidden={state !== "collapsed" || isMobile}
-        {...tooltip}
-      />
-    </Tooltip>
-  )
-}
+      <Tooltip>
+        <TooltipTrigger asChild>{button}</TooltipTrigger>
+        <TooltipContent
+          side="right"
+          align="center"
+          hidden={state !== "collapsed"}
+          {...tooltip}
+        />
+      </Tooltip>
+    )
+  }
 
 function SidebarMenuAction({
   className,

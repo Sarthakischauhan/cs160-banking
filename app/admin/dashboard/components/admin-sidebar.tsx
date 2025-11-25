@@ -5,6 +5,8 @@ import {
   FileText,
   UserCog,
   ArrowLeftRight,
+  Ticket,
+  LogOut,
 } from "lucide-react";
 
 import {
@@ -30,7 +32,7 @@ const sidebarOptions = [
   {
     title: "Notifications",
     url: "/admin/dashboard/notifications",
-    img: Bell
+    img: Bell,
   },
   {
     title: "Reports",
@@ -46,12 +48,17 @@ const sidebarOptions = [
     title: "Transactions",
     url: "/admin/dashboard/transactions",
     img: ArrowLeftRight,
-  }
+  },
+  {
+    title: "Support Tickets",
+    url: "/admin/dashboard/support-tickets",
+    img: Ticket,
+  },
 ];
 
 export function AdminSidebar() {
   return (
-    <Sidebar className="p-2">
+    <Sidebar collapsible="offcanvas" className="p-2">
       <SidebarHeader>
         <div className="flex flex-row items-center">
           <Landmark className="mx-2" />
@@ -76,14 +83,19 @@ export function AdminSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuButton>
-              <a 
-                href="/auth/logout"
-                className="bg-black text-white rounded-lg w-1/2 mx-auto text-center py-2 hover:bg-opacity-80"
-              >
-                Logout
-              </a>
-            </SidebarMenuButton>
+          <SidebarMenuButton
+            asChild
+            className="
+              text-red-600 dark:text-red-400
+              hover:bg-red-100 dark:hover:bg-red-900/40
+              transition-colors
+            "
+          >
+            <a href="/auth/logout">
+              <LogOut className="mr-2" />
+              <span className="text-lg">Logout</span>
+            </a>
+          </SidebarMenuButton>
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>

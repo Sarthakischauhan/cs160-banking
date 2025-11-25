@@ -1,10 +1,9 @@
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./components/app-sidebar";
 import { getUserData, handleCurrentId } from "@/lib/user";
 import { auth0 } from "@/lib/auth0";
 import { OnboardSidebar } from "./components/onboard-sidebar";
 import { cookies } from "next/headers";
-import { ThemeScript } from "@/components/theme-script";
 import { HideBalanceProvider } from "./providers/hide-balance-provider";
 import ChatWidget from "./components/chat-widget";
 
@@ -35,9 +34,15 @@ export default async function dashboardLayout({
       <HideBalanceProvider initialHideBalance={hideBalance}>
         <SidebarProvider>
           {user?.isOnboarded ? <AppSidebar />  : <OnboardSidebar />}
-          <SidebarInset>{children}</SidebarInset>
+          <SidebarInset>
+            <div className="md:hidden flex items-center gap-2 border-b px-3 py-2">
+              <SidebarTrigger />
+              <span className="text-sm font-medium">Menu</span>
+            </div>
+            {children}
+          </SidebarInset>
         </SidebarProvider>
-        <ChatWidget />
+        {user?.isOnboarded && <ChatWidget />}
       </HideBalanceProvider>
     </div>
   );

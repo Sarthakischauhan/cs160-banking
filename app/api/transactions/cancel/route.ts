@@ -6,113 +6,119 @@ import { Decimal } from "@prisma/client/runtime/library";
 export const POST = auth0.withApiAuthRequired(async (req: NextRequest) => {
   try {
     const session = await auth0.getSession();
-    if (!session)
+    if (!session) {
       return NextResponse.json({ message: "Unauthenticated" }, { status: 401 });
+    }
 
     const role = getRole(session);
     if (!role.includes("Admin")) {
-      return NextResponse.json(
-        { message: "Forbidden: Admin only" },
-        { status: 403 }
-      );
+      return NextResponse.json({ message: "Forbidden: Admin only" }, { status: 403 });
     }
 
     const { transaction_id } = await req.json();
     if (!transaction_id) {
-      return NextResponse.json(
-        { message: "transaction_id required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "transaction_id required" }, { status: 400 });
     }
 
-    // Fetch original transaction
-    const tx = await prisma.transaction.findUnique({
-      where: { transaction_id },
-    });
+    const tx = await prisma.transaction.findUnique({ where: { transaction_id } });
 
-    if (!tx)
-      return NextResponse.json(
-        { message: "Transaction not found" },
-        { status: 404 }
-      );
+    if (!tx) {
+      return NextResponse.json({ message: "Transaction not found" }, { status: 404 });
+    }
+
     if (tx.transaction_status === "CANCELED") {
-      return NextResponse.json(
-        { message: "Transaction already cancelled" },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Transaction already cancelled" }, { status: 400 });
     }
 
-    // Reverse logic
-    const reverseType =
-      tx.transaction_type === "DEPOSIT" ? "WITHDRAWAL" : "DEPOSIT";
-    const reverseAmount = tx.amount;
+    if (tx.transaction_status === "PENDING") {
+      await prisma.transaction.update({
+        where: {
+          transaction_id: transaction_id
+        },
+        data: {
+          transaction_status: "CANCELED"
+        }
+      })
+      return NextResponse.json({ message: "Transaction Cancelled from PENDING" }, { status: 400 });
+    }
 
-    // Reverse balances
     await prisma.$transaction(async (txDB) => {
-      // Reverse the source account
+      console.log(">> STARTING CANCEL FOR", transaction_id);
+
+      // Fetch source account
       const sourceAccount = await txDB.account.findUnique({
         where: { account_id: tx.account_id },
       });
       if (!sourceAccount) throw new Error("Source account not found");
 
-      const sourceNewBalance =
-        tx.transaction_type === "DEPOSIT"
-          ? sourceAccount.balance.minus(tx.amount)
-          : sourceAccount.balance.plus(tx.amount)
+      let sourceNewBalance = sourceAccount.balance;
+      let targetNewBalance: Decimal | null = null;
 
+      switch (tx.transaction_type) {
+        case "DEPOSIT":
+          sourceNewBalance = sourceAccount.balance.sub(tx.amount);
+          if (sourceNewBalance.lt(0)) {
+            throw new Error("Cannot cancel deposit: would result in negative balance");
+          }
+          break;
+
+        case "WITHDRAWAL":
+          sourceNewBalance = sourceAccount.balance.add(tx.amount);
+          break;
+
+        case "TRANSFER":
+          sourceNewBalance = sourceAccount.balance.add(tx.amount);
+
+          if (tx.account_id2 && tx.account_id2 !== tx.account_id) {
+            const targetAccount = await txDB.account.findUnique({
+              where: { account_id: tx.account_id2 },
+            });
+            if (!targetAccount) throw new Error("Target account not found");
+
+            targetNewBalance = targetAccount.balance.sub(tx.amount);
+
+            if (targetNewBalance.lt(0)) {
+              throw new Error("Cannot cancel transfer: target account would go negative");
+            }
+
+            await txDB.account.update({
+              where: { account_id: tx.account_id2 },
+              data: { balance: targetNewBalance },
+            });
+            console.log(">> TARGET BALANCE UPDATED", { before: targetAccount.balance.toString(), after: targetNewBalance.toString() });
+          }
+          break;
+
+        default:
+          throw new Error(`Unknown transaction type: ${tx.transaction_type}`);
+      }
+
+      // Update source account balance
       await txDB.account.update({
         where: { account_id: tx.account_id },
         data: { balance: sourceNewBalance },
       });
 
-      // If transfer, reverse second account
-      if (tx.account_id2) {
-        const targetAccount = await txDB.account.findUnique({
-          where: { account_id: tx.account_id2 },
-        });
-        if (!targetAccount) throw new Error("Target account not found");
+      await txDB.transaction.update({
+        where: {transaction_id: tx.transaction_id},
+        data: { amount_after_transaction: sourceNewBalance}
+      })
 
-        const targetNewBalance =
-          tx.transaction_type === "DEPOSIT"
-            ? targetAccount.balance.plus(tx.amount)
-            : targetAccount.balance.minus(tx.amount)
+      console.log(">> SOURCE BALANCE UPDATED", { before: sourceAccount.balance.toString(), after: sourceNewBalance.toString() });
 
-        await txDB.account.update({
-          where: { account_id: tx.account_id2 },
-          data: { balance: targetNewBalance },
-        });
-      }
-
-      // Mark transaction cancelled
+      // Mark transaction canceled
       await txDB.transaction.update({
         where: { transaction_id },
         data: { transaction_status: "CANCELED" },
       });
 
-      // Compensating transaction only if transfer
-      if (tx.account_id2) {
-        await txDB.transaction.create({
-          data: {
-            account_id: tx.account_id2,
-            account_id2: tx.account_id,
-            amount: tx.amount,
-            description: `Reversal of transaction ${transaction_id}`,
-            transaction_type: reverseType,
-            transaction_status: "COMPLETED",
-          },
-        });
-      }
+      console.log(">> TRANSACTION CANCELED SUCCESSFULLY");
     });
 
-    return NextResponse.json(
-      { message: "Transaction cancelled successfully" },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { message: "Failed to cancel transaction" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Transaction cancelled and balances updated" }, { status: 200 });
+
+  } catch (error: any) {
+    console.error("Cancel Error:", error);
+    return NextResponse.json({ message: "Failed to cancel transaction", error: error?.message }, { status: 500 });
   }
 });

@@ -1,6 +1,7 @@
 import { prisma } from "@/prisma/prisma";
 import { createClient } from "@supabase/supabase-js";
 import { GoogleGenerativeAI, type Content } from "@google/generative-ai";
+import { auth0 } from "@/lib/auth0";
 
 const supabase = createClient(
     process.env.SUPABASE_URL!,
@@ -14,6 +15,8 @@ export async function GET() {
 export async function POST(req: Request) {
     try {
         const formData = await req.formData();
+        const customerId = formData.get("customerId") as string | null;
+        const accountId = formData.get("accountId") as string | null;
 
         const front_image = formData.get("image") as File | null;
         const back_image = formData.get("image2") as File | null;
@@ -98,7 +101,8 @@ export async function POST(req: Request) {
             Return 'true' if:
             1. The image clearly shows a valid bank check (front or back).
             2. The deposit amount "$${amount}" (or numerically equivalent) is visible on the check.
-            Return 'false' only if it is unrelated, amount does not match or clearly not a check.`,
+            3. The check can be a photograph of a physical check shown on a smartphone.
+            Return 'false' only if it is unrelated, amount does not match.`,
                         },
                         {
                             inlineData: {
@@ -127,7 +131,7 @@ export async function POST(req: Request) {
         }
         const [frontValid, backValid] = await Promise.all([
             checkValidator(front_image, amount),
-            checkValidator(back_image, 0|| amount),
+            checkValidator(back_image, 0 || amount),
         ]);
         if (!frontValid || !backValid) {
             console.log("❌ Check image failed validation — rejecting deposit.");
@@ -146,6 +150,28 @@ export async function POST(req: Request) {
         if (!transactionId) {
             return new Response("Missing transaction ID", { status: 400 });
         }
+        const account = await prisma.account.findFirst({
+            where: {
+                customer_id: customerId ?? undefined,
+                account_type: "CHECKING",
+            },
+        });
+        if (!account) {
+            throw new Error("Checking account not found for this customer");
+        }
+
+        const transaction = await prisma.transaction.create({
+            data: {
+                amount,
+                transaction_type: "DEPOSIT",
+                transaction_status: "PENDING",
+                description: "Check deposit",
+                Account: {
+                    connect: { account_id: account.account_id }, // use the customer's real account
+                },
+            },
+        });
+
 
         const newCheck = await prisma.checks.create({
             data: {
@@ -156,16 +182,33 @@ export async function POST(req: Request) {
                 front_image: frontUrl,
                 back_image: backUrl,
                 deposit_date: new Date(),
-                transactionId
+                transactionId: transaction.transaction_id
             }
         });
+
+        await prisma.supportTicket.create({
+            data: {
+                customer_id: customerId!,
+                transaction_id: transaction.transaction_id,
+                account_id: account.account_id,           
+                ticket_type: "APPROVE",              
+                ticket_status: "OPEN",                     
+                subject: `Check deposit of $${amount} awaiting approval.`,
+                message: `Check deposit for $${amount} is pending admin approval.`,
+                tags: ["check", "deposit", "approval"],    
+            },
+        });
+
+
+        console.log("OCR Result:", newCheck);
 
         return new Response(
             JSON.stringify({ message: "Saved to DB", checks: newCheck }),
             { status: 200, headers: { "Content-Type": "application/json" } }
         );
 
-    } catch (error) {
+    } catch (error: any) {
+        console.log(error.message)
         console.error("OCR failed:", error);
         return new Response("OCR failed", { status: 500 });
     }
