@@ -11,12 +11,16 @@ export const GET = auth0.withApiAuthRequired(async (req: NextRequest) => {
         }
 
         const role = getRole(session as any);
+
+        /** 
+         * This is messing with checks
         const isAdmin = role?.includes("Admin");
 
         if (isAdmin) {
             const accounts = await prisma.account.findMany();
             return NextResponse.json(accounts, { status: 200 });
         }
+        */
 
         const auth0UserId = session.user?.sub || "";
         if (!auth0UserId) {

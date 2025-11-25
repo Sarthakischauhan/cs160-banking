@@ -162,6 +162,9 @@ export default function ChaseMap() {
   const [manualLng, setManualLng] = useState('');
   const [manualLocationText, setManualLocationText] = useState('');
   const [userMarker, setUserMarker] = useState<google.maps.Marker | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [destinationMarker, setDestinationMarker] = useState<google.maps.Marker | null>(null);
+
 
 
   // Detect theme on mount and when it changes
@@ -444,17 +447,26 @@ export default function ChaseMap() {
   };
 
   async function showDirections(destination: { lat: number; lng: number }) {
-    if (!directionsService || !directionsRenderer || !userLocation) {
+    if (!directionsService || !directionsRenderer || !userLocation || !map) {
       alert('Please search near your location first!');
       return;
     }
-
+  
+    // Hide existing directions
+    directionsRenderer.setDirections({ routes: [] });
+    setShowingDirections(false);
+  
     const request: google.maps.DirectionsRequest = {
       origin: userLocation,
       destination: destination,
       travelMode: google.maps.TravelMode.DRIVING,
     };
-
+  
+    // Suppress default markers
+    directionsRenderer.setOptions({
+      suppressMarkers: true,
+    });
+  
     directionsService.route(request, (result, status) => {
       if (status === 'OK' && result) {
         directionsRenderer.setDirections(result);
@@ -465,6 +477,8 @@ export default function ChaseMap() {
       }
     });
   }
+  
+  
 
   function resetDirections() {
     if (directionsRenderer) {
@@ -510,11 +524,39 @@ export default function ChaseMap() {
     }, []);
     
 
-    return (
+  return (
     <div className="relative w-full h-screen flex bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100">
-      {/* Sidebar */}
-      <div className="w-80 bg-sidebar text-sidebar-foreground border-r border-sidebar-border shadow-sm overflow-y-auto overflow-x-hidden z-20">
-        <div className="p-4 border-b border-sidebar-border">
+  
+      {/* ---- MOBILE SIDEBAR TOGGLE BUTTON ---- */}
+      <button
+        className="sm:hidden absolute top-15 left-3 z-40
+                  bg-primary dark:bg-sidebar-primary
+                  text-primary-foreground dark:text-sidebar-primary-foreground
+                  px-3 py-2 rounded-md shadow-md
+                  hover:opacity-90 transition"
+        onClick={() => setSidebarOpen((prev) => !prev)}
+      >
+        Menu
+      </button>
+  
+      {/* ---- MOBILE OVERLAY ---- */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-40 z-30 sm:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+  
+      {/* ---- SIDEBAR ---- */}
+      <div
+        className={`
+          fixed sm:static top-0 left-0 h-full w-72 sm:w-80 bg-sidebar text-sidebar-foreground 
+          border-r border-sidebar-border shadow-sm overflow-y-auto overflow-x-hidden z-40
+          transform transition-transform duration-300
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full sm:translate-x-0"}
+        `}
+      >
+        <div className="sticky top-0 bg-sidebar border-b border-sidebar-border p-4 z-50">
           <div className="flex items-center gap-2 mb-3 w-full">
             <input
               type="text"
@@ -524,43 +566,32 @@ export default function ChaseMap() {
               onChange={(e) => setManualLocationText(e.target.value)}
               className="
                 flex-1 min-w-0 
-                bg-input 
-                text-sidebar-foreground
-                placeholder-muted-foreground
-                border border-sidebar-border 
-                px-2 py-1 rounded-md
+                bg-input text-sidebar-foreground placeholder-muted-foreground
+                border border-sidebar-border px-2 py-1 rounded-md
               "
             />
             <button
               onClick={handleManualLocationSearch}
-              className="
-                bg-sidebar-primary 
-                text-sidebar-primary-foreground 
-                px-3 py-1 rounded-md 
-                hover:opacity-90 
-                transition
-              "
+              className="bg-sidebar-primary text-sidebar-primary-foreground px-3 py-1 rounded-md hover:opacity-90 transition"
             >
               Set
             </button>
           </div>
-
+  
           <button
             onClick={handleGeolocate}
             className="
               w-full 
-              bg-primary 
-              text-primary-foreground 
+              bg-primary text-primary-foreground 
               px-3 py-2 rounded-md 
-              hover:opacity-90 
-              transition
+              hover:opacity-90 transition
             "
           >
             Search Locations Near You
           </button>
         </div>
-
-        {/* Results section */}
+  
+        {/* RESULTS LIST */}
         <div className="p-3">
           {places.length === 0 ? (
             <p className="text-muted-foreground text-sm italic">
@@ -584,11 +615,11 @@ export default function ChaseMap() {
                     <strong className="block text-sm font-semibold">
                       {place.displayName?.text || "Chase ATM"}
                     </strong>
-
+  
                     <span className="text-xs text-muted-foreground block mb-2">
                       {place.formattedAddress || "No address"}
                     </span>
-
+  
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -596,13 +627,12 @@ export default function ChaseMap() {
                           lat: place.location!.latitude!,
                           lng: place.location!.longitude!,
                         });
+                        setSidebarOpen(false); // Auto close sidebar on mobile
                       }}
                       className="
                         bg-secondary px-3 py-1 text-xs rounded-md
-                        text-secondary-foreground
-                        hover:opacity-90
-                        border border-sidebar-border
-                        transition
+                        text-secondary-foreground hover:opacity-90
+                        border border-sidebar-border transition
                       "
                     >
                       Get Directions
@@ -615,17 +645,25 @@ export default function ChaseMap() {
         </div>
       </div>
 
-
-      {/* Map */}
+      {/* ---- MAP AREA ---- */}
       <div className="flex-1 h-full relative">
-        {showingDirections && (
-          <button
-            onClick={clearDirections}
-            className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-700 z-30"
-          >
+        {/* ---- Remove Directions Button ---- */}
+        {showingDirections && !sidebarOpen && (
+            <button
+              onClick={clearDirections}
+              className="
+                fixed sm:absolute top-26 right-2 sm:top-16 sm:right-4
+                bg-primary dark:bg-sidebar-primary
+                text-primary-foreground dark:text-sidebar-primary-foreground
+                px-4 py-2 rounded-lg shadow-md border border-gray-300 dark:border-gray-700
+                hover:opacity-90 transition z-50
+              "
+            >
             Remove Directions
           </button>
         )}
+
+        {/* ---- Map Container ---- */}
         <div ref={mapRef} className="h-full w-full" />
       </div>
     </div>

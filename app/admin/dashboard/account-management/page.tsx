@@ -44,7 +44,7 @@ export default async function AccountManagementPage({
           <h1 className="text-4xl font-bold mb-10">Account Management</h1>
           <form method="GET" className="flex flex-col gap-4">
             <p className="font-bold w-full border-b-2">Filters</p>
-            <div className="grid grid-cols-4 w-full gap-4">
+            <div className="grid sm:grid-cols-1 md:grid-cols-4 w-full gap-4">
               <TextFilter
                 label={"ID"}
                 name="id"
@@ -64,7 +64,7 @@ export default async function AccountManagementPage({
                 placeholder="Last Name"
               />
             </div>
-            <div className="grid grid-cols-3 w-full gap-4">
+            <div className="grid sm:grid-cols-1 md:grid-cols-3 w-full gap-4">
               <SelectFilter
                   label="Account Type"
                   name="accountType"

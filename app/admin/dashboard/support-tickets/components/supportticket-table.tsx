@@ -51,11 +51,12 @@ function SupportTicketTable({ tickets }: { tickets: SupportTableData[] }) {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Status</TableHead>
+            <TableHead>Date Created</TableHead>
             <TableHead>ID</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Subject</TableHead>
-            <TableHead>Date Created</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>Handler</TableHead>
             <TableHead>Type</TableHead>
             <TableHead />
           </TableRow>
@@ -63,6 +64,10 @@ function SupportTicketTable({ tickets }: { tickets: SupportTableData[] }) {
         <TableBody>
           {tickets.map((ticket: SupportTableData) => (
             <TableRow key={ticket.sticket_id}>
+              <TableCell>{statusIcon(ticket.ticket_status)}</TableCell>
+              <TableCell>
+                {new Date(ticket.created_at).toLocaleDateString()}
+              </TableCell>
               <TableCell className="max-w-[120px]">
                 {`SUP-${ticket.sticket_id.toString()}`}
               </TableCell>
@@ -71,9 +76,10 @@ function SupportTicketTable({ tickets }: { tickets: SupportTableData[] }) {
               </TableCell>
               <TableCell>{ticket.subject}</TableCell>
               <TableCell>
-                {new Date(ticket.created_at).toLocaleDateString()}
+                {ticket.Handler
+                  ? `${ticket?.Handler?.first_name} ${ticket?.Handler?.last_name}`
+                  : "N/A"}
               </TableCell>
-              <TableCell>{statusIcon(ticket.ticket_status)}</TableCell>
               <TableCell>{ticket.ticket_type}</TableCell>
               <TableCell>
                 <DropdownMenu>

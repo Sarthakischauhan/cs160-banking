@@ -43,7 +43,7 @@ export default async function TransactionsPage({
         <h1 className="text-4xl font-bold mb-10">Transactions</h1>
         <form method="GET" className="flex flex-col gap-4">
           <p className="font-bold w-full border-b-2">Filters</p>
-          <div className="w-full h-20 grid grid-cols-4 gap-4 py-4">
+          <div className="w-full grid sm:grid-cols-1 md:grid-cols-4 gap-4 py-4">
             <TextFilter label={"Transaction ID"} name="id" value={id} />
             <TextFilter
               label={"First Name"}
@@ -52,7 +52,7 @@ export default async function TransactionsPage({
             />
             <TextFilter label={"Last Name"} name="lastName" value={lastName} />
           </div>
-          <div className="grid grid-cols-4 gap-4 my-4">
+          <div className="grid sm:grid-cols-1 md:grid-cols-4 gap-4">
             <SelectFilter
               label={"Status"}
               options={Object.keys(TransactionStatus)}
