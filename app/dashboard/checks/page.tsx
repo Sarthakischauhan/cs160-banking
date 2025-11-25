@@ -4,7 +4,7 @@ import { Card, CardAction, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
 import { Camera, Upload, X } from "lucide-react";
-import { TransactionType } from "@prisma/client";
+
 
 type Account = { 
     account_id: string | null;
@@ -100,31 +100,7 @@ export default function Page() {
       return;
     }
 
-    const createDeposit = await fetch("/api/deposit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        account_id: account.account_id,
-        amount: Number(amount),
-        description: "Check deposit",
-      }),
-    });
-    console.log("seee", createDeposit);
-    if (!createDeposit.ok) {
-      const errorText = await createDeposit.text();
-      console.error("Deposit API Error:", createDeposit.status, errorText);
-      throw new Error("Failed to create deposit");
-    }
-    const depositData = await createDeposit.json();
-    console.log("Deposit API response:", depositData);
-    const transactionId =
-      depositData.transaction.transaction_id || depositData.transaction.id || depositData.transaction.transactionId;
-
-    if (!transactionId) {
-      throw new Error("Deposit response missing transactionId");
-    }
-
+   
     if (!account.customer_id) {
         throw new Error("account missing");
     }
@@ -139,7 +115,7 @@ export default function Page() {
     if (amount !== null && amount > 0) {
       formData.append("amount", amount.toString());
     }
-    formData.append("transactionId", transactionId);
+
     formData.append("customerId", account.customer_id!);
 
 

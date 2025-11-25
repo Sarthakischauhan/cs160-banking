@@ -16,7 +16,6 @@ export async function POST(req: Request) {
     try {
         const formData = await req.formData();
         const customerId = formData.get("customerId") as string | null;
-        const accountId = formData.get("accountId") as string | null;
 
         const front_image = formData.get("image") as File | null;
         const back_image = formData.get("image2") as File | null;
@@ -83,7 +82,6 @@ export async function POST(req: Request) {
 
         }
 
-
         async function checkValidator(imageFile: File, amount: number): Promise<boolean> {
             const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
             const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
@@ -124,6 +122,7 @@ export async function POST(req: Request) {
             [performOcr(front_image),
             performOcr(back_image)]
         );
+        
 
         const amount = Number(formData.get("amount"));
         if (!amount || amount <= 0) {
@@ -134,7 +133,7 @@ export async function POST(req: Request) {
             checkValidator(back_image, 0 || amount),
         ]);
         if (!frontValid || !backValid) {
-            console.log("❌ Check image failed validation — rejecting deposit.");
+            console.log(" Check image failed validation — rejecting deposit.");
             return new Response(
                 "Invalid or unreadable check image. Deposit rejected.",
                 { status: 400 }
@@ -146,10 +145,6 @@ export async function POST(req: Request) {
             getUrl(back_image, "back"),
         ]);
 
-        const transactionId = formData.get("transactionId") as string | null;
-        if (!transactionId) {
-            return new Response("Missing transaction ID", { status: 400 });
-        }
         const account = await prisma.account.findFirst({
             where: {
                 customer_id: customerId ?? undefined,
