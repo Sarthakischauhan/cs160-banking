@@ -84,10 +84,6 @@ export function AccountsTable(props: AccountsTableProps) {
                   <DropdownMenuContent>
                     <DropdownMenuLabel>Manage Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>View Details</DropdownMenuItem>
-                    <DropdownMenuItem>Edit Balance</DropdownMenuItem>
-                    <DropdownMenuItem>Add Note</DropdownMenuItem>
-                    <DropdownMenuSeparator />
                     <AccountStatusItem
                       id={account.account_id}
                       disabled={account.account_status === "ACTIVE"}
@@ -98,9 +94,6 @@ export function AccountsTable(props: AccountsTableProps) {
                       disabled={account.account_status === "CLOSED"}
                       status={"CLOSED"}
                     />
-                    <DropdownMenuItem variant="destructive">
-                      Delete
-                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>

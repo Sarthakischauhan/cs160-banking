@@ -40,6 +40,11 @@ const sidebarOptions = [
     img: HandCoins,
   },
   {
+    title: "Withdraw",
+    url: "/dashboard/withdraw",
+    img: HandCoins,
+  },
+  {
     title: "Transfer",
     url: "/dashboard/transfer",
     img: ArrowLeftRight,

@@ -140,9 +140,6 @@ export function TransactionsTable(transactions: {
                         )}
                         id={transaction.transaction_id}
                       />
-                      <DropdownMenuItem variant="destructive">
-                        Delete
-                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
