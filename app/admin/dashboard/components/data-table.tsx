@@ -19,7 +19,7 @@ export function DataTable({
     <Table className="border-2 rounded-2xl">
       <TableHeader>
         <TableRow>
-          {data &&
+          {data.length > 0 &&
             Object.keys(data[0]).map((key: string, idx: number) => {
               return disable ? (
                 <TableHead hidden={disable.includes(key)} key={idx}>
@@ -32,7 +32,7 @@ export function DataTable({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data &&
+        {data.length > 0 &&
           data.map((object: Record<string, any>, key) => {
             return (
               <TableRow key={key} className="text-wrap">
