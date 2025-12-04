@@ -65,7 +65,7 @@ export default async function NotificationsPage({
               name="dismissed"
               value={dismissed}
             />
-            <RangeFilter
+            <RangeFilter className="sm:col-span-1 md:col-span-2"
               label={"Date"}
               minName="minDate"
               maxName="maxDate"

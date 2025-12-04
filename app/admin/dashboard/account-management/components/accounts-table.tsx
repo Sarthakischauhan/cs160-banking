@@ -13,11 +13,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { censorString, formatCurrency } from "@/lib/utils";
+import { censorString, dataFormatter, formatCurrency } from "@/lib/utils";
 import { Account, Customer, Transaction } from "@prisma/client";
 import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import { EllipsisVertical, Squircle } from "lucide-react";
 import AccountStatusItem from "./accountstatus-item";
+import AccountDetailsItem from "./accountdetails-item";
 
 export type AccountWithExtraData = Account & {
   Customer: Customer;
@@ -84,6 +85,13 @@ export function AccountsTable(props: AccountsTableProps) {
                   <DropdownMenuContent>
                     <DropdownMenuLabel>Manage Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
+                    <AccountDetailsItem
+                      account={{
+                        ...account,
+                        balance: account.balance.toNumber(),
+                        limit_amount: account.limit_amount?.toNumber(),
+                      }}
+                    />
                     <AccountStatusItem
                       id={account.account_id}
                       disabled={account.account_status === "ACTIVE"}
