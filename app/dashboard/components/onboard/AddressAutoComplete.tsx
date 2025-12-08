@@ -62,10 +62,17 @@ export default function AddressAutocomplete({ setValue }: Props) {
     init();
   }, [setValue]);
 
+  const handleManualChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.value) {
+      setValue("address", "", { shouldValidate: true });
+    }
+  };
+
   return (
     <Input
       ref={inputRef}
       placeholder="Start typing your address..."
+      onChange={handleManualChange}
     />
   );
 }
