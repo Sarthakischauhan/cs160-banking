@@ -17,6 +17,7 @@ import { Plus } from "lucide-react";
 import { AccountType } from "@prisma/client";
 import { cookies } from "next/headers";
 import { AccountSettingsDropdown } from "./components/account-settings-gear";
+import SetDefaultAccount from "@/lib/setcookie";
 
 interface DashboardParams {
   [key: string]: string | undefined;
@@ -48,8 +49,9 @@ export default async function Page({ searchParams }: DashboardProps) {
 
   return (
     <>
+      {!currentAccountId && <SetDefaultAccount accounts={accountNames}/>}
       <div className="flex flex-col md:grid md:grid-cols-3 m-4 gap-4 md:gap-0">
-        {accountNames ? (
+        {accountNames.length > 0 ? (
           <div className="flex items-center gap-2">
             <AccountSettingsDropdown accountId={accountId} user={user} />
             <AccountSelect
@@ -65,7 +67,7 @@ export default async function Page({ searchParams }: DashboardProps) {
         ) : (
           <Button asChild>
             <Link href={"/dashboard/create-account"}>
-              Don't have an account ? Create one
+              Don't have an account? Create one
             </Link>
           </Button>
         )}

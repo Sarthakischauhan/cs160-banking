@@ -9,7 +9,7 @@ import {
   HandCoins,
   Banknote,
   LogOut,
-  Settings
+  Settings,
 } from "lucide-react";
 
 import {
@@ -25,6 +25,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import Image from "next/image";
+import LogoutButton from "@/components/ui/logoutbtn";
 
 // A collection of possible sidebar options users can use to route through the page.
 // UPDATE ME when another page is added for routing purposes
@@ -33,50 +34,63 @@ const sidebarOptions = [
     title: "Dashboard",
     url: "/dashboard",
     img: House,
+    accountDependent: false,
   },
   {
     title: "Deposit",
     url: "/dashboard/deposit",
     img: HandCoins,
+    accountDependent: true,
   },
   {
     title: "Withdraw",
     url: "/dashboard/withdraw",
     img: HandCoins,
+    accountDependent: true,
   },
   {
     title: "Transfer",
     url: "/dashboard/transfer",
     img: ArrowLeftRight,
+    accountDependent: true,
   },
   {
     title: "Deposit Checks",
     url: "/dashboard/checks",
     img: Banknote,
+    accountDependent: true,
   },
   {
     title: "Transaction History",
     url: "/dashboard/transaction-history",
     img: FileClock,
+    accountDependent: true,
   },
   {
     title: "Notifications",
     url: "/dashboard/notifications",
     img: Bell,
+    accountDependent: false,
   },
   {
     title: "Nearby ATMs",
     url: "/dashboard/maps",
     img: MapPin,
+    accountDependent: false,
   },
   {
     title: "Account Settings",
     url: "/dashboard/account-settings",
-    img: Settings
+    img: Settings,
+    accountDependent: false,
   },
 ];
 
-export function AppSidebar({currentAccountId}: {currentAccountId?: string}) {
+export function AppSidebar({
+  currentAccountId,
+}: {
+  currentAccountId?: string;
+}) {
   return (
     <Sidebar className="p-2" collapsible="icon">
       <SidebarHeader>
@@ -90,7 +104,14 @@ export function AppSidebar({currentAccountId}: {currentAccountId?: string}) {
         <SidebarGroup />
         <SidebarMenu>
           {sidebarOptions.map((option) => (
-            <SidebarMenuItem key={option.title}>
+            <SidebarMenuItem
+              key={option.title}
+              className={
+                option.accountDependent && !currentAccountId
+                  ? "opacity-50 pointer-events-none"
+                  : ""
+              }
+            >
               <SidebarMenuButton asChild tooltip={option.title}>
                 <a href={option.url}>
                   <option.img />
@@ -108,14 +129,8 @@ export function AppSidebar({currentAccountId}: {currentAccountId?: string}) {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild className="
-              text-red-600 dark:text-red-400
-              hover:bg-red-100 dark:hover:bg-red-900/40
-              transition-colors
-            ">
-              <a href="/auth/logout">
-                <span className="text-lg group-data-[collapsible=icon]:hidden">Logout</span>
-              </a>
+            <SidebarMenuButton asChild className="transition-colors">
+              <LogoutButton />
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

@@ -6,6 +6,7 @@ import { OnboardSidebar } from "./components/onboard-sidebar";
 import { cookies } from "next/headers";
 import { HideBalanceProvider } from "./providers/hide-balance-provider";
 import ChatWidget from "./components/chat-widget";
+import { getAccount } from "@/lib/accounts";
 
 export default async function dashboardLayout({
   children,
@@ -28,12 +29,15 @@ export default async function dashboardLayout({
   if (!userSub) {
     throw new Error("User ID (sub) is missing from session.")
   }
+
+  const activeId = (await handleCurrentId()) ?? "";
+
   const user = await getUserData({ userId: userSub })
   return (
     <div>
       <HideBalanceProvider initialHideBalance={hideBalance}>
         <SidebarProvider>
-          {user?.isOnboarded ? <AppSidebar />  : <OnboardSidebar />}
+          {user?.isOnboarded ? <AppSidebar currentAccountId={activeId} />  : <OnboardSidebar />}
           <SidebarInset>
             <div className="md:hidden flex items-center gap-2 border-b px-3 py-2">
               <SidebarTrigger />
