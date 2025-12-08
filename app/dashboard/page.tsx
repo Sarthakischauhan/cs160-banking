@@ -32,6 +32,7 @@ export default async function Page({ searchParams }: DashboardProps) {
   if (!session) {
     redirect("/");
   }
+  
   const user = await getUserData({ userId: session.user.sub });
   if (!user?.isOnboarded) {
     return <ProfileCompletion />;
@@ -95,8 +96,6 @@ export default async function Page({ searchParams }: DashboardProps) {
           {currentAccount && (
             <BalanceCardWrapper
               userBalance={currentAccount.balance}
-              monthIncome={1400}
-              monthExpense={1000}
               account_type={
                 currentAccount.account_type === "SAVINGS"
                   ? AccountType.SAVINGS
