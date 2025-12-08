@@ -94,6 +94,7 @@ export const ProfileCompletion: React.FC = () => {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors, isValid },
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -109,6 +110,9 @@ export const ProfileCompletion: React.FC = () => {
       zipCode: "",
     },
   });
+
+  // Watch the address field to keep it in sync with the autocomplete input
+  const addressValue = watch("address");
 
   // helper: normalize phone input to digits-only
   const onPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -249,13 +253,12 @@ export const ProfileCompletion: React.FC = () => {
                 Street Address <span className="text-destructive">*</span>
               </Label>
 
-              <AddressAutocomplete setValue={setValue} />
-
-              {/* Hidden real RHF field (for validation + submission) */}
-              <Input
-                id="address"
-                {...register("address")}
-                className="hidden"
+              <AddressAutocomplete 
+                setValue={setValue}
+                value={addressValue || ""}
+                onChange={(value) => {
+                  setValue("address", value, { shouldValidate: true });
+                }}
               />
 
               {errors.address && (

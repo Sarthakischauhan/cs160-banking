@@ -7,10 +7,13 @@ import { UseFormSetValue } from "react-hook-form";
 
 interface Props {
   setValue: UseFormSetValue<any>;
+  value: string;
+  onChange: (value: string) => void;
 }
 
-export default function AddressAutocomplete({ setValue }: Props) {
+export default function AddressAutocomplete({ setValue, value, onChange }: Props) {
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -26,10 +29,12 @@ export default function AddressAutocomplete({ setValue }: Props) {
       const autocomplete = new google.maps.places.Autocomplete(
         inputRef.current,
         {
-          fields: ["address_components"],
+          fields: ["address_components", "formatted_address"],
           types: ["address"],
         }
       );
+
+      autocompleteRef.current = autocomplete;
 
       autocomplete.addListener("place_changed", () => {
         const place = autocomplete.getPlace();
@@ -51,8 +56,13 @@ export default function AddressAutocomplete({ setValue }: Props) {
           if (types.includes("postal_code")) zip = comp.long_name;
         });
 
+        const fullAddress = street.trim();
+        
+        // Update the input value to show the selected address
+        onChange(fullAddress);
+        
         // Fill RHF fields
-        setValue("address", street.trim(), { shouldValidate: true });
+        setValue("address", fullAddress, { shouldValidate: true });
         setValue("city", city, { shouldValidate: true });
         setValue("state", state, { shouldValidate: true });
         setValue("zipCode", zip, { shouldValidate: true });
@@ -60,11 +70,31 @@ export default function AddressAutocomplete({ setValue }: Props) {
     };
 
     init();
-  }, [setValue]);
+  }, [setValue, onChange]);
+
+  // Handle manual input changes
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    onChange(newValue);
+    // Update the form field immediately when user types or deletes
+    // This ensures manual edits are captured and validation runs
+    setValue("address", newValue, { shouldValidate: true });
+  };
+
+  // Sync the input value with the controlled value prop
+  // This ensures React's controlled component stays in sync
+  useEffect(() => {
+    if (inputRef.current && inputRef.current.value !== value) {
+      // Only update if the value actually changed to avoid unnecessary updates
+      inputRef.current.value = value;
+    }
+  }, [value]);
 
   return (
     <Input
       ref={inputRef}
+      value={value}
+      onChange={handleInputChange}
       placeholder="Start typing your address..."
     />
   );
