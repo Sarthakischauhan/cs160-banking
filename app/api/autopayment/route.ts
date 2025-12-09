@@ -100,6 +100,7 @@ export const GET = auth0.withApiAuthRequired(async () => {
       orderBy: { scheduled: "asc" },
     });
 
+    console.log("Scheduled Payments:", scheduledPayments);
     return NextResponse.json(scheduledPayments, { status: 200 });
   } catch (error) {
     console.error(error);

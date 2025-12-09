@@ -52,8 +52,7 @@ export function UpcomingCard() {
           <div className="grid grid-cols-4 my-2" key={payment.transaction_id}>
             <span className="col-span-2">{payment.description}</span>
             <span>${Number(payment.amount).toFixed(2)}</span>
-            <span>{new Date(payment.scheduled).toLocaleDateString()}</span>
-          </div>
+            <span>{payment.scheduled.split("T")[0]}</span>          </div>
         ))}
       </CardContent>
     </Card>
