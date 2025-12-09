@@ -1,15 +1,21 @@
-import Link from "next/link";
+"use client";
+
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
 
-export default function AuthErrorPage({
-  searchParams,
-}: {
-  searchParams: { error?: string; error_description?: string };
-}) {
-  const error = searchParams.error || "unknown_error";
-  const errorDescription = searchParams.error_description || "An unknown authentication error occurred";
+export default function AuthErrorPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const error = searchParams.get("error") || "unknown_error";
+  const errorDescription = searchParams.get("error_description") || "An unknown authentication error occurred";
+
+  const handleReturnHome = () => {
+    // Redirect to Auth0's logout endpoint which will clear the session and redirect to home
+    window.location.href = "/api/auth/logout?returnTo=" + encodeURIComponent(window.location.origin + "/");
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
@@ -40,14 +46,12 @@ export default function AuthErrorPage({
             Please try logging in again. If the problem persists, contact our support team.
           </p>
           <div className="flex flex-col gap-3">
-            <Link href="/auth/login" className="w-full">
-              <Button className="w-full">Try Logging In Again</Button>
-            </Link>
-            <Link href="/" className="w-full">
-              <Button variant="outline" className="w-full">
-                Return to Home
-              </Button>
-            </Link>
+            <Button onClick={() => router.push("/auth/login")} className="w-full">
+              Try Logging In Again
+            </Button>
+            <Button variant="outline" className="w-full" onClick={handleReturnHome}>
+              Return to Home
+            </Button>
           </div>
         </CardContent>
       </Card>
