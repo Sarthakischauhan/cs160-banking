@@ -116,10 +116,11 @@ export function TransferCard({
       }
 
       router.push("/dashboard");
+      toast.success("Transfer successful!");
     } catch (err: any) {
       console.error("Error submitting transfer:", err);
       // Optionally show a toast or alert
-      toast.error(err.message || "An error occurred during the transfer.");
+      toast.error("An error occurred during the transfer.");
     }
   };
 

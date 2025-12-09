@@ -68,7 +68,7 @@ export function DepositCard({account_id} : DepositCardProps) {
     router.push("/dashboard");
   } catch (err) {
     console.error("Error depositing money:", err);
-    toast.error("Failed to deposit money. Please try again.");
+    toast.error("Failed to deposit money. Verify the information below is correct.");
   }
 };
 

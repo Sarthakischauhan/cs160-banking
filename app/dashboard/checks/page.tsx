@@ -135,8 +135,8 @@ export default function Page() {
       );
     } catch (err: any) {
       seterror("Error cannot process the image");
-      toast.error(err.message ||
-        "Error cannot process the image. Verify that the images are clea and correct and try again.",
+      toast.error(
+        "Error cannot process the image. Verify that the images are clear and correct and try again.",
       );
     }
   }
