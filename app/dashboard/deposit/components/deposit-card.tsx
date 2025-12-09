@@ -25,6 +25,7 @@ import { MoneyInput } from "./money-input";
 import { useEffect, useState } from "react";
 import Decimal from "decimal.js";
 import type { AccountType } from "@prisma/client";
+import { toast } from "sonner";
 
 type DepositCardProps = {
   account_id: string
@@ -41,28 +42,36 @@ export function DepositCard({account_id} : DepositCardProps) {
     },
   });
 
-  const handleClick = async (values: any) =>{ 
-     // When submit button is clicked api for deposit will hit
-     const payload = {
+  const handleClick = async (values: any) => {
+  try {
+    if (!account_id) throw new Error("No account selected");
+
+    const payload = {
       amount: values.amount,
       account_id: account_id,
-      description: values.description
-     }
-    
-     const response = await fetch("/api/deposit",{
+      description: values.description,
+    };
+
+    const response = await fetch("/api/deposit", {
       method: "POST",
       headers: {
-          'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload)
-     })
+      body: JSON.stringify(payload),
+    });
 
-     if(!response.ok){
-      return new Error("Couldn't deposit money")
-     }
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Deposit failed: ${errorText}`);
+    }
 
-     router.push("/dashboard")
-  };
+    router.push("/dashboard");
+  } catch (err) {
+    console.error("Error depositing money:", err);
+    toast.error("Failed to deposit money. Please try again.");
+  }
+};
+
 
   return (
     <>
