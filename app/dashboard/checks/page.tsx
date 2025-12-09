@@ -4,19 +4,22 @@ import { Card, CardAction, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
 import { Camera, Upload, X } from "lucide-react";
-import { TransactionType } from "@prisma/client";
+import { toast } from "sonner";
 
-type Account = { 
-    account_id: string | null;
-    balance: number | null;
-    customer_id: string | null;
+type Account = {
+  account_id: string | null;
+  balance: number | null;
+  customer_id: string | null;
 };
 let test = "";
 
 export default function Page() {
   const [front_image, setimage1] = useState<File | null>(null);
   const [back_image, setimage2] = useState<File | null>(null);
-  const [result, setresult] = useState<{ frontText: string; backText: string } | null>(null);
+  const [result, setresult] = useState<{
+    frontText: string;
+    backText: string;
+  } | null>(null);
   const [error, seterror] = useState("");
   const [amount, setAmount] = useState<number | null>(null);
   const [account, setAccount] = useState<Account | null>(null);
@@ -52,7 +55,9 @@ export default function Page() {
     async function startCamera() {
       if (!showCamera) return;
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
         if (videoRef.current) videoRef.current.srcObject = stream;
       } catch (err) {
         console.error("Camera access denied:", err);
@@ -73,7 +78,9 @@ export default function Page() {
 
     canvas.toBlob((blob) => {
       if (blob) {
-        const file = new File([blob], `${showCamera}_check.jpg`, { type: "image/jpeg" });
+        const file = new File([blob], `${showCamera}_check.jpg`, {
+          type: "image/jpeg",
+        });
         if (showCamera === "front") setimage1(file);
         if (showCamera === "back") setimage2(file);
         setShowCamera(null);
@@ -90,69 +97,47 @@ export default function Page() {
   }, [showCamera]);
 
   async function handleUpload(e: React.FormEvent) {
-    e.preventDefault();
-    seterror("");
-    setresult(null);
-    console.log("testing if test shows up " + test);
-
-    if (!account) {
-      seterror("Account not loaded");
-      return;
-    }
-
-    const createDeposit = await fetch("/api/deposit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        account_id: account.account_id,
-        amount: Number(amount),
-        description: "Check deposit",
-      }),
-    });
-    console.log("seee", createDeposit);
-    if (!createDeposit.ok) {
-      const errorText = await createDeposit.text();
-      console.error("Deposit API Error:", createDeposit.status, errorText);
-      throw new Error("Failed to create deposit");
-    }
-    const depositData = await createDeposit.json();
-    console.log("Deposit API response:", depositData);
-    const transactionId =
-      depositData.transaction.transaction_id || depositData.transaction.id || depositData.transaction.transactionId;
-
-    if (!transactionId) {
-      throw new Error("Deposit response missing transactionId");
-    }
-
-    if (!account.customer_id) {
-        throw new Error("account missing");
-    }
-
-    const formData = new FormData();
-    if (front_image) {
-      formData.append("image", front_image);
-    }
-    if (back_image) {
-      formData.append("image2", back_image);
-    }
-    if (amount !== null && amount > 0) {
-      formData.append("amount", amount.toString());
-    }
-    formData.append("transactionId", transactionId);
-    formData.append("customerId", account.customer_id!);
-
-
     try {
+      e.preventDefault();
+      seterror("");
+      setresult(null);
+      console.log("testing if test shows up " + test);
+
+      if (!account) {
+        seterror("Account not loaded");
+        return;
+      }
+
+      if (!account.customer_id) {
+        throw new Error("account missing");
+      }
+
+      const formData = new FormData();
+      if (front_image) {
+        formData.append("image", front_image);
+      }
+      if (back_image) {
+        formData.append("image2", back_image);
+      }
+      if (amount !== null && amount > 0) {
+        formData.append("amount", amount.toString());
+      }
+
+      formData.append("customerId", account.customer_id!);
       const res = await fetch("/api/checks", {
         method: "POST",
         body: formData,
       });
       const data = await res.json();
       setresult(data);
-      alert("Check submitted successfully! We will review and approve it shortly.");
-    } catch (error) {
+      toast.success(
+        "Check submitted successfully! We will review and approve it shortly.",
+      );
+    } catch (err: any) {
       seterror("Error cannot process the image");
+      toast.error(err.message ||
+        "Error cannot process the image. Verify that the images are clea and correct and try again.",
+      );
     }
   }
 
@@ -170,7 +155,9 @@ export default function Page() {
     <Card className="w-full max-w-sm flex flex-col p-4 bg-card border border-border shadow-lg rounded-xl transition-all duration-300 hover:shadow-xl">
       <CardHeader className="p-0 mb-4">
         {/* Removed text color utility (text-blue-400) */}
-        <CardTitle className="text-xl font-semibold text-center">{title}</CardTitle>
+        <CardTitle className="text-xl font-semibold text-center">
+          {title}
+        </CardTitle>
       </CardHeader>
 
       <div
@@ -241,14 +228,18 @@ export default function Page() {
     <main className="min-h-screen flex flex-col items-center py-12 px-4 bg-background">
       <div className="max-w-3xl w-full">
         {/* Removed text color utility (text-blue-400) */}
-        <h1 className="text-4xl font-extrabold mb-2 text-center">Deposit a Check</h1>
+        <h1 className="text-4xl font-extrabold mb-2 text-center">
+          Deposit a Check
+        </h1>
         {/* Changed text color to muted-foreground */}
         <p className="text-lg text-muted-foreground mb-10 text-center">
           Securely upload the front and back of your check.
         </p>
-        
-        <form onSubmit={handleUpload} className="flex flex-col items-center gap-8">
-          
+
+        <form
+          onSubmit={handleUpload}
+          className="flex flex-col items-center gap-8"
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
             <ImageUploadCard
               title="Front of Check"
@@ -273,21 +264,31 @@ export default function Page() {
               min="1"
               max="10000"
               value={amount ?? ""}
-              onChange={(e) => setAmount(e.target.value === "" ? null : Number(e.target.value))}
+              onChange={(e) =>
+                setAmount(e.target.value === "" ? null : Number(e.target.value))
+              }
               step="0.01"
               // Removed explicit text and background colors, letting theme handle it
               className="h-12 text-lg"
             />
             {/* Changed text color to use error semantic color (text-red-500) */}
-            {error && <p className="text-destructive text-sm text-center font-medium">{error}</p>}
-            
+            {error && (
+              <p className="text-destructive text-sm text-center font-medium">
+                {error}
+              </p>
+            )}
+
             <Button
               type="submit"
               // Removed explicit colors, letting primary variant handle it
               className="w-full h-12 text-lg font-semibold rounded-lg transition-colors dark:text-white"
-              disabled={!front_image || !back_image || amount === null || amount <= 0}
+              disabled={
+                !front_image || !back_image || amount === null || amount <= 0
+              }
             >
-              {front_image && back_image ? "Submit Check for Deposit" : "Upload Missing Sides"}
+              {front_image && back_image
+                ? "Submit Check for Deposit"
+                : "Upload Missing Sides"}
             </Button>
           </div>
         </form>
@@ -296,16 +297,28 @@ export default function Page() {
       {showCamera && (
         <div className="fixed inset-0 bg-black/90 flex flex-col items-center justify-center z-50 p-4">
           <div className="relative">
-            <video ref={videoRef} autoPlay playsInline className="w-full max-w-lg rounded-xl shadow-2xl" />
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              className="w-full max-w-lg rounded-xl shadow-2xl"
+            />
             <canvas ref={canvasRef} className="hidden" />
           </div>
           <div className="mt-6 flex gap-4">
             {/* Using default primary button style */}
-            <Button onClick={capturePhoto} className="text-lg font-semibold h-12 px-6">
+            <Button
+              onClick={capturePhoto}
+              className="text-lg font-semibold h-12 px-6"
+            >
               Capture Photo
             </Button>
             {/* Using outline variant and relying on default colors */}
-            <Button variant="outline" onClick={() => setShowCamera(null)} className="text-lg font-semibold h-12 px-6">
+            <Button
+              variant="outline"
+              onClick={() => setShowCamera(null)}
+              className="text-lg font-semibold h-12 px-6"
+            >
               <X className="mr-2 h-5 w-5" /> Cancel
             </Button>
           </div>
