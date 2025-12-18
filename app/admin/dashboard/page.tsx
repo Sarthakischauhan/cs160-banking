@@ -5,10 +5,8 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { MetricCard, MetricCardProps } from "./components/metric-card";
 import { TableCard } from "./components/table-card";
 import { TrendsCard } from "./components/trends-card";
-import { pendingTransfers, supportTickets } from "./dummydata/data";
 import {
   getAccountsSummary,
   getCustomerSummary,
@@ -19,6 +17,7 @@ import { formatCurrency } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getSupportTickets } from "@/lib/admin/supportTickets";
+import { MetricCard, MetricCardProps } from "./components/metric-card";
 
 export default async function AdminDashboardPage() {
   const start = new Date();

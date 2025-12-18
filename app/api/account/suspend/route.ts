@@ -48,6 +48,13 @@ export const PUT = auth0.withApiAuthRequired(async (req: NextRequest) => {
       );
     }
 
+    if (account.balance.toNumber() > 0) {
+      return NextResponse.json(
+        {message: "Error: Account balance should be $0.00 to suspend the account"},
+        { status: 500 }
+      );
+    }
+
     // Use enum type from Prisma
     await prisma.account.update({
       where: { account_id },

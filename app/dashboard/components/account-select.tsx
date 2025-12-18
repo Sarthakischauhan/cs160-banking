@@ -1,6 +1,5 @@
-"use client"
-import * as React from "react"
-
+"use client";
+import { useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -9,10 +8,9 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import { redirect } from "next/navigation";
 import { handleCurrentId } from "@/lib/user";
-
 
 interface AccountSelectProps {
   accounts: Array<{
@@ -23,20 +21,23 @@ interface AccountSelectProps {
   currentAccountId: string;
 }
 
-export function AccountSelect({accounts, currentAccountId}: AccountSelectProps) {
+export function AccountSelect({
+  accounts,
+  currentAccountId,
+}: AccountSelectProps) {
   const handleSelectedAccount = async (accountId: string) => {
-    console.log("called")
+    console.log("called");
     const active_id = await handleCurrentId(accountId);
-    redirect("/dashboard")
-  }
-  
+    redirect("/dashboard");
+  };
+
   return (
-    <Select 
-      value={currentAccountId} 
+    <Select
+      value={currentAccountId}
       onValueChange={(value) => handleSelectedAccount(value)}
     >
       <SelectTrigger className="w-[180px]">
-        <SelectValue placeholder={currentAccountId}/>
+        <SelectValue placeholder={currentAccountId} />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
@@ -49,5 +50,5 @@ export function AccountSelect({accounts, currentAccountId}: AccountSelectProps) 
         </SelectGroup>
       </SelectContent>
     </Select>
-  )
+  );
 }

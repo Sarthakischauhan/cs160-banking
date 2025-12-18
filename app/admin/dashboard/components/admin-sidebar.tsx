@@ -20,6 +20,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
+import LogoutButton from "@/components/ui/logoutbtn";
 
 // A collection of possible sidebar options users can use to route through the page.
 // UPDATE ME when another page is added for routing purposes
@@ -86,15 +87,10 @@ export function AdminSidebar() {
           <SidebarMenuButton
             asChild
             className="
-              text-red-600 dark:text-red-400
-              hover:bg-red-100 dark:hover:bg-red-900/40
               transition-colors
             "
           >
-            <a href="/auth/logout">
-              <LogOut className="mr-2" />
-              <span className="text-lg">Logout</span>
-            </a>
+            <LogoutButton />
           </SidebarMenuButton>
         </SidebarMenu>
       </SidebarFooter>

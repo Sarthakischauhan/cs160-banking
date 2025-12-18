@@ -500,7 +500,7 @@ export default function ChaseMap() {
     const autocompleteRef = useRef<HTMLInputElement | null>(null);
 
     useEffect(() => {
-      if (!window.google || !window.google.maps || !autocompleteRef.current) return;
+      if (!window.google || !window.google.maps || !autocompleteRef.current || !window.google.maps.places) return;
     
       const autocomplete = new google.maps.places.Autocomplete(
         autocompleteRef.current,

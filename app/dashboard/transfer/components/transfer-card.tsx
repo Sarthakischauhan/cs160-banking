@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { MoneyInput } from "../../deposit/components/money-input";
 import { RecipientSearchResults } from "../components/recipient-search-result";
 import { RecipientPreview } from "../components/recipient-preview";
+import { toast } from "sonner";
 
 type Transfer = {
   account_id: string | null;
@@ -93,24 +94,34 @@ export function TransferCard({
   const handleSubmit = async (values: Transfer) => {
     if (!activeAccountId || !recipient) return;
 
-    const payload = {
-      from_account_id: activeAccountId,
-      to_account_id: recipient.account_id,
-      amount: Number(values.amount),
-      description: values.description,
-      transaction_type: values.transaction_type,
-      schedule_date: values.schedule_date,
-    };
+    try {
+      const payload = {
+        from_account_id: activeAccountId,
+        to_account_id: recipient.account_id,
+        amount: Number(values.amount),
+        description: values.description,
+        transaction_type: values.transaction_type,
+        schedule_date: values.schedule_date,
+      };
 
-    const res = await fetch("/api/transfer", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+      const res = await fetch("/api/transfer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    if (!res.ok) return;
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Transfer failed: ${errorText}`);
+      }
 
-    router.push("/dashboard");
+      router.push("/dashboard");
+      toast.success("Transfer successful!");
+    } catch (err: any) {
+      console.error("Error submitting transfer:", err);
+      // Optionally show a toast or alert
+      toast.error("An error occurred during the transfer.");
+    }
   };
 
   return (
@@ -122,7 +133,10 @@ export function TransferCard({
 
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-6"
+          >
             {/* Amount */}
             <FormField
               control={form.control}
@@ -164,7 +178,9 @@ export function TransferCard({
                         }}
                       />
                       {loading && (
-                        <div className="text-sm text-gray-500">Searching...</div>
+                        <div className="text-sm text-gray-500">
+                          Searching...
+                        </div>
                       )}
                       <RecipientSearchResults
                         results={results}
@@ -172,7 +188,9 @@ export function TransferCard({
                       />
                     </div>
                   </FormControl>
-                  <FormDescription>Search and select a recipient</FormDescription>
+                  <FormDescription>
+                    Search and select a recipient
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -208,7 +226,9 @@ export function TransferCard({
                     <FormControl>
                       <Input type="date" {...field} value={field.value ?? ""} />
                     </FormControl>
-                    <FormDescription>Select the date to execute this payment</FormDescription>
+                    <FormDescription>
+                      Select the date to execute this payment
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

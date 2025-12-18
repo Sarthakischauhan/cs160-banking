@@ -13,7 +13,7 @@ import {
   calculateBalanceHistory,
   calculateTransactionHistory,
 } from "./history";
-import { isValidUUID } from "../utils";
+import { dataFormatter, isValidUUID } from "../utils";
 
 const timeFrameOptions = {
   month: 30,

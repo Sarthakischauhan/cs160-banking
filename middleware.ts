@@ -3,6 +3,22 @@ import { NextResponse } from "next/server";
 import { auth0, getRole } from "@/lib/auth0";
 
 export async function middleware(request: NextRequest) {
+  // Handle Auth0 callback errors
+  if (request.nextUrl.pathname.includes("/auth/callback")) {
+    const error = request.nextUrl.searchParams.get("error");
+    const errorDescription = request.nextUrl.searchParams.get("error_description");
+    
+    if (error === "access_denied") {
+      // User declined authorization, redirect to a friendly page
+      return NextResponse.redirect(new URL("/auth/access-denied", request.url));
+    }
+    
+    if (error) {
+      // Other Auth0 errors
+      return NextResponse.redirect(new URL("/auth/error", request.url));
+    }
+  }
+
   if (request.nextUrl.pathname.includes("/auth/")) {
     return auth0.middleware(request);
   }

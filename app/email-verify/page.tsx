@@ -98,7 +98,7 @@ export default function emailVerification(){
             {message.text}
           </div>
         )}
-        <div className="text-center">
+        <div className="flex flex-col text-center gap-4">
           <p className="text-sm text-gray-600 mb-4">
             Didn't receive the email? Check your spam folder or request a new verification email.
           </p>
@@ -108,6 +108,14 @@ export default function emailVerification(){
             className="w-full"
           >
             {isLoading ? "Sending..." : "Resend Verification Email"}
+          </Button>
+          <Button 
+            variant={'destructive'}
+            onClick={() => { window.location.href="/auth/logout" }}
+            disabled={isLoading}
+            className="w-full"
+          >
+            {isLoading ? "Sending..." : "Cancel Verification"}
           </Button>
         </div>
       </CardContent>

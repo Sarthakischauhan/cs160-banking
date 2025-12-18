@@ -30,7 +30,6 @@ export default function TransactionManagementDropdown({
       <DropdownMenuContent>
         <DropdownMenuLabel>Manage Transaction</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>View Details</DropdownMenuItem>
         <RequestApprovalTransactionItem
           id={transaction_id}
           disabled={transaction_status === "COMPLETED"}
